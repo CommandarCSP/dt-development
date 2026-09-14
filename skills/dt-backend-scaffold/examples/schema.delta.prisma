@@ -1,0 +1,30 @@
+// EXAMPLE Phase 1 schema delta for the 'orders' module.
+// This block is the deterministic data contract. be-builder (Repository 계층) merges it into
+// prisma/schema.prisma in Phase 2 and runs `prisma migrate dev --name add-orders`.
+//
+// Phase 1 gate runs `prisma validate` + `prisma format` on the merged schema.
+
+model Order {
+  id         String      @id @default(cuid())
+  customerId String
+  total      Int
+  status     OrderStatus @default(created)
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+
+  @@index([customerId])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  price   Int
+  qty     Int
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  created
+  paid
+  shipped
+}

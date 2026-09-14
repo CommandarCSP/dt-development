@@ -1,0 +1,5 @@
+{
+  "enabled": true,
+  "commitThreshold": 1,
+  "startReminder": true
+}

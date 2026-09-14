@@ -1,0 +1,1 @@
+{ "name": "np", "dependencies": { "next": "^14", "next-auth": "^4" } }

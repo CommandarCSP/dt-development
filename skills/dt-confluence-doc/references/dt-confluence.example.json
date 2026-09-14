@@ -1,0 +1,13 @@
+{
+  "site": "your-site.atlassian.net",
+  "cloudId": "00000000-0000-0000-0000-000000000000",
+  "defaultSpaceKey": "REPLACE_WITH_TEAM_SPACE_KEY",
+  "defaultSpaceId": "REPLACE_WITH_NUMERIC_SPACE_ID",
+  "parentPageId": null,
+  "labelsByType": {
+    "meeting": ["meeting-notes"],
+    "worklog": ["worklog"],
+    "techdoc": ["tech-doc"],
+    "retro": ["retrospective"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "_comment": "EXAMPLE owners for 'comments' domain. Phase 1 generates this. The fe-builder owns all layers of one domain; owners map matters mainly for page-간 병렬(다른 도메인을 다른 fe-builder가 맡을 때 경로 충돌 방지).",
+  "domain": "comments",
+  "owners": {
+    "src/store/queries/comments/**": "fe-builder",
+    "src/services/comments/**": "fe-builder",
+    "src/components/view/CommentItem.tsx": "fe-builder",
+    "src/business/hooks/comments/**": "fe-builder",
+    "src/mocks/handlers.ts": "fe-builder"
+  },
+  "phase1Outputs": [
+    "src/types/comment.ts",
+    "src/store/queries/keys.ts",
+    "src/contracts/comments.contract.ts"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "dt-development",
+  "version": "0.11.0",
+  "description": "FE(5레이어 React) + BE(NestJS 계층형) 아키텍처 하네스 — 프로젝트 부트스트랩 + 자동 검증(리뷰/커버리지) + 다중 소스 SDD 명세 생성(dt-spec/dt-bespec) + 멀티에이전트 스캐폴드(dt-scaffold/dt-be-scaffold) + Jira 동기화(dt-worklog-sync) + Confluence 문서(dt-confluence-doc) + 개발 정의서 SOT(dt-devspec) + 스펙↔구현 감사(dt-audit) + 사용자 가이드 PDF(dt-guide) + 한국어 문장 검사(dt-ko)",
+  "author": {
+    "name": "dt-development team"
+  },
+  "hooks": "./hooks/hooks.json"
+}

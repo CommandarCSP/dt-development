@@ -1,0 +1,19 @@
+{
+  "name": "dt-development",
+  "owner": {
+    "name": "CommandarCSP"
+  },
+  "metadata": {
+    "description": "FE(5레이어 React) + BE(NestJS 계층형) 아키텍처 하네스 — SDD 명세 생성 · 멀티에이전트 스캐폴드 · 자동 검증을 묶은 Claude Code 플러그인",
+    "version": "0.11.0"
+  },
+  "plugins": [
+    {
+      "name": "dt-development",
+      "description": "SDD 명세 생성(dt-spec/dt-bespec) · 멀티에이전트 스캐폴드(dt-scaffold/dt-be-scaffold) · 풀스택 조율(dt-fullstack) · 규칙 기반 리뷰(dt-review/dt-be-review) · 사용자 가이드 PDF(dt-guide) · 한국어 문장 검사(dt-ko)",
+      "version": "0.11.0",
+      "author": { "name": "CommandarCSP" },
+      "source": "."
+    }
+  ]
+}

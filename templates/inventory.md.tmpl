@@ -1,0 +1,20 @@
+---
+version: {{VERSION}}
+analyzedAt: {{ANALYZED_AT}}
+type: {{TYPE}}
+product: {{PRODUCT}}
+stack:
+{{STACK_YAML}}
+scenarios:
+{{SCENARIOS_YAML}}
+screens:
+{{SCREENS_YAML}}
+prep:
+{{PREP_YAML}}
+---
+# {{PRODUCT}} 기능 인벤토리
+
+> `/dt-guide analyze` 가 만들고 사람이 고친다. front matter 가 기계가 읽는 부분이고 아래 표는 사람용 요약이다.
+> 라벨: `stack` · `doc:<경로>` · `code:<파일:줄>` · `test:<파일>` · `user-confirmed`(재실행이 덮어쓰지 않음) · `assumed:<사유>`(무인 실행 기본값 — 재실행 때 다시 묻는다).
+
+{{HUMAN_TABLE}}

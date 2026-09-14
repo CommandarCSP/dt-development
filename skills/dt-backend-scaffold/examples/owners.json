@@ -1,0 +1,15 @@
+{
+  "_comment": "EXAMPLE owners for the 'orders' module. Phase 1 generates this. The be-builder owns all layers of one module; owners map matters mainly for resource-간 병렬(다른 모듈을 다른 be-builder가 맡을 때 경로 충돌 방지). prisma/schema.prisma는 공유라 머지 구간 순차.",
+  "module": "orders",
+  "owners": {
+    "src/orders/**": "be-builder",
+    "prisma/schema.prisma": "be-builder (공유 — 머지 순차)",
+    "prisma/migrations/**": "be-builder"
+  },
+  "phase1Outputs": [
+    "src/orders/contracts/orders.contract.ts",
+    "src/cache/cache-keys.ts",
+    "prisma/schema.delta.prisma"
+  ],
+  "layerOrder": ["repository+dto (Phase 2)", "service (Phase 3)", "controller (Phase 4)", "module (Phase 5)"]
+}

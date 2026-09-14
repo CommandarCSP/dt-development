@@ -1,0 +1,12 @@
+{
+  "name": "@dt-frontend/scaffold",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
