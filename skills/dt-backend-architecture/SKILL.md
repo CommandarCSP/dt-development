@@ -105,4 +105,4 @@ DTO (경계 계약)  ·  Entity/Model (내부 도메인)  ·  Module (DI 와이�
 
 ## 활성화 조건
 
-이 스킬은 `.dt-backend.json`이 있고 `enabledSkills`에 포함된 프로젝트에서만 의미가 있습니다.
+이 스킬은 `.dt-backend.json`의 `enabledSkills`에 포함된 프로젝트에서 동작합니다. **파일이 없으면 물러나지 말고 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만들고 계속합니다.**

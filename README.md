@@ -48,7 +48,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `.dt-confluence.json` / `.dt-confluence.local.json` | Confluence 연동 | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-pipeline.json` | 세션 알림 훅 사용 여부(opt-in) | `/dt-wrap --init` |
-| `.dt-frontend.json` / `.dt-backend.json` | FE/BE 아키텍처 규칙 | 스캐폴드가 새 프로젝트를 만들 때 함께 쓴다 |
+| `.dt-frontend.json` / `.dt-backend.json` | FE/BE 아키텍처 규칙 | 스킬이 필요할 때 없으면 만든다 |
 
 읽는 순서는 **개인(`.local.json`) > 팀(`.json`) > 대화형 질문**입니다. `.local.json`은 커밋하지 않는 개인 값(예: 마지막으로 동기화를 마친 커밋 위치)이라 각자 `.gitignore`에 등록합니다.
 
@@ -56,11 +56,20 @@ Jira 연동 위저드는 cloudId·site를 `getAccessibleAtlassianResources`로 �
 
 ---
 
-## 알려진 한계
+## 이미 있는 프로젝트에 얹을 때
 
-`.dt-frontend.json`·`.dt-backend.json`은 **스캐폴드로 새 프로젝트를 만들 때만** 함께 쓰입니다. 이미 있는 프로젝트에 이 플러그인을 얹으려면 두 파일을 직접 작성해야 하는데, 그 절차가 아직 마련되어 있지 않습니다.
+아무것도 준비하지 않아도 됩니다. `.dt-frontend.json`·`.dt-backend.json`이 없으면 **스킬이 필요한 시점에 만들고 하던 일을 계속합니다.**
 
-원래 이 플러그인을 쓰던 곳에서는 스캐폴드로 시작한 프로젝트만 다뤄서 드러나지 않았던 구멍입니다. 설치한 뒤 조용히 막히는 것보다 미리 알리는 쪽이 낫다고 판단해 숨기지 않고 적습니다.
+무엇을 보고 정하는지는 이렇습니다.
+
+- 스택 — `package.json`의 의존성. `react`·`vite`·`next`가 보이면 프론트엔드, `@nestjs/core`가 보이면 백엔드. 둘 다면 둘 다 만듭니다
+- 소스 경로 — `src/`가 있으면 `src`
+
+**묻지 않고 만들지만, 무엇을 어떻게 정했는지는 알려 줍니다.** 모노레포처럼 소스가 `packages/web/src`에 있는 프로젝트라면 감지가 틀릴 수 있습니다. 그때는 만들어진 파일의 `paths.src`를 고치면 됩니다.
+
+아는 의존성이 하나도 없으면 만들지 않습니다. 어느 스택인지 모르는 채로 만들면 맞지 않는 규칙이 켜진 상태로 검사가 돌기 때문입니다. 이때는 그 사실을 알리고 멈춥니다.
+
+절차의 자세한 규칙은 [`docs/refs/stack-config-bootstrap.md`](./docs/refs/stack-config-bootstrap.md)에 있습니다.
 
 ---
 

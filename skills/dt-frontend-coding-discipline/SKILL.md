@@ -124,4 +124,4 @@ function useFollowToggleViewModel() {
 
 ## 활성화 조건
 
-`.dt-frontend.json`이 있고 `enabledSkills`에 `dt-frontend-coding-discipline`이 포함된 프로젝트에서만 트리거됩니다.
+`.dt-frontend.json`의 `enabledSkills`에 `dt-frontend-coding-discipline`이 포함된 프로젝트에서 트리거됩니다. **파일이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만들고 계속합니다.**

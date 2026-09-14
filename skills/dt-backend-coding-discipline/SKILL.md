@@ -97,4 +97,4 @@ export class OrdersRepository {
 **좋은 코드는 내일의 문제를 미리 푸는 게 아니라 오늘의 문제를 단순하게 푸는 코드다.**
 
 ## 활성화 조건
-`.dt-backend.json`이 있고 `enabledSkills`에 `dt-backend-coding-discipline`이 포함된 프로젝트에서만 트리거됩니다.
+`.dt-backend.json`의 `enabledSkills`에 `dt-backend-coding-discipline`이 포함된 프로젝트에서 트리거됩니다. **파일이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만들고 계속합니다.**

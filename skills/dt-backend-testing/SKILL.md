@@ -53,4 +53,4 @@ description: Use when writing or reviewing tests in a NestJS project that contai
 > 참고: Service/Controller의 sibling 테스트 **존재 강제**는 `dt-backend-architecture`의 `service-requires-unit-test` / `controller-requires-integration-test`가 담당한다.
 
 ## 활성화 조건
-`.dt-backend.json`이 있고 `enabledSkills`에 `dt-backend-testing` 포함된 프로젝트에서만 의미가 있습니다.
+`.dt-backend.json`의 `enabledSkills`에 `dt-backend-testing`이 포함된 프로젝트에서 동작합니다. **파일이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만들고 계속합니다.**

@@ -19,7 +19,7 @@ description: Use when reviewing dt-backend (NestJS) project code for architectur
 4. Critical/Important/Minor + Coverage 리포트 출력
 
 ## 활성화 조건
-- 현재 작업 디렉토리에 `.dt-backend.json`이 있고 `enabledSkills`에 `dt-backend-review` 포함
+- 현재 작업 디렉토리의 `.dt-backend.json`의 `enabledSkills`에 `dt-backend-review` 포함. **파일이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만들고 계속한다**
 - 또는 사용자가 명시적으로 `/dt-be-review` 호출
 
 ## 슬래시 명령
