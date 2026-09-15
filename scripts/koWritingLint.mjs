@@ -200,14 +200,19 @@ export function lintProseShape(text) {
   for (const sec of splitProseSections(lines)) {
     const body = sec.lines.filter((l) => l.trim() !== '');
     if (body.length === 0) continue;
-    const tableLines = body.filter((l) => /^\s*\|/.test(l)).length;
+    const tableRows = body.filter((l) => /^\s*\|/.test(l));
+    const tableLines = tableRows.length;
+    // 조회표(셀에 이름·경로·숫자만) 는 읽는 글이 아니라 색인이라 길어도 된다.
+    // 셀 하나에 문장이 들어가면 읽는 표다 — 그때만 E1 을 건다.
+    const hasSentenceCell = tableRows.some((row) => row.split('|').slice(1, -1)
+      .some((cell) => cell.trim().length >= 14 && /[가-힣]+\s[가-힣]+\s[가-힣]/.test(cell)));
     const proseSentences = body
       .filter((l) => !/^\s*[|>#`-]|^\s*\d+\.|^\s*</.test(l))
       .join(' ')
       .split(/(?<=[.!?])\s+/)
       .filter((x) => x.trim().length > 0).length;
 
-    if (tableLines >= E1_MIN_TABLE_LINES && tableLines / body.length > E1_TABLE_RATIO && proseSentences < E1_MIN_PROSE_SENTENCES) {
+    if (hasSentenceCell && tableLines >= E1_MIN_TABLE_LINES && tableLines / body.length > E1_TABLE_RATIO && proseSentences < E1_MIN_PROSE_SENTENCES) {
       findings.push({ line: sec.start, col: 1, rule: 'E1', id: 'L-E1-table-only', match: sec.heading.trim() || '(절)',
         hint: '표가 절을 다 먹었다 — 중요한 두세 항목은 문단으로 풀고 표에는 눈으로 훑는 것만 남긴다' });
     }
@@ -381,6 +386,15 @@ const C2_TENSE_RE = /[가-힣]+고\s*있(?:다|는|었|으)/g;
 // "계측 파사드"는 한글이라 안 걸렸다. 목록으로 간다.
 // 판정 기준은 C3 완화와 같다: 한국어로 바꿔도 뜻이 같으면 고친다.
 // `IPC`·캐시·토큰·프로세스처럼 대체하면 뜻이 달라지는 말은 목록에 없다.
+// C3-b — 코드에 없는 비유어. 사전이 통하는 부류라 기계가 잡는다.
+// 실제로 「감옥」이 여섯 판을 통과했다(코드의 이름은 guard 인데 문서만 감옥이라 불렀다).
+const C3B_FIGURES = [
+  { w: '감옥', hint: '경로 제한 · 손댈 수 있는 범위' },
+  { w: '문지기', hint: '검사하는 곳 · 게이트' },
+  { w: '지뢰', hint: '걸리기 쉬운 곳' },
+  { w: '심장부', hint: '가장 중요한 곳' },
+];
+
 const C5_LOANWORDS = [
   { w: '파사드', hint: '창구 · 겉면 · 그 일을 하는 코드', sev: 'strong' },
   { w: '플로우', hint: '흐름', sev: 'strong' },
@@ -504,16 +518,8 @@ export function lintKoWriting(text, opts = {}) {
     for (const t of UNFAMILIAR_TERMS) {
       for (const { col, match } of findAll(line, t.re)) push('C3', `L-C3-${t.key}`, col, match, t.hint);
     }
-    if (docType === 'guide') {
-      for (const term of DEV_TERMS_GUIDE) {
-        if (devTermSeen.has(term)) continue;
-        const idx = line.indexOf(term);
-        if (idx === -1) continue;
-        devTermSeen.add(term);
-        const after = line.slice(idx + term.length);
-        if (!/^\s*\(/.test(after)) push('C3', 'L-C3-devterm', idx, term, '첫 등장에서 괄호로 풀어 쓰거나 일상어로');
-      }
-    }
+    // C3 개발 용어 풀이는 기계가 못 잰다 — 사외 가이드 실측에서 정밀도 25%, 재현율 한 자릿수였다.
+    // 경계가 낱말이 아니라 쓰임에 있어 사전으로는 못 가른다. 리뷰어가 본다(readable-writing.md C3).
     if (docType === 'handbook') {
       for (const { col, match } of findAll(line, EMOJI_RE)) {
         push('D3', 'L-D3-emoji', col, match, '[코드]·[문서]·[추정] 뱃지로 — 이모지는 PDF 임베드가 불안정하다');
@@ -571,6 +577,15 @@ export function lintKoWriting(text, opts = {}) {
       const bare = rawLines[i].replace(/`[^`]*`/g, ' ');   // 백틱 안은 검사하지 않는다
       for (const r of AI_LINE_RULES) {
         for (const { col, match } of findAll(line, r.re)) add(r.rule, r.id, col, match, r.hint);
+      }
+      for (const { w, hint } of C3B_FIGURES) {
+        let from = 0;
+        for (;;) {
+          const at = bare.indexOf(w, from);
+          if (at === -1) break;
+          add('C3-b', `L-C3b-${w}`, at, w, `${hint} — 코드에 없는 비유어를 쓰지 않는다`);
+          from = at + w.length;
+        }
       }
       for (const { w, hint } of C5_LOANWORDS) {
         let from = 0;

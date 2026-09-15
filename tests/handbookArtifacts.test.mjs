@@ -106,3 +106,19 @@ test('장 규격의 제목과 템플릿의 제목이 글자까지 같다', () =>
   const of = (text) => text.split('\n').filter((l) => /^##\s+\d\.\s/.test(l)).map((l) => l.replace(/^##\s+/, '').trim());
   assert.deepEqual(of(read('templates/handbook.md.tmpl')), of(read('skills/dt-handbook/references/chapter-recipes.md')));
 });
+
+/**
+ * 집필 워커는 장 규격과 그림 견본을 보고 문체를 따라 한다. 견본이 규칙을 어기면 산출물도 어긴다 —
+ * 실제로 규격 파일에 「지뢰」·「물리면」이 있었고 같은 말이 핸드북에 그대로 나왔다.
+ * 다만 견본은 규칙을 **설명하는** 글이라 근거·수치 규칙(D3·D8·E6)은 대지 않는다. 문체만 본다.
+ */
+test('문체 견본(장 규격·그림 견본)이 문체 규칙을 지킨다', async () => {
+  const { lintKoWriting } = await import('../scripts/koWritingLint.mjs');
+  const TONE = /^(C1|C2|C3|C3-b|C3-c|C3-d|C4|C5|B3)$/;
+  for (const p of ['skills/dt-handbook/references/chapter-recipes.md',
+                   'skills/dt-handbook/references/figure-examples.md']) {
+    const found = lintKoWriting(read(p), { docType: 'handbook' }).findings
+      .filter((f) => TONE.test(f.rule) || f.id.startsWith('L-AI'));
+    assert.deepEqual(found.map((f) => `${f.id}(${f.match})`), [], p);
+  }
+});

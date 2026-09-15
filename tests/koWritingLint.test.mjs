@@ -106,10 +106,13 @@ test('C3: 치환표 어휘 → L-C3-*', () => {
   assert.deepEqual(ids('(수행) 후 확인'), ['L-C3-suhaeng']);
 });
 
-test('C3 guide: 개발 용어 첫 등장에 풀이가 없으면 L-C3-devterm, 풀이(괄호)가 붙으면 안 잡음', () => {
-  assert.deepEqual(ids('빌드가 끝나면 배포합니다.', { docType: 'guide' }), ['L-C3-devterm', 'L-C3-devterm']);
-  assert.deepEqual(ids('캐시(임시 저장 공간)를 비웁니다. 캐시가 비면 끝.', { docType: 'guide' }), []);
-  assert.deepEqual(ids('빌드가 끝나면 배포합니다.'), []);
+/**
+ * C3 개발 용어 풀이 검사는 기계에서 내렸다. 사외 가이드 실측에서 정밀도 25%·재현율 한 자릿수였다 —
+ * 경계가 낱말이 아니라 쓰임에 있어 사전으로는 못 가른다. 리뷰어가 본다.
+ */
+test('C3: 개발 용어 풀이는 기계가 재지 않는다', () => {
+  assert.deepEqual(ids('빌드가 끝나면 배포합니다.', { docType: 'guide' }), []);
+  assert.deepEqual(ids('캐시를 비웁니다.', { docType: 'guide' }), []);
 });
 
 test('C4: 상투 도입구 → L-C4-opener', () => {
@@ -242,9 +245,23 @@ test('handbook 밖에서는 D6 이 돌지 않는다', () => {
   assert.equal(r.findings.some((f) => f.id === 'L-D6-jargon'), false);
 });
 
-test('E1: 표가 절을 다 먹으면 잡는다', () => {
-  const t = '## 7. 공통\n\n| 항목 | 규약 | 구현 |\n|---|---|---|\n| 가 | 이러이러하다 | 저기 |\n| 나 | 저러저러하다 | 여기 |\n| 다 | 그러그러하다 | 거기 |\n';
+test('E1: 셀에 문장이 든 표가 절을 다 먹으면 잡는다', () => {
+  const t = '## 7. 공통\n\n| 항목 | 규약 | 구현 |\n|---|---|---|\n| 가 | 예외를 경계 너머로 던지지 않는다 | 저기 |\n| 나 | 거부는 값으로 돌려주고 기록에 남긴다 | 여기 |\n| 다 | 깨진 문서는 격리하고 목록을 비우지 않는다 | 거기 |\n';
   assert.ok(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E1-table-only'));
+});
+
+test('E1: 조회표(셀에 이름·경로·숫자만)는 길어도 잡지 않는다', () => {
+  const rows = ['| 경로 | 책임 | 규모 |', '|---|---|---|',
+    '| `src/core` | 코어 | 42 |', '| `src/agent` | 에이전트 | 20 |',
+    '| `src/vault` | 보관함 | 12 |', '| `electron` | 메인 | 17 |'].join('\n');
+  const t = `## 2. 폴더\n\n${rows}\n`;
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E1-table-only'), false);
+});
+
+test('C3-b: 코드에 없는 비유어를 잡는다', () => {
+  const f = lintKoWriting('도구 감옥이 가장 무겁다. 문지기가 검사한다.', { docType: 'handbook' }).findings;
+  assert.ok(f.some((x) => x.id === 'L-C3b-감옥'));
+  assert.ok(f.some((x) => x.id === 'L-C3b-문지기'));
 });
 
 test('E1: 문단이 있으면 곁들인 표는 잡지 않는다', () => {
