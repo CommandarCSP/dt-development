@@ -222,7 +222,7 @@ export function lintProseShape(text) {
       const isBullet = /^\s*[-*]\s/.test(line);
       bulletRun = isBullet ? bulletRun + 1 : 0;
       if (bulletRun === E3_BULLET_RUN) {
-        findings.push({ line: sec.start + i, col: 1, rule: 'E5', id: 'L-E5-bullet-run', match: line.trim().slice(0, 30),
+        findings.push({ line: sec.start + i + 1, col: 1, rule: 'E5', id: 'L-E5-bullet-run', match: line.trim().slice(0, 30),
           hint: '불릿이 길게 이어진다 — 나열이 설명을 대신하고 있다. 묶거나 문장으로 푼다' });
       }
       if (/^\s*[|>#`-]|^\s*\d+\.|^\s*</.test(line) || line.trim() === '') { longRun = 0; return; }
@@ -231,7 +231,7 @@ export function lintProseShape(text) {
         if (t.length === 0) continue;
         longRun = t.length >= E2_LONG_CHARS ? longRun + 1 : 0;
         if (longRun === E2_LONG_RUN) {
-          findings.push({ line: sec.start + i, col: 1, rule: 'E2', id: 'L-E2-rhythm', match: t.slice(0, 30),
+          findings.push({ line: sec.start + i + 1, col: 1, rule: 'E2', id: 'L-E2-rhythm', match: t.slice(0, 30),
             hint: '긴 문장만 이어진다 — 중요한 사실을 짧은 문장으로 끊어 눈에 걸리게 한다' });
         }
       }
@@ -282,14 +282,22 @@ export function lintUnbackedNumbers(rawLines) {
 // 때문에 "배포물에 구운 .env" 가 한 판 통째로 통과했다.
 // 오탐을 막으려고 **문장 안에 맥락 낱말이 함께 있을 때만** 잡는다.
 const C3D_RULES = [
-  { key: 'bake',  verb: /구운|굽는|굽고|구워|굽는다/,        ctx: /빌드|배포|설치본|산출물|번들|이미지|\.env/, hint: '빌드할 때 함께 넣는다' },
-  { key: 'emit',  verb: /흘린다|흘리고|흘려|흘리는/,          ctx: /로그|진행|화면|출력|이벤트/,                hint: '내보낸다' },
-  { key: 'kill',  verb: /죽는다|죽으면|죽이면|죽였|죽인다/,   ctx: /프로세스|서버|앱|연결|스레드|워커/,          hint: '멈춘다 · 끝낸다' },
-  { key: 'drop',  verb: /떨어뜨린다|떨어뜨리고|떨어뜨려/,     ctx: /요청|패킷|이벤트|메시지|프레임/,            hint: '버린다' },
-  { key: 'hit',   verb: /밟는다|밟게|밟은다|다시 밟/,         ctx: /함정|버그|사고|결함|지뢰|경로/,              hint: '걸린다 · 겪는다' },
-  { key: 'fire',  verb: /쏜다|쏘고|쏜 뒤/,                    ctx: /요청|이벤트|쿼리|호출/,                      hint: '보낸다' },
-  { key: 'path',  verb: /경로를 탄다|경로를 타면|경로를 타/,  ctx: /증분|캐시|빠른|느린/,                        hint: '경로를 쓴다' },
-  { key: 'ride',  verb: /태워 보낸|태워서 보낸|태운다/,       ctx: /응답|요청|헤더|페이로드|본문/,               hint: '실어 보낸다' },
+  { key: 'bake',  verb: /구운|굽는|굽고|굽는다|굳히|굳혀|굳힌/,       ctx: /빌드|배포|설치본|산출물|번들|이미지|\.env|코드|상수|주소|타입|계약/, hint: '빌드할 때 함께 넣는다 · 고정한다' },
+  { key: 'emit',  verb: /흘린다|흘리고|흘려|흘리는|새고 있|새어|샌다/, ctx: /로그|진행|화면|출력|이벤트|판정|코드|계층/,                          hint: '내보낸다 · 옮겨 간다' },
+  { key: 'kill',  verb: /죽는다|죽으면|죽이면|죽였|죽인다|터진다|터지면|터졌/, ctx: /프로세스|서버|앱|연결|스레드|워커|검사|빌드|테스트/,           hint: '멈춘다 · 실패한다' },
+  { key: 'drop',  verb: /떨어뜨린다|떨어뜨리고|떨어뜨려/,              ctx: /요청|패킷|이벤트|메시지|프레임/,                                     hint: '버린다' },
+  { key: 'hit',   verb: /밟는다|밟게|다시 밟|물린다|물리면|물린/,      ctx: /함정|버그|사고|결함|지뢰|경로|문제/,                                  hint: '걸린다 · 겪는다' },
+  { key: 'fire',  verb: /쏜다|쏘고|쏜 뒤/,                             ctx: /요청|이벤트|쿼리|호출/,                                              hint: '보낸다' },
+  { key: 'path',  verb: /(?:을|를)\s*(?:탄다|타면|타는지|타는|탄)/, ctx: /경로|어댑터|분기|모드|엔진|흐름/,                                    hint: '쓴다' },
+  { key: 'ride',  verb: /태워 보낸|태워서 보낸|태운다/,                ctx: /응답|요청|헤더|페이로드|본문/,                                       hint: '실어 보낸다' },
+  // C3-c 의 개발자 구어 중 맥락이 좁아 기계가 가릴 수 있는 것들. 규칙집은 "기계가 못 잡는다"고
+  // 적어 두었지만, 맥락 낱말을 함께 요구하면 오탐 없이 잡힌다 — 실제로 여섯 판을 통과했다.
+  { key: 'feed',  verb: /먹인다|먹이는|먹여|먹은/,                     ctx: /변환기|입력|표본|데이터|파일|모델/,                                  hint: '넣는다' },
+  { key: 'queue', verb: /줄 세운다|줄 세우고|줄 세워/,                 ctx: /대화|작업|요청|잡|큐/,                                               hint: '차례로 기다리게 한다' },
+  { key: 'ask',   verb: /안 묻는다|묻지 않는다|다시 묻는다/,           ctx: /캐시|저장소|서버|API|조회/,                                          hint: '조회하지 않는다' },
+  { key: 'chance',verb: /기회를 못 얻|기회를 얻지/,                    ctx: /판정|실행|코드|검사/,                                                hint: '실행되기 전에 끝난다' },
+  { key: 'role',  verb: /제구실을|제 몫을 한다/,                       ctx: /계약|모듈|규약|설계/,                                                hint: '의도대로 동작한다' },
+  { key: 'spin',  verb: /돌린다|돌리고|돌린다|돌려 본다/,              ctx: /배경|백그라운드|작업|잡|프로세스/,                                   hint: '실행한다' },
 ];
 
 /** 문장 단위로 본다 — 맥락 낱말이 같은 문장에 있어야 잡는다(관용구 오탐 방지). */
@@ -322,6 +330,10 @@ export function lintTranslationeseVerbs(rawLines) {
 //   약 — 같은 줄에 다른 위반이 함께 있을 때만 보고한다
 const MEDIUM_THRESHOLD = 3;
 const SEVERITY = {
+  'L-AI3-meta': 'medium', 'L-AI3-hedge': 'medium', 'L-AI3-role': 'medium',
+  'L-AI5-count': 'medium', 'L-AI5-ordinal': 'medium',
+  'L-AI7-adverb': 'medium', 'L-AI7-filler': 'medium',
+  'L-AI8-bold': 'medium',
   'L-B3-geotida': 'medium', 'L-B3-haneun-geot': 'medium', 'L-B3-raneun-jeom': 'medium',
   'L-B3-pilyo': 'medium', 'L-B3-gyeongdongsa': 'medium',
   'L-C2-tense': 'medium',
@@ -382,6 +394,56 @@ const C5_LOANWORDS = [
   { w: '페이로드', hint: '보내는 데이터', sev: 'medium' },
 ];
 const C5_ID = (w) => `L-C5-${w}`;
+
+// ── AI 티 3·5·7·8 (원문 택소노미에서 아직 안 옮긴 갈래) ────────────────
+// 규칙집이 원문을 요약하면서 이 넷을 흘렸고, 그래서 리뷰 여섯 판 동안 한 번도
+// 지적되지 않았다. 실측에서 열거 선언 9회·em-dash 29회가 나왔다.
+const AI_LINE_RULES = [
+  // 3. 상투적 표현·hedging
+  { id: 'L-AI3-meta',   re: /주목할\s*만하다|흥미로운\s*점은|여기서\s*중요한\s*것은/g, rule: 'C4', hint: '바로 본론을 쓴다' },
+  { id: 'L-AI3-hedge',  re: /라고\s*할\s*수\s*있다|인\s*것으로\s*보인다/g,             rule: 'C4', hint: '단정하거나 근거를 댄다' },
+  { id: 'L-AI3-hype',   re: /혁신적|획기적|강력한|놀라운|필수적인/g,                    rule: 'C4', hint: '구체적 서술로 바꾼다', sev: 'strong' },
+  { id: 'L-AI3-role',   re: /중요한\s*역할을\s*한다/g,                                  rule: 'C4', hint: '무엇을 하는지 동사로 쓴다' },
+  // 5. 기계적 구조·병렬
+  { id: 'L-AI5-count',  re: /[^\s.]{1,20}(?:은|는|가|이)\s*(?:둘|셋|넷|다섯|여섯|두|세|네|\d+)\s*(?:겹|가지|곳|개|군데|갈래|벌)?(?:이다|다|\s*있다)(?=[.\n])/g,
+    rule: 'C4', hint: '개수를 먼저 선언하지 않는다 — 무엇이 왜 그렇게 나뉘는지 쓰면 숫자는 저절로 드러난다' },
+  { id: 'L-AI5-ordinal', re: /첫째|둘째|셋째/g,                                        rule: 'C4', hint: '산문으로 잇는다' },
+  // 7. 과잉 수식
+  { id: 'L-AI7-adverb', re: /매우|정말|너무|굉장히|대단히/g,                            rule: 'C4', hint: '대부분 지운다' },
+  { id: 'L-AI7-filler', re: /기본적으로|사실상|본질적으로/g,                            rule: 'C4', hint: '의미 없는 자리면 지운다' },
+];
+
+// 8. 시각 장식 — 밀도로 본다. 한 번은 멋이고 스무 번은 버릇이다.
+const VISUAL_EMDASH_PER_LINES = 10;   // 산문 10줄에 하나를 넘으면 남용
+const VISUAL_BOLD_PER_SECTION = 6;
+
+export function lintVisualNoise(rawLines) {
+  const findings = [];
+  const inFence = fenceMask(rawLines);
+  const prose = rawLines.filter((l, i) => !inFence[i] && l.trim() && !/^\s*(?:[|>#]|<|-\s|\d+\.\s)/.test(l));
+  const dashes = prose.join('\n').match(/—/g)?.length ?? 0;
+  const allowed = Math.ceil(prose.length / VISUAL_EMDASH_PER_LINES);
+  if (dashes > allowed) {
+    findings.push({ line: 1, col: 1, rule: 'C4', id: 'L-AI8-emdash', match: `${dashes}개`,
+      hint: `산문 ${prose.length}줄에 em-dash 가 ${dashes}개다(권장 ${allowed} 이하) — 쉼표·괄호·연결어로 바꾼다` });
+  }
+  let secLine = 1;
+  let bold = 0;
+  const flushSection = () => {
+    if (bold > VISUAL_BOLD_PER_SECTION) {
+      findings.push({ line: secLine, col: 1, rule: 'C4', id: 'L-AI8-bold', match: `${bold}곳`,
+        hint: `한 절에 굵은 글씨가 ${bold}곳이다 — 정말 핵심 한두 곳만 남긴다` });
+    }
+    bold = 0;
+  };
+  rawLines.forEach((l, i) => {
+    if (inFence[i]) return;
+    if (/^#{2,3}\s/.test(l)) { flushSection(); secLine = i + 1; return; }
+    bold += (l.match(/\*\*[^*]+\*\*/g) ?? []).length;
+  });
+  flushSection();
+  return findings;
+}
 
 // ── keep 주석 · spec 예외 ─────────────────────────────────────────────
 const KEEP_RE = /<!--\s*ko-lint:\s*keep\s+(L-C[1-4]-[a-z-]+)\b(?:(?!-->)[\s\S])*?-->/g;
@@ -493,6 +555,7 @@ export function lintKoWriting(text, opts = {}) {
   if (PROSE_DOC_TYPES.has(docType)) {
     findings.push(...lintProseShape(masked));
     findings.push(...lintTranslationeseVerbs(rawLines));
+    findings.push(...lintVisualNoise(rawLines));
     const inFence = fenceMask(rawLines);
     lines.forEach((line, i) => {
       if (inFence[i]) return;
@@ -506,6 +569,9 @@ export function lintKoWriting(text, opts = {}) {
         add('C2', 'L-C2-tense', col, match, '진행형을 남발하지 않는다 — ~한다');
       }
       const bare = rawLines[i].replace(/`[^`]*`/g, ' ');   // 백틱 안은 검사하지 않는다
+      for (const r of AI_LINE_RULES) {
+        for (const { col, match } of findAll(line, r.re)) add(r.rule, r.id, col, match, r.hint);
+      }
       for (const { w, hint } of C5_LOANWORDS) {
         let from = 0;
         for (;;) {

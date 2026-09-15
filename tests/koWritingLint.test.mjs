@@ -384,3 +384,42 @@ test('개조식 문서에는 새 규칙을 적용하지 않는다', () => {
   const t = '이것이 규약인 것이다. 저것도 규약인 것이다. 그것 역시 규약인 것이다.';
   assert.equal(lintKoWriting(t, { docType: 'jira' }).findings.some((x) => x.rule === 'B3'), false);
 });
+
+test('C3-d 확장: 여섯 판을 통과했던 여덟 문장을 전부 잡는다', () => {
+  const cases = [
+    ['어느 어댑터를 타는지는 설정에 달렸다.', 'L-C3d-path'],
+    ['변환기에 먹이는 표본이다.', 'L-C3d-feed'],
+    ['타입 검사가 터진다.', 'L-C3d-kill'],
+    ['다른 대화를 줄 세운다.', 'L-C3d-queue'],
+    ['주소를 코드에 굳히면 실패한다.', 'L-C3d-bake'],
+    ['판정이 JSX 안으로 새고 있다.', 'L-C3d-emit'],
+    ['캐시가 살아 있으면 다시 안 묻는다.', 'L-C3d-ask'],
+    ['판정이 실행될 기회를 못 얻었다.', 'L-C3d-chance'],
+  ];
+  for (const [text, id] of cases) {
+    assert.ok(lintKoWriting(text, { docType: 'handbook' }).findings.some((f) => f.id === id), text);
+  }
+});
+
+test('C3-d 확장: 맥락이 다르면 잡지 않는다', () => {
+  for (const t of ['사용자가 빵을 구워 먹는다.', '버스를 타고 간다.', '기차를 타는 사람이 많다.']) {
+    assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.rule === 'C3-d'), false, t);
+  }
+});
+
+test('AI5: 개수를 먼저 선언하는 틀을 세 번부터 잡는다', () => {
+  const t = '하는 일은 세 가지다.\n큰 덩어리는 넷이다.\n신뢰 경계는 두 겹이다.\n';
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.filter((f) => f.id === 'L-AI5-count').length, 3);
+});
+
+test('AI8: em-dash 남용을 밀도로 잡는다', () => {
+  const many = Array.from({ length: 12 }, (_, i) => `문장 ${i} 은 이렇다 — 저렇다.`).join('\n');
+  assert.ok(lintKoWriting(many, { docType: 'handbook' }).findings.some((f) => f.id === 'L-AI8-emdash'));
+  const few = Array.from({ length: 12 }, (_, i) => `문장 ${i} 은 이렇다.`).join('\n');
+  assert.equal(lintKoWriting(few, { docType: 'handbook' }).findings.some((f) => f.id === 'L-AI8-emdash'), false);
+});
+
+test('AI3: 과장 어휘는 한 번이라도 잡는다', () => {
+  assert.ok(lintKoWriting('강력한 기능이다.', { docType: 'handbook' })
+    .findings.some((f) => f.id === 'L-AI3-hype' && f.severity === 'strong'));
+});
