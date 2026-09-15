@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { surfaceInventory } from '../scripts/surfaceInventory.mjs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { surfaceInventory, walkSourceFiles } from '../scripts/surfaceInventory.mjs';
 
 const fx = (name) => fileURLToPath(new URL(`./fixtures/guide/surface/${name}/`, import.meta.url));
 const routes = (r) => r.screens.map((s) => s.route);
@@ -112,4 +115,13 @@ test('CLI: 프로젝트 폴더 안에서 루트를 . 로 줘도 인벤토리를 
   const r = spawnSync(process.execPath, [cli, '.', '--json'], { cwd: fx('react-router'), encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   assert.equal(JSON.parse(r.stdout).type, 'web');
+});
+
+test('숨김 디렉터리는 훑지 않는다 — 워크트리가 소스를 두 벌로 만든다', () => {
+  const root = mkdtempSync(join(tmpdir(), 'si-'));
+  mkdirSync(join(root, 'src'), { recursive: true });
+  mkdirSync(join(root, '.worktrees', 'x', 'src'), { recursive: true });
+  writeFileSync(join(root, 'src', 'a.ts'), 'export const a = 1;\n', 'utf8');
+  writeFileSync(join(root, '.worktrees', 'x', 'src', 'a.ts'), 'export const a = 1;\n', 'utf8');
+  assert.deepEqual(walkSourceFiles(root), ['src/a.ts']);
 });

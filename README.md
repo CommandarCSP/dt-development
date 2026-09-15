@@ -31,6 +31,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 풀스택 조율 | 정의서 → BE → FE → 리뷰까지 한 번에 이어 실행한다 | `dt-fullstack` (전용 슬래시 커맨드 없음 — 스킬을 직접 불러 실행) |
 | 감사 | 스펙과 실제 구현이 어긋난 곳(드리프트)을 찾는다 | `/dt-audit` |
 | 가이드 PDF | 프로젝트를 분석해 사용자 가이드 PDF를 만든다 | `/dt-guide` |
+| 인수인계 핸드북 | 이미 있는 코드를 분석해 신규 개발자용 핸드북 PDF를 만든다. 데이터 주인·군집·경계를 먼저 세우고 시나리오 호출 사슬을 얹는다 | `/dt-handbook` |
 | 한국어 문장 검사 | 기계 검사 + 격리 리뷰로 어색한 문장을 고친다 | `/dt-ko` |
 | Jira 연동 | 개발 작업을 Jira Sub-task로 정리·동기화한다 | `/dt-worklog` |
 | Confluence 연동 | 작업을 Confluence 문서(회의록·요약·기술문서·릴리즈노트)로 쓴다 | `/dt-confluence` |
@@ -47,6 +48,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `.dt-worklog.json` / `.dt-worklog.local.json` | Jira 연동(프로젝트 키 등) | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-confluence.json` / `.dt-confluence.local.json` | Confluence 연동 | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
+| `.dt-handbook.json` | 인수인계 핸드북 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-pipeline.json` | 세션 알림 훅 사용 여부(opt-in) | `/dt-wrap --init` |
 | `.dt-frontend.json` / `.dt-backend.json` | FE/BE 아키텍처 규칙 | 스킬이 필요할 때 없으면 만든다 |
 

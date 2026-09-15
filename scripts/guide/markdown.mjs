@@ -11,6 +11,8 @@ export function renderInline(text) {
     const rest = text.slice(i);
     let m;
     if ((m = /^`([^`]+)`/.exec(rest))) { out += `<code>${esc(m[1])}</code>`; i += m[0].length; continue; }
+    // 인라인 raw HTML — 근거 뱃지(<span class="ev …">)와 줄바꿈만. 그 밖의 태그는 글자로 남긴다.
+    if ((m = /^<\/?(?:span|br)\b[^>]*>/.exec(rest))) { out += m[0]; i += m[0].length; continue; }
     if ((m = /^!\[([^\]]*)\]\(([^)\s]+)\)/.exec(rest))) { out += `<img alt="${esc(m[1])}" src="${esc(m[2])}">`; i += m[0].length; continue; }
     if ((m = /^\[([^\]]+)\]\(([^)\s]+)\)/.exec(rest))) { out += `<a href="${esc(m[2])}">${renderInline(m[1])}</a>`; i += m[0].length; continue; }
     if ((m = /^\*\*(.+?)\*\*/.exec(rest))) { out += `<strong>${renderInline(m[1])}</strong>`; i += m[0].length; continue; }
@@ -61,17 +63,28 @@ export function renderMarkdown(md) {
     let m;
     if ((m = /^(#{1,6})\s+(.*)$/.exec(line))) { out.push(`<h${m[1].length}>${renderInline(m[2].trim())}</h${m[1].length}>`); i++; continue; }
     if (/^---+\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
-    if (/^```/.test(line)) {
+    if ((m = /^```(\w*)/.exec(line))) {
+      const lang = m[1];
       const buf = [];
       i++;
       while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
       i++;
-      out.push(`<pre><code>${esc(buf.join('\n'))}</code></pre>`);
+      // 머메이드는 코드가 아니라 그림이다 — 빌드가 브라우저에서 그린다.
+      out.push(lang === 'mermaid'
+        ? `<pre class="mermaid">${esc(buf.join('\n'))}</pre>`
+        : `<pre><code>${esc(buf.join('\n'))}</code></pre>`);
       continue;
     }
-    if (/^</.test(line)) { // raw HTML 블록: 빈 줄까지 그대로
+    if (/^</.test(line)) { // raw HTML 블록
+      const open = /^<(figure|svg)\b/.exec(line);
       const buf = [];
-      while (i < lines.length && lines[i].trim() !== '') { buf.push(lines[i]); i++; }
+      if (open) {
+        // 손 SVG 는 안에 빈 줄이 있다 — 짝이 되는 닫는 태그까지 삼킨다.
+        const close = new RegExp(`</${open[1]}>`);
+        while (i < lines.length) { buf.push(lines[i]); if (close.test(lines[i])) { i++; break; } i++; }
+      } else { // 그 밖의 raw HTML: 빈 줄까지 그대로
+        while (i < lines.length && lines[i].trim() !== '') { buf.push(lines[i]); i++; }
+      }
       out.push(buf.join('\n'));
       continue;
     }

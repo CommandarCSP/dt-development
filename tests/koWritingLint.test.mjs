@@ -205,3 +205,99 @@ test('CLI: 모르는 --docType 은 exit 2 + Usage', () => {
   assert.equal(r.status, 2);
   assert.match(r.stderr, /Usage/);
 });
+
+test('handbook: 알고리즘 서술의 판단 동사는 위반이 아니다', () => {
+  const r = lintKoWriting('라우터가 경로를 판단한다.', { docType: 'handbook' });
+  assert.equal(r.findings.filter((f) => f.rule === 'C1').length, 0);
+});
+
+test('handbook: 앱이 사람처럼 구는 문장은 여전히 잡는다', () => {
+  const r = lintKoWriting('앱이 사용자의 의도를 이해한다.', { docType: 'handbook' });
+  assert.ok(r.findings.some((f) => f.rule === 'C1'));
+});
+
+test('handbook: 이모지를 잡는다', () => {
+  const r = lintKoWriting('근거는 🟢 코드다.', { docType: 'handbook' });
+  assert.ok(r.findings.some((f) => f.id === 'L-D3-emoji'));
+});
+
+test('handbook: 지시문을 잡는다', () => {
+  const r = lintKoWriting('설정 화면에서 값을 바꾸시기 바랍니다.', { docType: 'handbook' });
+  assert.ok(r.findings.some((f) => f.id === 'L-D5-imperative'));
+});
+
+test('handbook 밖에서는 D 규칙이 돌지 않는다', () => {
+  const r = lintKoWriting('근거는 🟢 코드다. 값을 입력하세요.', { docType: 'guide' });
+  assert.equal(r.findings.filter((f) => f.rule === 'D3' || f.rule === 'D5').length, 0);
+});
+
+test('handbook: 직역한 학술 용어를 제목에서도 잡는다(D6)', () => {
+  const r = lintKoWriting('## 4. 빌딩블록과 계층\n## 7. 횡단 관심사\n## 6. 시나리오별 런타임 뷰\n', { docType: 'handbook' });
+  const ids = r.findings.filter((f) => f.id === 'L-D6-jargon').map((f) => f.match);
+  assert.deepEqual(ids.sort(), ['런타임 뷰', '빌딩블록', '횡단 관심사']);
+});
+
+test('handbook 밖에서는 D6 이 돌지 않는다', () => {
+  const r = lintKoWriting('## 횡단 관심사\n', { docType: 'confluence' });
+  assert.equal(r.findings.some((f) => f.id === 'L-D6-jargon'), false);
+});
+
+test('E1: 표가 절을 다 먹으면 잡는다', () => {
+  const t = '## 7. 공통\n\n| 항목 | 규약 | 구현 |\n|---|---|---|\n| 가 | 이러이러하다 | 저기 |\n| 나 | 저러저러하다 | 여기 |\n| 다 | 그러그러하다 | 거기 |\n';
+  assert.ok(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E1-table-only'));
+});
+
+test('E1: 문단이 있으면 곁들인 표는 잡지 않는다', () => {
+  const t = '## 7. 공통\n\n이 절은 공통 규약을 다룬다. 중요한 것은 자격 증명이 한곳에만 있다는 점이다. 나머지는 표로 모았다.\n\n| 항목 | 경로 |\n|---|---|\n| 가 | a.ts |\n| 나 | b.ts |\n| 다 | c.ts |\n';
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E1-table-only'), false);
+});
+
+test('E6: 도입 문장 없이 표로 시작하면 잡는다', () => {
+  const t = '### 7.1 인증\n\n| 항목 | 경로 |\n|---|---|\n| 가 | a.ts |\n';
+  assert.ok(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E6-no-lead'));
+});
+
+test('E2: 긴 문장만 이어지면 리듬을 지적한다', () => {
+  const long = '이 문장은 스물다섯 글자를 넘기려고 일부러 길게 늘여 쓴 문장이다.';
+  assert.ok(lintKoWriting(`## 1. 요약\n\n${(long + ' ').repeat(7)}\n`, { docType: 'handbook' })
+    .findings.some((f) => f.id === 'L-E2-rhythm'));
+});
+
+test('E5: 불릿이 길게 이어지면 잡는다', () => {
+  const t = '## 1. 요약\n\n' + Array.from({ length: 9 }, (_, i) => `- 항목 ${i}`).join('\n') + '\n';
+  assert.ok(lintKoWriting(t, { docType: 'handbook' }).findings.some((f) => f.id === 'L-E5-bullet-run'));
+});
+
+test('개조식·구조 문서에는 묶음 E 를 적용하지 않는다', () => {
+  const t = '## 7. 공통\n\n| 항목 | 규약 | 구현 |\n|---|---|---|\n| 가 | 이러하다 | 저기 |\n| 나 | 저러하다 | 여기 |\n| 다 | 그러하다 | 거기 |\n';
+  for (const d of ['spec', 'jira']) {
+    assert.equal(lintKoWriting(t, { docType: d }).findings.some((f) => f.rule?.startsWith('E')), false, d);
+  }
+});
+
+test('D7: 문서를 만든 과정이 새면 잡는다', () => {
+  const t = '분석 스크립트는 파일 쓰기를 `file:fs` 로 뭉쳐 판정을 못 냈다. 근거는 structure.json 이다.';
+  const ids = lintKoWriting(t, { docType: 'handbook' }).findings.filter((f) => f.id === 'L-D7-process-leak');
+  assert.ok(ids.length >= 3, JSON.stringify(ids));
+});
+
+test('D7 은 handbook 밖에서 돌지 않는다', () => {
+  assert.equal(lintKoWriting('분석 스크립트가 structure.json 을 만든다.', { docType: 'confluence' })
+    .findings.some((f) => f.id === 'L-D7-process-leak'), false);
+});
+
+test('D8: 근거 없는 수치를 잡는다', () => {
+  const t = '컴파일에 59턴이 들었다. 캐시는 30초다.';
+  const f = lintKoWriting(t, { docType: 'handbook' }).findings.filter((x) => x.id === 'L-D8-bare-number');
+  assert.deepEqual(f.map((x) => x.match).sort(), ['30초', '59턴']);
+});
+
+test('D8: 같은 문단에 근거가 있으면 잡지 않는다', () => {
+  const t = '캐시는 30초다 (electron/cli-auth.ts:36).';
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((x) => x.id === 'L-D8-bare-number'), false);
+});
+
+test('D8: 표·목록 줄의 수치는 보지 않는다', () => {
+  const t = '| 항목 | 값 |\n|---|---|\n| 캐시 | 30초 |\n';
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((x) => x.id === 'L-D8-bare-number'), false);
+});

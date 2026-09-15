@@ -1,0 +1,107 @@
+<!-- dt-guide 기본 테마 — 프로젝트는 docs/guide/theme.override.html 로 통째 대체할 수 있다. 자리표시자 네 개(TITLE / VERSION / FONT_CSS / CONTENT, 각각 이중 중괄호)는 scripts/guide/assemble.mjs 가 채운다. -->
+<meta charset="utf-8" />
+<title>{{TITLE}}</title>
+<style>
+  {{FONT_CSS}}
+
+  :root {
+    --ink: #1a1a1a;
+    --muted: #666;
+    --line: #e3e3e3;
+    --accent: #2b5cff;
+    --panel: #f7f8fa;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  h1 { font-size: 22pt; margin: 0 0 4pt; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 14pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5px solid var(--ink);
+    page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; page-break-after: avoid; }
+
+  p, li { orphans: 2; widows: 2; }
+
+  /* 표지 — 첫 h1 과 그 뒤 인용은 표지 블록으로 읽히게 한다. */
+  .cover-version { color: var(--muted); font-size: 9.5pt; margin: 0 0 18pt; }
+
+  /* 표지와 본문을 가른다 — 본문 마크다운의 `<div class="page-break">` 자리다. */
+  .page-break { page-break-after: always; }
+
+  /* 목차 — 표지 다음 한 쪽을 차지하고 본문은 새 쪽에서 시작한다. */
+  .toc { page-break-after: always; }
+  .toc-title { margin-top: 0; border: 0; }
+  /* 표식을 지운다 — 절 제목이 이미 번호를 갖는다(점까지 붙으면 "· 0." 이 된다). */
+  .toc ul { margin: 0; padding-left: 0; list-style: none; }
+  .toc li { margin: 5pt 0; }
+  .toc a { color: inherit; text-decoration: none; }
+
+  blockquote {
+    margin: 10pt 0;
+    padding: 8pt 12pt;
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid var(--line); padding: 5pt 7pt; text-align: left; vertical-align: top; }
+  th { background: var(--panel); font-weight: 600; }
+
+  code {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 9pt;
+    background: var(--panel);
+    padding: 1pt 3pt;
+    border-radius: 3px;
+  }
+
+  /* 스크린샷 — 그림과 캡션이 페이지 경계에서 갈라지지 않게 묶는다. */
+  img {
+    display: block;
+    max-width: 100%;
+    /* 세로로 긴 캡처는 폭만 맞추면 A4 한 장을 넘긴다 — 높이도 함께 묶어야
+       그림 하나가 페이지 경계에서 갈리지 않는다.
+       가로 캡처는 폭 제한에 먼저 걸려 영향을 받지 않는다. */
+    max-height: 168mm;
+    width: auto;
+    height: auto;
+    margin: 8pt auto 2pt;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  /* 마크다운의 `![캡션](…)` 은 p 안에 홀로 들어온다 — 그 p 를 그림 블록으로 본다. */
+  p:has(> img) {
+    page-break-inside: avoid;
+    text-align: center;
+    color: var(--muted);
+    font-size: 9pt;
+    margin: 12pt 0;
+  }
+
+  ul, ol { padding-left: 18pt; margin: 6pt 0; }
+{{FIGURES_CSS}}
+</style>
+<body>
+  <main data-version="{{VERSION}}">{{CONTENT}}</main>
+</body>

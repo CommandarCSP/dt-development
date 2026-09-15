@@ -118,6 +118,155 @@ export const DEV_TERMS_GUIDE = ['빌드', '배포', '인스턴스', '캐시', '�
 const C4_OPENER_RE = /^(?:결론적으로|주목할 점은|흥미롭게도|종합하면|요컨대)(?=\s|,)/;
 const C4_CONJ_RE = /^(?:또한|따라서|그리고|하지만|그러나)(?=\s|,)/;
 
+// ── 묶음 D: 개발자 문서(handbook) ─────────────────────────────────────
+// 독자가 개발자다. 개발 용어는 살리고, 대신 인쇄를 깨는 이모지와 설명서를 매뉴얼로
+// 만드는 지시문을 막는다. 알고리즘 서술의 '판단하다'는 의인화가 아니다
+// (`라우터가 경로를 판단한다`는 정상, `앱이 사용자를 이해한다`는 위반).
+const HANDBOOK_C1_ALLOW_RE = /(?:판단|결정|선택|해석)/;
+/**
+ * D6 — 문서 뼈대에 숨는 번역투 전문용어. 장 제목·표 머리는 본문보다 눈에 덜 띄어
+ * 규칙을 빠져나간다. 실제로 arc42 목차를 그대로 옮긴 「빌딩블록과 계층」·「횡단 관심사」가
+ * 한 판을 통째로 통과했다. 개발 용어는 살리되(C3 완화) **직역한 학술 용어**는 막는다.
+ */
+/**
+ * D7 — 문서를 만든 과정이 문서에 새는 것. 독자는 우리가 어떻게 알아냈는지가 아니라
+ * 코드가 어떤지를 읽는다. 실제로 "분석 스크립트가 …판정을 못 냈다" 로 시작하는 문단이
+ * 한 판에 실려 나갔고, 근거 블록이 자기 산출물(structure.json)을 인용하는 순환도 있었다.
+ */
+const D7_LEAKS = [
+  { re: /분석\s?스크립트/g, hint: '문서를 만든 과정은 독자와 상관없다 — 코드 사실만 적는다' },
+  { re: /structure\.json/g, hint: '자기 산출물을 근거로 대지 않는다 — 실제 코드 파일이나 git 을 인용한다' },
+  { re: /docs\/handbook\/(?:inventory\.md|traces)/g, hint: '분석 중간물은 문서에 등장하지 않는다' },
+  { re: /flowCandidates|multiOwner|byTarget/g, hint: '분석 도구의 내부 이름이다 — 사람 말로 바꾼다' },
+  { re: /`?file:fs`?/g, hint: '분석 도구가 붙인 꼬리표다 — 실제 저장소 이름으로 바꾼다' },
+  { re: /\/dt-handbook\b/g, hint: '이 문서를 만든 도구를 문서 안에서 말하지 않는다' },
+];
+const D6_TERMS = [
+  { re: /빌딩\s?블록/g, hint: '구성 요소' },
+  { re: /런타임\s?뷰/g, hint: '동작 순서' },
+  { re: /횡단\s?관심사/g, hint: '전체에 공통으로 걸리는 것' },
+  { re: /시스템\s?컨텍스트/g, hint: '바깥과 주고받는 것' },
+  { re: /관리\s?주체/g, hint: '누가 관리하나' },
+  { re: /저장소\s?지도/g, hint: '폴더 구조' },
+  { re: /아키텍처\s?뷰/g, hint: '구조 설명' },
+  { re: /유즈\s?케이스/g, hint: '사용 흐름' },
+];
+const EMOJI_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu;
+const IMPERATIVE_RE = /[가-힣](?:세요|십시오|시기\s?바랍니다)/g;
+
+// ── 묶음 E: 사람이 쓴 글의 결 (산문 문서 공통) ────────────────────────
+// A~D 는 낱말과 문장을 본다. E 는 문서의 결을 본다 — 표가 절을 다 먹었는지,
+// 문장 길이가 균일한지, 나열이 설명을 대신하는지. 낱말을 다 지켜도 읽기 힘든
+// 글이 나오는 층이라 따로 둔다. 판정은 전부 MINOR 다(사람이 고칠 힌트).
+const PROSE_DOC_TYPES = new Set(['guide', 'confluence', 'explain', 'handbook']);
+/** 한 절에서 표가 이만큼을 넘고 산문 문장이 이보다 적으면 표를 잘못 고른 것이다. */
+const E1_TABLE_RATIO = 0.5;
+const E1_MIN_PROSE_SENTENCES = 3;
+/** 표가 이보다 짧으면(머리·구분선 포함) 곁들인 표다 — 절을 먹었다고 보지 않는다. */
+const E1_MIN_TABLE_LINES = 5;
+/** 이만큼 연속으로 긴 문장만 이어지면 리듬이 없다. */
+const E2_LONG_RUN = 6;
+const E2_LONG_CHARS = 25;
+/** 불릿이 이만큼 연달아 오면 나열이 설명을 대신하고 있다. */
+const E3_BULLET_RUN = 8;
+
+/** 절(##·###) 단위로 갈라 각 절의 시작 줄과 줄 목록을 돌려준다. */
+function splitProseSections(lines) {
+  const out = [];
+  let cur = { start: 1, heading: '', lines: [] };
+  lines.forEach((line, i) => {
+    if (/^#{2,3}\s/.test(line)) {
+      if (cur.lines.length > 0 || cur.heading) out.push(cur);
+      cur = { start: i + 1, heading: line, lines: [] };
+    } else cur.lines.push(line);
+  });
+  out.push(cur);
+  return out;
+}
+
+/** 묶음 E 판정 — 절 단위 구조를 본다. findings 를 그대로 돌려준다. */
+export function lintProseShape(text) {
+  const findings = [];
+  const lines = text.split('\n');
+  for (const sec of splitProseSections(lines)) {
+    const body = sec.lines.filter((l) => l.trim() !== '');
+    if (body.length === 0) continue;
+    const tableLines = body.filter((l) => /^\s*\|/.test(l)).length;
+    const proseSentences = body
+      .filter((l) => !/^\s*[|>#`-]|^\s*\d+\.|^\s*</.test(l))
+      .join(' ')
+      .split(/(?<=[.!?])\s+/)
+      .filter((x) => x.trim().length > 0).length;
+
+    if (tableLines >= E1_MIN_TABLE_LINES && tableLines / body.length > E1_TABLE_RATIO && proseSentences < E1_MIN_PROSE_SENTENCES) {
+      findings.push({ line: sec.start, col: 1, rule: 'E1', id: 'L-E1-table-only', match: sec.heading.trim() || '(절)',
+        hint: '표가 절을 다 먹었다 — 중요한 두세 항목은 문단으로 풀고 표에는 눈으로 훑는 것만 남긴다' });
+    }
+    if (sec.heading && proseSentences === 0 && body.length > 0) {
+      findings.push({ line: sec.start, col: 1, rule: 'E6', id: 'L-E6-no-lead', match: sec.heading.trim(),
+        hint: '도입 문장 없이 표·그림으로 시작한다 — 이 절이 무엇을 말하는지 한 문장 쓰고 연다' });
+    }
+
+    let longRun = 0;
+    let bulletRun = 0;
+    sec.lines.forEach((line, i) => {
+      const isBullet = /^\s*[-*]\s/.test(line);
+      bulletRun = isBullet ? bulletRun + 1 : 0;
+      if (bulletRun === E3_BULLET_RUN) {
+        findings.push({ line: sec.start + i, col: 1, rule: 'E5', id: 'L-E5-bullet-run', match: line.trim().slice(0, 30),
+          hint: '불릿이 길게 이어진다 — 나열이 설명을 대신하고 있다. 묶거나 문장으로 푼다' });
+      }
+      if (/^\s*[|>#`-]|^\s*\d+\.|^\s*</.test(line) || line.trim() === '') { longRun = 0; return; }
+      for (const sent of line.split(/(?<=[.!?])\s+/)) {
+        const t = sent.trim();
+        if (t.length === 0) continue;
+        longRun = t.length >= E2_LONG_CHARS ? longRun + 1 : 0;
+        if (longRun === E2_LONG_RUN) {
+          findings.push({ line: sec.start + i, col: 1, rule: 'E2', id: 'L-E2-rhythm', match: t.slice(0, 30),
+            hint: '긴 문장만 이어진다 — 중요한 사실을 짧은 문장으로 끊어 눈에 걸리게 한다' });
+        }
+      }
+    });
+  }
+  return findings;
+}
+
+/**
+ * D8 의 기계 검사 한 갈래 — 근거 없는 수치. 숫자만 적으면 독자는 그것이 큰지 작은지 모른다.
+ * 문단에 근거 뱃지도 파일 인용도 없이 수치가 있으면 짚는다. 나머지 네 질문(주장·왜·증상·
+ * 첫 등장 풀이)은 기계가 못 본다 — 리뷰어 몫이다.
+ */
+const D8_NUMBER_RE = /(?<![\d.])\d{1,4}(?:,\d{3})*\s*(?:턴|번|회|건|개|줄|채널|초|분|시간|일|주|개월|%|KB|MB|GB)/g; // 조사가 바로 붙으므로 뒤를 막지 않는다
+const D8_EVIDENCE_RE = /ev-(?:code|doc|guess)|\([\w./-]+\.\w+:\d+\)|`[\w./-]+\.\w+`/;
+const D8_SKIP_LINE_RE = /^\s*(?:[|>#`]|<|-\s|\d+\.\s)/;
+
+/** 문단(빈 줄로 갈린 산문 덩어리) 단위로 근거 없는 수치를 찾는다. */
+export function lintUnbackedNumbers(rawLines) {
+  const findings = [];
+  let buf = [];
+  let start = 0;
+  const flush = () => {
+    if (buf.length === 0) return;
+    const text = buf.join(' ');
+    if (!D8_EVIDENCE_RE.test(text)) {
+      D8_NUMBER_RE.lastIndex = 0;
+      let m;
+      while ((m = D8_NUMBER_RE.exec(text))) {
+        findings.push({ line: start, col: 1, rule: 'D8', id: 'L-D8-bare-number', match: m[0].trim(),
+          hint: '무엇을 재서 나온 값인지, 무엇과 견주는 값인지를 함께 적는다 — 숫자만 있으면 크고 작음을 모른다' });
+      }
+    }
+    buf = [];
+  };
+  rawLines.forEach((line, i) => {
+    if (line.trim() === '' || D8_SKIP_LINE_RE.test(line)) { flush(); return; }
+    if (buf.length === 0) start = i + 1;
+    buf.push(line);
+  });
+  flush();
+  return findings;
+}
+
 // ── keep 주석 · spec 예외 ─────────────────────────────────────────────
 const KEEP_RE = /<!--\s*ko-lint:\s*keep\s+(L-C[1-4]-[a-z-]+)\b(?:(?!-->)[\s\S])*?-->/g;
 // spec 모드: 줄 자체를 빼는 것은 요소 목록 줄·주석만. EARS 줄은 **키워드만 마스킹**하고 뒤따르는 한글 서술은
@@ -169,7 +318,10 @@ export function lintKoWriting(text, opts = {}) {
       for (const { col, match } of findAll(line, r.re)) push('C2', r.id, col, match, r.hint);
     }
     // C1
-    for (const { col, match } of findAll(line, C1_RE)) push('C1', 'L-C1-anthro', col, match, '기계 동작 동사나 상태 서술로');
+    for (const { col, match } of findAll(line, C1_RE)) {
+      if (docType === 'handbook' && HANDBOOK_C1_ALLOW_RE.test(match)) continue;
+      push('C1', 'L-C1-anthro', col, match, '기계 동작 동사나 상태 서술로');
+    }
     // C3
     for (const t of UNFAMILIAR_TERMS) {
       for (const { col, match } of findAll(line, t.re)) push('C3', `L-C3-${t.key}`, col, match, t.hint);
@@ -182,6 +334,25 @@ export function lintKoWriting(text, opts = {}) {
         devTermSeen.add(term);
         const after = line.slice(idx + term.length);
         if (!/^\s*\(/.test(after)) push('C3', 'L-C3-devterm', idx, term, '첫 등장에서 괄호로 풀어 쓰거나 일상어로');
+      }
+    }
+    if (docType === 'handbook') {
+      for (const { col, match } of findAll(line, EMOJI_RE)) {
+        push('D3', 'L-D3-emoji', col, match, '[코드]·[문서]·[추정] 뱃지로 — 이모지는 PDF 임베드가 불안정하다');
+      }
+      for (const { col, match } of findAll(line, IMPERATIVE_RE)) {
+        push('D5', 'L-D5-imperative', col, match, '핸드북은 설명서다 — 절차 지시는 링크로 넘긴다');
+      }
+      for (const t of D6_TERMS) {
+        for (const { col, match } of findAll(line, t.re)) {
+          push('D6', 'L-D6-jargon', col, match, `${t.hint} — 직역한 학술 용어는 제목에서도 쓰지 않는다`);
+        }
+      }
+      // D7 은 **원문 줄**을 본다 — 도구 이름은 대개 백틱 안에 있어 마스킹된 줄에서는 안 보인다.
+      for (const t of D7_LEAKS) {
+        for (const { col, match } of findAll(raw, t.re)) {
+          push('D7', 'L-D7-process-leak', col, match, t.hint);
+        }
       }
     }
     // 문장 첫머리 규칙 (C2 대명사 · C4 도입구 · C4 접속사 연속)
@@ -203,6 +374,9 @@ export function lintKoWriting(text, opts = {}) {
     }
   });
 
+  if (PROSE_DOC_TYPES.has(docType)) findings.push(...lintProseShape(masked));
+  if (docType === 'handbook') findings.push(...lintUnbackedNumbers(rawLines));
+
   findings.sort((a, b) => a.line - b.line || a.col - b.col);
   return { findings, stats: { lines: lines.length, sentences: countSentences(masked), kept } };
 }
@@ -214,7 +388,7 @@ function formatTable(result) {
   return rows.join('\n');
 }
 
-const DOC_TYPES = ['jira', 'confluence', 'guide', 'explain', 'spec'];
+const DOC_TYPES = ['jira', 'confluence', 'guide', 'explain', 'spec', 'handbook'];
 const USAGE = `Usage: node scripts/koWritingLint.mjs <file.md> [--json] [--docType ${DOC_TYPES.join('|')}]\n`;
 
 // exit 계약: findings 0 → 0, 있음 → 1. 사용법·IO 오류만 2 (게이트가 둘을 구분해야 한다).

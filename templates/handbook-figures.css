@@ -1,0 +1,30 @@
+/* 핸드북 도형 키트 — 인쇄 고정 팔레트. 흑백 출력에서도 명도로 구분된다.
+   의미를 지는 색(--hb-accent)은 문서 전체에서 하나만 쓴다. */
+:root {
+  --hb-ink: #1a1a1a; --hb-line: #4a4a4a; --hb-muted: #8a8a8a;
+  --hb-fill: #f2f2f2; --hb-fill-2: #e0e0e0; --hb-accent: #1f5fa9;
+}
+figure { margin: 1.2em 0; break-inside: avoid; page-break-inside: avoid; text-align: center; }
+figure svg, figure img, pre.mermaid svg { max-width: 100%; height: auto; }
+figcaption { font-size: 9.5pt; color: var(--hb-muted); margin-top: .4em; text-align: left; }
+pre.mermaid { background: none; border: 0; padding: 0; text-align: center; break-inside: avoid; }
+
+/* 도형 어휘 8종 — 손 SVG 는 이 클래스만 쓴다 */
+.hb-box { fill: var(--hb-fill); stroke: var(--hb-line); stroke-width: 1.5; }
+.hb-store { fill: #fff; stroke: var(--hb-line); stroke-width: 1.5; }
+.hb-ext { fill: var(--hb-fill-2); stroke: var(--hb-line); stroke-width: 1.5; }
+.hb-boundary { fill: none; stroke: var(--hb-muted); stroke-width: 1; stroke-dasharray: 5 4; }
+.hb-lane { fill: none; stroke: var(--hb-fill-2); stroke-width: 1; }
+.hb-arrow { stroke: var(--hb-line); stroke-width: 1.5; fill: none; }
+.hb-arrow-accent { stroke: var(--hb-accent); stroke-width: 2; fill: none; }
+.hb-badge { fill: var(--hb-accent); }
+.hb-note { fill: #fff; stroke: var(--hb-muted); stroke-width: 1; stroke-dasharray: 2 2; }
+.hb-t { font-size: 12px; fill: var(--hb-ink); }
+.hb-t-s { font-size: 11px; fill: var(--hb-muted); }
+.hb-t-badge { font-size: 10px; fill: #fff; font-weight: 700; }
+
+/* 근거 뱃지 — 이모지를 쓰지 않는다(PDF 임베드가 불안정하다) */
+.ev { font-size: 8.5pt; padding: 0 .35em; border-radius: 3px; white-space: nowrap; }
+.ev-code { border: 1px solid var(--hb-line); color: var(--hb-ink); }
+.ev-doc { border: 1px dashed var(--hb-line); color: var(--hb-ink); }
+.ev-guess { background: var(--hb-fill-2); color: var(--hb-ink); }

@@ -14,7 +14,9 @@ export function walkSourceFiles(root) {
   const out = [];
   const walk = (dir) => {
     for (const entry of readdirSync(dir)) {
-      if (SKIP_DIRS.has(entry)) continue;
+      // 숨김 디렉터리는 통째로 건너뛴다 — .worktrees·.claude 같은 곳에 소스 사본이 있으면
+      // 같은 파일이 두 벌로 잡혀 군집·진입점이 전부 중복된다.
+      if (SKIP_DIRS.has(entry) || entry.startsWith('.')) continue;
       const full = join(dir, entry);
       const st = statSync(full);
       if (st.isDirectory()) { walk(full); continue; }
