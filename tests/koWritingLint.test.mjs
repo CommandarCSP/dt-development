@@ -329,3 +329,58 @@ test('C3-d: 개조식 문서에는 적용하지 않는다', () => {
   assert.equal(lintKoWriting('설정은 배포물에 구운 파일에서 읽는다.', { docType: 'jira' })
     .findings.some((x) => x.rule === 'C3-d'), false);
 });
+
+test('등급: 중 규칙은 두 번까지 봐준다', () => {
+  const two = '이것이 규약인 것이다. 저것도 규약인 것이다.';
+  assert.equal(lintKoWriting(two, { docType: 'handbook' }).findings.some((f) => f.id === 'L-B3-geotida'), false);
+});
+
+test('등급: 중 규칙도 세 번 쌓이면 보고한다', () => {
+  const three = '이것이 규약인 것이다. 저것도 규약인 것이다. 그것 역시 규약인 것이다.';
+  const f = lintKoWriting(three, { docType: 'handbook' }).findings.filter((x) => x.id === 'L-B3-geotida');
+  assert.equal(f.length, 3);
+  assert.equal(f[0].severity, 'medium');
+});
+
+test('등급: 강 규칙은 한 번이라도 보고한다', () => {
+  const f = lintKoWriting('근거는 🟢 코드다.', { docType: 'handbook' }).findings;
+  assert.ok(f.some((x) => x.id === 'L-D3-emoji' && x.severity === 'strong'));
+});
+
+test('C5: 대체 가능한 외래어를 잡는다', () => {
+  const f = lintKoWriting('계측 파사드는 값을 찾는다.', { docType: 'handbook' }).findings;
+  assert.ok(f.some((x) => x.id === 'L-C5-파사드' && x.severity === 'strong'));
+});
+
+test('C5: 백틱 안은 검사하지 않는다', () => {
+  assert.equal(lintKoWriting('`파사드` 패턴을 쓴다.', { docType: 'handbook' })
+    .findings.some((x) => x.rule === 'C5'), false);
+});
+
+test('C5: 애매한 외래어는 세 번부터 잡는다', () => {
+  assert.equal(lintKoWriting('이 케이스는 다르다. 저 케이스도 다르다.', { docType: 'handbook' })
+    .findings.some((x) => x.rule === 'C5'), false);
+  assert.equal(lintKoWriting('이 케이스. 저 케이스. 그 케이스.', { docType: 'handbook' })
+    .findings.filter((x) => x.id === 'L-C5-케이스').length, 3);
+});
+
+test('C5: 대체하면 뜻이 달라지는 말은 목록에 없다', () => {
+  const f = lintKoWriting('IPC 로 프로세스 사이를 오간다. 캐시와 토큰을 쓴다.', { docType: 'handbook' }).findings;
+  assert.equal(f.some((x) => x.rule === 'C5'), false);
+});
+
+test('코드 펜스 안은 산문으로 세지 않는다', () => {
+  const FENCE = '```';
+  const t = `## 4. 구조\n\n이 절은 구조를 다룬다.\n\n${FENCE}mermaid\nsequenceDiagram\n  participant R as 렌더러\n${FENCE}\n`;
+  assert.equal(lintKoWriting(t, { docType: 'handbook' }).findings.some((x) => x.rule === 'C5' || x.rule === 'B3'), false);
+});
+
+test('C2-tense: 진행형 남발을 세 번 이상일 때 잡는다', () => {
+  const t = '서버가 돌고 있다. 큐가 쌓이고 있다. 작업이 밀리고 있다.';
+  assert.ok(lintKoWriting(t, { docType: 'handbook' }).findings.some((x) => x.id === 'L-C2-tense'));
+});
+
+test('개조식 문서에는 새 규칙을 적용하지 않는다', () => {
+  const t = '이것이 규약인 것이다. 저것도 규약인 것이다. 그것 역시 규약인 것이다.';
+  assert.equal(lintKoWriting(t, { docType: 'jira' }).findings.some((x) => x.rule === 'B3'), false);
+});

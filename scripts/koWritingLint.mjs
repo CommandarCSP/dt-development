@@ -170,6 +170,15 @@ const E2_LONG_CHARS = 25;
 /** 불릿이 이만큼 연달아 오면 나열이 설명을 대신하고 있다. */
 const E3_BULLET_RUN = 8;
 
+/** 코드 펜스 안을 표시한다 — 머메이드·코드 블록을 산문으로 세면 판정이 전부 어긋난다. */
+export function fenceMask(lines) {
+  let inFence = false;
+  return lines.map((l) => {
+    if (/^\s*```/.test(l)) { inFence = !inFence; return true; }
+    return inFence;
+  });
+}
+
 /** 절(##·###) 단위로 갈라 각 절의 시작 줄과 줄 목록을 돌려준다. */
 function splitProseSections(lines) {
   const out = [];
@@ -301,6 +310,79 @@ export function lintTranslationeseVerbs(rawLines) {
   return findings;
 }
 
+// ── 심각도 등급 (yoonmoon 택소노미 승계) ──────────────────────────────
+// 원문은 등급에 **빈도** 개념을 둔다 — "중: 1~2회는 자연스러우나 반복되면 티가 남,
+// 문서당 3회 이상이면 제거". 우리 린트에는 그 개념이 없어서 규칙을 넣을 때마다
+// 오탐을 걱정했고, 정작 "각각은 괜찮은데 쌓여서 기계 같은" 상태는 못 잡았다.
+//
+// 기존 규칙은 등급을 내리지 않는다(전부 '강'). 등급제는 공격적인 규칙을 안전하게
+// **더 넣기** 위한 장치다.
+//   강 — 한 번이라도 보고한다
+//   중 — 같은 규칙이 문서에서 MEDIUM_THRESHOLD 회 이상일 때만 보고한다
+//   약 — 같은 줄에 다른 위반이 함께 있을 때만 보고한다
+const MEDIUM_THRESHOLD = 3;
+const SEVERITY = {
+  'L-B3-geotida': 'medium', 'L-B3-haneun-geot': 'medium', 'L-B3-raneun-jeom': 'medium',
+  'L-B3-pilyo': 'medium', 'L-B3-gyeongdongsa': 'medium',
+  'L-C2-tense': 'medium',
+};
+/** C5 는 낱말마다 등급이 다르다 — 목록에서 지연 조회한다(선언 순서에 매이지 않게). */
+const severityOf = (id) => {
+  if (SEVERITY[id]) return SEVERITY[id];
+  const hit = C5_LOANWORDS.find((x) => `L-C5-${x.w}` === id);
+  return hit ? hit.sev : 'strong';
+};
+
+/** 등급대로 걸러 낸다. 강은 그대로, 중은 3회 이상일 때만, 약은 같은 줄에 동행이 있을 때만. */
+export function applySeverity(findings) {
+  const count = new Map();
+  for (const f of findings) if (severityOf(f.id) === 'medium') count.set(f.id, (count.get(f.id) ?? 0) + 1);
+  const strongLines = new Set(findings.filter((f) => severityOf(f.id) === 'strong').map((f) => f.line));
+  return findings
+    .filter((f) => {
+      const sev = severityOf(f.id);
+      if (sev === 'medium') return (count.get(f.id) ?? 0) >= MEDIUM_THRESHOLD;
+      if (sev === 'weak') return strongLines.has(f.line);
+      return true;
+    })
+    .map((f) => ({ ...f, severity: severityOf(f.id) }));
+}
+
+// ── 묶음 B3 기계화: 형식명사·명사화 (AI 티 6) ─────────────────────────
+// 동사로 쓰면 될 것을 명사로 굳혀 문장을 늘어지게 만드는 습관. 리뷰어가 손으로
+// 두 번 잡은 항목이라 기계에 넘긴다. 전부 '중' — 한두 번은 자연스럽다.
+const B3_RULES = [
+  { id: 'L-B3-geotida',      re: /(?:하는|인|라는|다는)\s*것이다/g,        hint: '~한다 · ~이다 로 끝낸다' },
+  { id: 'L-B3-haneun-geot',  re: /[가-힣]+하는\s*것(?:이|을|은)\s/g,       hint: '명사화를 풀어 동사로 쓴다' },
+  { id: 'L-B3-raneun-jeom',  re: /(?:라는|다는)\s*점에서/g,                hint: '~어서 · ~기 때문에' },
+  { id: 'L-B3-pilyo',        re: /할\s*필요가\s*있다/g,                    hint: '~해야 한다' },
+  { id: 'L-B3-gyeongdongsa', re: /[가-힣]{2}(?:을|를)\s*(?:하다|한다|했다|하고)/g, hint: '경동사를 붙여 한 낱말로 — 활용을 하다 → 활용하다' },
+];
+
+// ── C2 확장: 시제·서법 calque (번역투 6) ──────────────────────────────
+// 진행형 자체는 우리말에도 있다 — 남발만 잡는다(중 등급이라 세 번부터 뜬다).
+const C2_TENSE_RE = /[가-힣]+고\s*있(?:다|는|었|으)/g;
+
+// ── C5: 대체 가능한 외래어 (AI 티 10 — 미번역 용어) ──────────────────
+// yoonmoon 의 "미번역 용어"(leverage → 활용)를 우리 문맥으로 옮긴 것이다. 라틴 문자
+// 밀도를 세는 방식은 버렸다 — 머메이드 블록과 파일 경로만 잡혔고, 정작 문제인
+// "계측 파사드"는 한글이라 안 걸렸다. 목록으로 간다.
+// 판정 기준은 C3 완화와 같다: 한국어로 바꿔도 뜻이 같으면 고친다.
+// `IPC`·캐시·토큰·프로세스처럼 대체하면 뜻이 달라지는 말은 목록에 없다.
+const C5_LOANWORDS = [
+  { w: '파사드', hint: '창구 · 겉면 · 그 일을 하는 코드', sev: 'strong' },
+  { w: '플로우', hint: '흐름', sev: 'strong' },
+  { w: '로직', hint: '처리 · 동작 · 규칙', sev: 'strong' },
+  { w: '컨피그', hint: '설정', sev: 'strong' },
+  { w: '밸리데이션', hint: '검사', sev: 'strong' },
+  { w: '케이스', hint: '경우', sev: 'medium' },
+  { w: '레이어', hint: '계층', sev: 'medium' },
+  { w: '인스턴스', hint: '실행 중인 것 · 하나', sev: 'medium' },
+  { w: '리소스', hint: '자원', sev: 'medium' },
+  { w: '페이로드', hint: '보내는 데이터', sev: 'medium' },
+];
+const C5_ID = (w) => `L-C5-${w}`;
+
 // ── keep 주석 · spec 예외 ─────────────────────────────────────────────
 const KEEP_RE = /<!--\s*ko-lint:\s*keep\s+(L-C[1-4]-[a-z-]+)\b(?:(?!-->)[\s\S])*?-->/g;
 // spec 모드: 줄 자체를 빼는 것은 요소 목록 줄·주석만. EARS 줄은 **키워드만 마스킹**하고 뒤따르는 한글 서술은
@@ -411,11 +493,36 @@ export function lintKoWriting(text, opts = {}) {
   if (PROSE_DOC_TYPES.has(docType)) {
     findings.push(...lintProseShape(masked));
     findings.push(...lintTranslationeseVerbs(rawLines));
+    const inFence = fenceMask(rawLines);
+    lines.forEach((line, i) => {
+      if (inFence[i]) return;
+      const keepIds = keepIdsOf(rawLines[i]);
+      const add = (rule, id, col, match, hint) => {
+        if (keepIds.has(id)) { kept++; return; }
+        findings.push({ line: i + 1, col: col + 1, rule, id, match, hint });
+      };
+      for (const r of B3_RULES) for (const { col, match } of findAll(line, r.re)) add('B3', r.id, col, match, r.hint);
+      for (const { col, match } of findAll(line, C2_TENSE_RE)) {
+        add('C2', 'L-C2-tense', col, match, '진행형을 남발하지 않는다 — ~한다');
+      }
+      const bare = rawLines[i].replace(/`[^`]*`/g, ' ');   // 백틱 안은 검사하지 않는다
+      for (const { w, hint } of C5_LOANWORDS) {
+        let from = 0;
+        for (;;) {
+          const at = bare.indexOf(w, from);
+          if (at === -1) break;
+          add('C5', C5_ID(w), at, w, `${hint} — 우리말로 바꿔도 뜻이 같으면 바꾼다`);
+          from = at + w.length;
+        }
+      }
+    });
   }
+
   if (docType === 'handbook') findings.push(...lintUnbackedNumbers(rawLines));
 
-  findings.sort((a, b) => a.line - b.line || a.col - b.col);
-  return { findings, stats: { lines: lines.length, sentences: countSentences(masked), kept } };
+  const graded = applySeverity(findings);
+  graded.sort((a, b) => a.line - b.line || a.col - b.col);
+  return { findings: graded, stats: { lines: lines.length, sentences: countSentences(masked), kept } };
 }
 
 // ── CLI ───────────────────────────────────────────────────────────────
