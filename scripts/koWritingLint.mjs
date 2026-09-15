@@ -267,6 +267,40 @@ export function lintUnbackedNumbers(rawLines) {
   return findings;
 }
 
+// ── C3-d: 영어 개발 은어의 직역 (산문 문서 공통) ──────────────────────
+// C3-c 가 우리말 구어라면 이쪽은 영어 은어를 그대로 옮긴 것이다. 개발 맥락이라고
+// 허용되지 않는다 — 뜻이 같은 우리말이 있다. "개발 용어는 그대로" 라는 완화 한 줄
+// 때문에 "배포물에 구운 .env" 가 한 판 통째로 통과했다.
+// 오탐을 막으려고 **문장 안에 맥락 낱말이 함께 있을 때만** 잡는다.
+const C3D_RULES = [
+  { key: 'bake',  verb: /구운|굽는|굽고|구워|굽는다/,        ctx: /빌드|배포|설치본|산출물|번들|이미지|\.env/, hint: '빌드할 때 함께 넣는다' },
+  { key: 'emit',  verb: /흘린다|흘리고|흘려|흘리는/,          ctx: /로그|진행|화면|출력|이벤트/,                hint: '내보낸다' },
+  { key: 'kill',  verb: /죽는다|죽으면|죽이면|죽였|죽인다/,   ctx: /프로세스|서버|앱|연결|스레드|워커/,          hint: '멈춘다 · 끝낸다' },
+  { key: 'drop',  verb: /떨어뜨린다|떨어뜨리고|떨어뜨려/,     ctx: /요청|패킷|이벤트|메시지|프레임/,            hint: '버린다' },
+  { key: 'hit',   verb: /밟는다|밟게|밟은다|다시 밟/,         ctx: /함정|버그|사고|결함|지뢰|경로/,              hint: '걸린다 · 겪는다' },
+  { key: 'fire',  verb: /쏜다|쏘고|쏜 뒤/,                    ctx: /요청|이벤트|쿼리|호출/,                      hint: '보낸다' },
+  { key: 'path',  verb: /경로를 탄다|경로를 타면|경로를 타/,  ctx: /증분|캐시|빠른|느린/,                        hint: '경로를 쓴다' },
+  { key: 'ride',  verb: /태워 보낸|태워서 보낸|태운다/,       ctx: /응답|요청|헤더|페이로드|본문/,               hint: '실어 보낸다' },
+];
+
+/** 문장 단위로 본다 — 맥락 낱말이 같은 문장에 있어야 잡는다(관용구 오탐 방지). */
+export function lintTranslationeseVerbs(rawLines) {
+  const findings = [];
+  rawLines.forEach((raw, i) => {
+    if (/^\s*(?:[|>#`]|<)/.test(raw)) return;          // 표·인용·제목·코드·태그 줄은 건너뛴다
+    const line = raw.replace(/`[^`]*`/g, ' ');          // 백틱 안은 검사하지 않는다
+    for (const sent of line.split(/(?<=[.!?])\s+/)) {
+      for (const r of C3D_RULES) {
+        if (r.verb.test(sent) && r.ctx.test(sent)) {
+          findings.push({ line: i + 1, col: 1, rule: 'C3-d', id: `L-C3d-${r.key}`,
+            match: (r.verb.exec(sent) ?? [''])[0], hint: `${r.hint} — 영어 은어를 그대로 옮기지 않는다` });
+        }
+      }
+    }
+  });
+  return findings;
+}
+
 // ── keep 주석 · spec 예외 ─────────────────────────────────────────────
 const KEEP_RE = /<!--\s*ko-lint:\s*keep\s+(L-C[1-4]-[a-z-]+)\b(?:(?!-->)[\s\S])*?-->/g;
 // spec 모드: 줄 자체를 빼는 것은 요소 목록 줄·주석만. EARS 줄은 **키워드만 마스킹**하고 뒤따르는 한글 서술은
@@ -374,7 +408,10 @@ export function lintKoWriting(text, opts = {}) {
     }
   });
 
-  if (PROSE_DOC_TYPES.has(docType)) findings.push(...lintProseShape(masked));
+  if (PROSE_DOC_TYPES.has(docType)) {
+    findings.push(...lintProseShape(masked));
+    findings.push(...lintTranslationeseVerbs(rawLines));
+  }
   if (docType === 'handbook') findings.push(...lintUnbackedNumbers(rawLines));
 
   findings.sort((a, b) => a.line - b.line || a.col - b.col);
