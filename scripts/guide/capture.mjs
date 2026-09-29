@@ -254,7 +254,11 @@ export function scaffoldCaptureConfig({ inventory, existing }) {
   const start = inventory.type === 'electron'
     ? `{ command: ${q(st.startCommand ?? 'npm start')}, mainEntry: ${q(st.mainEntry ?? 'dist/electron/main.js')} }`
     : `{ command: ${q(st.startCommand ?? 'npm run dev')}, url: ${q(st.url ?? 'http://localhost:5173')}, readySelector: ${q(st.readySelector ?? '#root')} }`;
-  const screens = inventory.screens.filter((s) => s.capture?.mode === 'auto').map((s) => `    // '${s.id}': { beforeShot: async ({ page, driver }) => {}, selector: ${q(s.capture.selector ?? 'body')} },`).join('\n');
+  // 스캐폴드에 `selector` 를 보여 주지 않는다 — 그건 인벤토리가 정하는 **대기
+  // 대상**이고 여기서 덮어쓸 일이 드물다. 여기 적을 것은 찍을 범위(`crop`)와
+  // 찍기 직전 손질(`beforeShot`)이다. 예전 스캐폴드가 `selector` 를 내밀어
+  // "이걸 고치면 그림 범위가 바뀐다"고 읽히게 했고, 실제로 그렇게 동작했다.
+  const screens = inventory.screens.filter((s) => s.capture?.mode === 'auto').map((s) => `    // '${s.id}': { beforeShot: async ({ page, driver }) => {}, /* crop: '#panel' — 생략하면 창 전체 */ },`).join('\n');
   return tmpl.replace('{{START}}', () => start).replace('{{STATES}}', () => states).replace('{{SCREENS}}', () => screens);
 }
 
@@ -304,7 +308,13 @@ export async function runCaptures({ projectRoot, plan, config, driver }) {
         for (const n of p.needs) await config.states[n]({ page: driver.page, env: process.env, driver });
         await driver.goto(p.route);
         const over = config.screens?.[p.id] ?? {};
+        // `selector` 는 **대기 대상**이고 `crop` 은 **찍을 범위**다. 둘을 한
+        // 키로 겸하던 때에는 화면이 뜨기를 기다리려고 `selector: main` 을
+        // 적으면 그림도 그 요소만 잘려 나왔고, 창 전체를 찍으려면
+        // `selector: body` 로 덮어써야 했다(실제 실행에서 밟았다).
+        // 기본은 **창 전체**다 — 가이드 그림은 대개 화면 전체를 보여 준다.
         const selector = over.selector ?? p.selector;
+        const crop = over.crop ?? undefined;
         if (selector) await driver.waitFor(selector);
         if (typeof over.beforeShot === 'function') await over.beforeShot({ page: driver.page, driver });
         // 가린 뒤에 찍는다 — 순서가 뒤집히면 가리기 전 화면이 파일로 남는다.
@@ -312,13 +322,15 @@ export async function runCaptures({ projectRoot, plan, config, driver }) {
           await driver.redact(over.redact);
         }
         const path = join(shotsDir, `${p.id}.png`);
-        await driver.screenshot(path, { selector, fullPage: over.fullPage === true });
+        await driver.screenshot(path, { selector: crop, fullPage: over.fullPage === true });
         // 찍는 순간의 글자를 같이 뜬다 — 스크린샷은 DOM 을 그린 것이라 이
         // 텍스트가 곧 그림에 보이는 글자다. G6 가 OCR 없이 이걸 읽는다.
         // **여기서 터져도 그림은 남긴다** — 검사 재료를 못 뜬 것이 캡처 실패는 아니다.
         try {
           if (typeof driver.text === 'function') {
-            writeFileSync(join(shotsDir, `${p.id}.txt`), await driver.text(selector), 'utf8');
+            // 그림과 **같은 범위**에서 뜬다 — 범위가 어긋나면 G6 가 그림에
+            // 없는 글자를 검사하거나 그림에 있는 글자를 놓친다.
+            writeFileSync(join(shotsDir, `${p.id}.txt`), await driver.text(crop), 'utf8');
           }
         } catch { /* 글자를 못 읽었다 — G6 는 그 화면을 검사하지 못한다(빌드가 알린다) */ }
         results.push({ id: p.id, mode: p.mode, status: 'ok', path: `shots/${p.id}.png` });

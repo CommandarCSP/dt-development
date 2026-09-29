@@ -51,7 +51,7 @@ test('assignIntent: 주입된 existingDomains로 결정', () => {
 
 const SPEC_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  '../../sample-app/docs/specs/pages/file-management',
+  '../../mvi/docs/specs/pages/file-management',
 );
 
 const hasSpecFixture = existsSync(join(SPEC_DIR, 'requirements.md'));   // 레포 밖 실측 스펙 — 없으면 건너뛴다

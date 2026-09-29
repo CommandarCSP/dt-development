@@ -37,7 +37,7 @@ export function FollowedUserList() {
   );
 }
 ```
-(현재 실측 프로젝트의 `FollowedUserList`/`RecommendedUserList` 케이스 — `users.length === 0 && !isLoading`
+(현재 mvi `FollowedUserList`/`RecommendedUserList` 케이스 — `users.length === 0 && !isLoading`
 빈 상태 분기가 없어 0건일 때 안내가 표시되지 않는다.)
 
 ## ✅ Correct

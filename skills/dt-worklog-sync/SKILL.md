@@ -1,12 +1,12 @@
 ---
 name: dt-worklog-sync
 description: >-
-  Use when a developer (FE/BE) wants to sync their development work to Jira following the ACME JIRA guideline — summarize git commits/diff + current session + manual notes into Jira Sub-tasks (the developer's unit) under a Story/Task, transition status, and attach deliverable links. If no parent Story/Task exists, asks the user and (on consent) creates one — Story for screen/feature dev, Task for non-screen dev work (요구사항분석·설계·인프라·배포 등) under the 수행 Epic. Out of scope: design(UX/Visual) sub-tasks, QA bug verification, PM Epic/Story management. Also optionally attaches an existing Confluence doc link as a Jira comment (read-only — doc authoring is dt-confluence-doc). Triggers on "작업 Jira에 정리/등록", "worklog 동기화", "/dt-worklog".
+  Use when a developer (FE/BE) wants to sync their development work to Jira following the HNINE JIRA guideline — summarize git commits/diff + current session + manual notes into Jira Sub-tasks (the developer's unit) under a Story/Task, transition status, and attach deliverable links. If no parent Story/Task exists, asks the user and (on consent) creates one — Story for screen/feature dev, Task for non-screen dev work (요구사항분석·설계·인프라·배포 등) under the 수행 Epic. Out of scope: design(UX/Visual) sub-tasks, QA bug verification, PM Epic/Story management. Also optionally attaches an existing Confluence doc link as a Jira comment (read-only — doc authoring is dt-confluence-doc). Triggers on "작업 Jira에 정리/등록", "worklog 동기화", "/dt-worklog".
 ---
 
 # dt-worklog-sync
 
-**개발자(FE/BE)의 개발 작업**을 **ACME JIRA 가이드라인**(`references/jira-guideline.md`)에 맞게 Jira에 동기화한다.
+**개발자(FE/BE)의 개발 작업**을 **HNINE JIRA 가이드라인**(`references/jira-guideline.md`)에 맞게 Jira에 동기화한다.
 기본 단위는 **Sub-task**(가이드라인 "개인이 수행할 실제 업무 단위"). 모든 쓰기는 **dry-run 승인 후** 실행한다.
 
 ## 범위 (개발자 전용)
@@ -86,15 +86,24 @@ description: >-
 
 모든 부모/Sub-task 생성은 **dry-run 표 승인 후** 실행한다(안전장치 1).
 
-### 3.5 수정 버전(릴리즈/마일스톤) 매칭 (릴리즈가 있을 때만 — `references/release-matching.md`)
-프로젝트에 릴리즈(마일스톤)가 정의돼 있으면 각 Sub-task를 그 릴리즈에 매칭해 **수정 버전(fixVersions)** 필드를 채운다.
-1. **릴리즈 목록 조회** — 버전 전용 도구가 없으므로 `getJiraIssueTypeMetaWithFields`(대상=설정 `subtask` 타입)의 `fixVersions.allowedValues`로 후보를 얻는다. **빈 배열이면 릴리즈 미정의 → 이 단계 스킵**(필드 비움). `archived`는 제외.
-2. **의미 매칭 우선** — 티켓 요약·작업 범위(What/Why)를 릴리즈 **이름·설명**과 대조해 가장 맞는 1개를 고른다. `releaseDate`는 보조 tiebreaker.
-3. **애매하면 무조건 사용자 확인** — 단일 신뢰 매칭이 안 나오거나(0개/복수 비등), 범위가 여러 릴리즈에 걸치거나, 이름·설명이 빈약하면 **자동 확정 금지** → 후보(이름·releaseDate·설명 요약)+"매칭 안 함"을 제시해 사용자에게 묻는다(안전장치 2). 임의 추정 금지.
-4. **대상=Sub-task**(설정 `fixVersionsTarget`, 기본 `subtask`). 매칭 결과를 [4] dry-run 표의 수정버전 열에 노출한다.
+### 3.5 수정 버전(릴리즈/마일스톤) — `references/release-matching.md`가 SOT
+릴리즈는 이 팀의 마일스톤이다. 동기화하는 모든 이슈가 어느 릴리즈에 속하는지 드러나야 한다.
+
+**대상: 부모(스토리·작업·버그) + 그 아래 하위 작업 — 부모 값으로 통일.** 한 작업 묶음이 두 릴리즈로 갈라지지 않게 한다.
+
+- **버그는 작업 하위로 옮길 수 없다**(계층이 같음). Epic 아래 제자리에 두고 수정 버전만 단다.
+- **제목에 버전을 적지 않는다.** 릴리즈는 수정 버전 필드가 그 자리다(옛 이슈는 건드리지 않음).
+
+1. **릴리즈 목록 조회** — 버전 전용 도구가 없으므로 `getJiraIssueTypeMetaWithFields`의 `fixVersions.allowedValues`로 후보를 얻는다. `archived`는 제외, 미출시(`released: false`)를 먼저 보여준다.
+2. **결정 순서**
+   - **① 부모에 릴리즈가 있으면 — 그대로 상속.** 사람에게 묻지 않고 하위 작업에 같은 값을 넣는다.
+   - **② 부모가 비어 있으면 — 번호 목록으로 제시해 사람이 고른다.** 1순위에 `← 추천`을 표시만 하고 **자동 확정하지 않는다**(릴리즈 설명이 비어 있고 종료일이 지난 경우가 흔해 이름만으로 찍게 됨). 제품 접두어(`[Insight]` 등)가 다르면 섞지 않는다. 고른 값은 **부모에도 쓰고** 하위 작업에도 넣는다.
+   - **③ 맞는 릴리즈가 없으면 — 초안(이름·기간·설명)을 추천하고 Jira 릴리즈 화면 링크를 띄운다.** 공식 MCP엔 버전 생성 도구가 없어 **생성은 사람이** 한다. 만든 뒤 알려주면 목록을 다시 읽어 ②로 돌아간다. 프로젝트에 릴리즈가 하나도 없을 때도 같다 — **조용히 넘어가지 않는다.**
+3. **"릴리즈 없이 진행"은 사람이 고른 결과일 때만.** 모델이 알아서 건너뛰지 않는다(안전장치 2).
+4. 결과를 [4] dry-run 표의 수정버전 열에 **부모 갱신 / 부모 상속 / 변경 없음**으로 구분해 노출한다.
 
 ### 4. 확인 (Dry-run)
-계획을 표로 출력: [동작 | 이슈타입 | 부모 | 제목 | 상태전이 | **산출물(Output) 필드 값** | **수정버전(릴리즈)**]. 사용자 승인 대기. 산출물 필드 값은 [2]에서 모은 커밋/MR URL·파일명을 줄바꿈으로 보여준다(빈 값이면 그 사유). 수정버전 열은 [3.5] 매칭 결과(릴리즈명 또는 "미정의—스킵"/"애매—확인 필요")를 보여준다.
+계획을 표로 출력: [동작 | 이슈타입 | 부모 | 제목 | 상태전이 | **산출물(Output) 필드 값** | **수정버전(릴리즈)**]. 사용자 승인 대기. 산출물 필드 값은 [2]에서 모은 커밋/MR URL·파일명을 줄바꿈으로 보여준다(빈 값이면 그 사유). 수정버전 열은 [3.5] 결과를 **부모 갱신**(`(비어있음) → <릴리즈명>`) / **부모 상속**(`<릴리즈명>`) / **변경 없음**으로 구분해 보여준다.
 - 표와 함께 **채워진 description/comment 마크다운 프리뷰**를 출력한다. `{확인 필요}` 슬롯이 있으면 승인 전에 질문한다.
 - **한글 리뷰 게이트 (격리, 1회)** — 프리뷰 본문(description·comment 마크다운)을 `Task`로 `ko-writing-reviewer` 에이전트에 넘긴다: `{ text: <프리뷰 마크다운>, docType: 'jira' }`. 반환 `verdict`가 `NEEDS_REPAIR`면 `findings[].after`를 해당 문장에 **그대로** 끼운다(`needsHuman: true`는 건너뜀). 그다음 사용자에게 **before→after 표** [행 | 규칙 | 전 | 후 | 이유]를 보이고, `needsHuman` 항목은 아래에 "확인 요망"으로 따로 적는다. 승인받는다. **재리뷰는 하지 않는다**(정확히 1회). 서브에이전트를 못 쓰는 런타임이면 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <임시파일> --docType jira` + readable-writing.md 체크리스트 12항을 메인이 직접 대조하고, "리뷰를 격리하지 못해 인라인으로 대신했다"고 한 줄 고지한다.
 
@@ -103,7 +112,7 @@ description: >-
 - **본문은 `references/worklog-templates.md` 템플릿을 채워서 쓴다.** `createJiraIssue`의 `description`·`addCommentToJiraIssue`의 `commentBody` 모두 `contentFormat: "markdown"`을 전달한다.
 - 생성: `createJiraIssue` (Sub-task는 `parent`=부모 Story/Task 키, `issueTypeName`=설정값, `assignee_account_id`=나).
   - **산출물(Output) 커스텀 필드 기재 (필수 — `references/output-field-rules.md`):** [2]에서 모은 산출물(커밋/MR GitLab URL·파일명)을 산출물 필드에 넣는다. **값은 ADF(리치텍스트) 필수** — URL 한 줄 = paragraph 하나인 `{type:"doc"...}` 객체로 만들어 `createJiraIssue`의 `additional_fields`(또는 기존 이슈면 `editJiraIssue`의 `fields`)에 `{ "<outputFieldId>": <ADF doc> }`로 전달한다(평문 문자열은 "Atlassian 문서여야 합니다" 오류). **필드 id 발견:** 설정 `outputFieldId`가 있으면 사용, 없으면 `getJiraIssueTypeMetaWithFields`로 `outputFieldName`(기본 "산출물") 매칭 `customfield_*`를 찾는다(못 찾으면 필드 기재는 건너뛰고 산출물을 코멘트/설명에만 남긴 뒤 보고 — 침묵 실패 금지). 커밋을 본문에만 남기지 않는다.
-  - **수정 버전(fixVersions) 기재 ([3.5] 매칭 시):** 매칭된 릴리즈를 `additional_fields`에 `{ "fixVersions": [ { "id": "<versionId>" } ] }`로 넣는다(기존 이슈면 `editJiraIssue.fields`). **이름보다 id 우선**(allowedValues에서). 릴리즈 미정의·"매칭 안 함"이면 필드를 넣지 않는다. 대상은 설정 `fixVersionsTarget`(기본 Sub-task).
+  - **수정 버전(fixVersions) 기재 ([3.5]):** 릴리즈를 `additional_fields`에 `{ "fixVersions": [ { "id": "<versionId>" } ] }`로 넣는다(기존 이슈면 `editJiraIssue.fields`). **이름보다 id 우선**(allowedValues에서). **부모(스토리·작업·버그)와 하위 작업 양쪽에 같은 값**을 넣는다 — 부모가 비어 있었으면 부모도 `editJiraIssue`로 채운다(dry-run에서 승인받은 건에 한해). 사람이 "릴리즈 없이 진행"을 고른 경우에만 필드를 넣지 않는다.
   - **부모 Story/Task 신규 생성**(흐름 3): `issueTypeName`을 결정 타입(Story|Task)으로, `parent`=상위 Epic 키(보통 `수행`)로 둔다. 인스턴스마다 Epic 연결 방식(parent vs epic link 커스텀필드)이 다를 수 있으니 `getJiraIssueTypeMetaWithFields`로 필드를 확인한다.
   - Story/Task 생성 시 시작일·종료일 필수. 종료일은 `additional_fields`의 `duedate`, 시작일은 인스턴스별 커스텀 필드이므로 `getJiraIssueTypeMetaWithFields`로 필드 id를 확인해 `additional_fields`에 넣는다. 날짜 값이 없으면 질문.
 - **DoD 갱신 (기존 이슈 완료/진행 시 — 상태만 바꾸지 말 것):** 전이 전에 대상 이슈 description을 읽어, 이번 작업으로 **충족된 DoD 체크박스를 `- [ ]` → `- [x]`로 갱신**한다(`editJiraIssue`, `contentFormat: "markdown"`). 부분 완료면 충족분만 체크. description에 DoD가 없으면 `references/worklog-templates.md`의 What/Why/How/DoD 템플릿으로 보강 후 체크. **상태(Done) 전이만 하고 DoD를 미체크로 두지 않는다.**

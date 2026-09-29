@@ -71,7 +71,7 @@ Page → Domain Component → Business Hook → Store (Query | UI) → Utils
 
 - **표준 라이브러리**: `react-error-boundary`(Sentry 비의존). react-query 연계는 `useQueryErrorResetBoundary().reset`→`onReset`, `useLocation().key`→`resetKeys`.
 - **쿼리 정책**: `throwOnError`로 경계에 던질지(핵심 데이터)/로컬 처리할지(보조) 명시. 폐기된 v4 `useErrorBoundary` 옵션 금지.
-- **관측 훅 포인트**: 경계 `onError`가 단일 진입점(`reportError`) — Sentry 관측 연동에서 capture를 여기 한 곳에 연결.
+- **관측 훅 포인트**: 경계 `onError`가 단일 진입점(`reportError`) — Sentry 연동에서 capture를 여기 한 곳에 연결.
 - **폴백 키트**: `src/components/error/`(RetryErrorFallback/LocalErrorSection/RootErrorPage) 재사용. 참조 구현: [examples/error/](examples/error/).
 - 상세 분류·코드·연계: [에러 경계 계층](references/error-boundary-layering.md).
 - **관측(Sentry, opt-in)**: 캡처는 경계·캐시 `onError`→`reportError` 단일 진입점. 분류→level/tag/fingerprint 매핑, PII·필터는 init 한 곳. [Sentry 관측 계층](references/sentry-observability.md).
@@ -96,9 +96,11 @@ React Best Practices(vendored)도 함께 등록 — review가 자동 검출하�
 - **business-logic-not-inlined** _(important)_ — ViewModel hook 파일(use*ViewModel.ts)에 순수 transform/계산 함수를 인라인 정의 금지 — <domain>Business.ts로 추출 [상세](patterns/business-logic-not-inlined.md)
 - **business-logic-purity** _(important)_ — 순수 비즈니스 함수는 <domain>Business.ts에 모으고 sibling 단위 테스트 필수 [상세](patterns/business-logic-purity.md)
 - **centralized-query-keys** _(important)_ — queryKey 정의는 src/store/queries/keys.ts 단일 위치, Hook 파일 내 별도 keys export 금지 [상세](patterns/centralized-query-keys.md)
-- **design-fidelity** _(important)_ — 디자인 충실도: 수거 에셋은 실제 파일로 배선(플레이스홀더 `<img>`·빈 src 금지), 색은 `globals.css @theme` semantic 토큰 클래스로(임의 팔레트 `bg-blue-500` 금지). 테마 물질화 누락·매니페스트 미배선은 reviewer 크로스파일 검사 [상세](patterns/design-fidelity.md)
+- **design-fidelity** _(important)_ — 디자인 충실도 — 수거 에셋은 실제 파일로, 색은 디자인 토큰으로(임의 팔레트·플레이스홀더 금지) [상세](patterns/design-fidelity.md)
 - **dto-vs-viewmodel** _(important)_ — View/Domain은 ViewModel(Model) 타입만 사용, DTO 타입 import 금지 [상세](patterns/dto-vs-viewmodel.md)
 - **error-boundary-required** _(important)_ — Page는 자식을 최소 1개 ErrorBoundary로 감싼다 — 렌더 중 throw를 선언적으로 잡아 폴백 UI로 (react-error-boundary) [상세](patterns/error-boundary-required.md)
+- **interactive-a11y** _(important)_ — onClick을 가진 비버튼/비링크 요소는 role=button·tabIndex=0·Enter/Space 키 핸들러 3종을 갖춘다 [상세](patterns/interactive-a11y.md)
+- **list-empty-state** _(important)_ — 배열 .map 렌더와 로딩 분기를 가진 목록 컴포넌트는 '비어 있고 로딩 아님' 상태의 빈 상태 UI(안내 문구)를 갖춘다 [상세](patterns/list-empty-state.md)
 - **modal-management** _(important)_ — 모달은 nice-modal-react로 중앙 관리 — id 상수(src/modals/ids.ts) + 등록(src/modals/registry)만, 컴포넌트는 id로 show/resolve. 컴포넌트별 isOpen useState 분산 금지 [상세](patterns/modal-management.md)
 - **no-hardcoded-design-values** _(important)_ — 생짜 hex 금지 — 토큰(CSS변수/Tailwind scale) 사용 [상세](patterns/no-hardcoded-design-values.md)
 - **no-imperative-error-branch** _(important)_ — 에러를 명령형으로 처리 금지 — fetcher/컴포넌트에서 navigate('/error')·history.push('/error')로 라우팅하지 말고 ErrorBoundary에 위임 [상세](patterns/no-imperative-error-branch.md)
@@ -109,6 +111,8 @@ React Best Practices(vendored)도 함께 등록 — review가 자동 검출하�
 - **view-styling** _(important)_ — Tailwind 유틸리티 + cn()로 스타일링, inline style={{}}는 동적 값 한정 [상세](patterns/view-styling.md)
 - **where-does-business-logic-go** _(important)_ — Business Hook=ViewModel 가공, Store Query=fetching, View=렌더링 — 레이어 책임 위반 금지 [상세](patterns/where-does-business-logic-go.md)
 - **adding-business-params** _(minor)_ — limit/sort 같은 비즈니스 파라미터는 Page에서 선언 → Business Hook param으로 전달, 내부 하드코딩 금지 [상세](patterns/adding-business-params.md)
+- **decision-log-format** _(minor)_ — Business Hook의 결정 로그 주석은 제목 줄 + 시간순 `- YYYY-MM · 출처: 무엇을. 왜.` 형식 — 이유 없는 출처 표기 금지 [상세](patterns/decision-log-format.md)
+- **decision-log-scope** _(minor)_ — 결정 로그 주석은 Business Hook에만 — View/Domain Component/Store Query/Page에는 쓰지 않는다 [상세](patterns/decision-log-scope.md)
 - **fallback-escalation** _(minor)_ — 로컬 폴백은 자기 책임 밖 에러를 rethrow해 상위 경계로 위임 — 모든 에러를 같은 자리에서 삼키지 않는다 [상세](patterns/fallback-escalation.md)
 - **sentry-breadcrumb-no-pii** _(minor)_ — 커스텀 브레드크럼 data에는 식별용 값(id)만 — 이름·이메일·본문 등 개인정보(PII) 금지 [상세](patterns/sentry-breadcrumb-no-pii.md)
 
@@ -133,6 +137,23 @@ mutation.onMutate(...)
 enabled: id > 0,
 ```
 
+### 결정 로그 — 비즈니스 로직에만
+
+`src/business/hooks/**` 의 비즈니스 훅은 규칙이 **왜 이렇게 변해왔는지**를 함수 위 누적 블록으로 남긴다.
+
+```ts
+/**
+ * 무료 취소 한도: 출발 48시간 전까지
+ * - 2026-01 · 초기: 24시간 전까지. 경쟁사 기준을 따름
+ * - 2026-05 · PROJ-108(CS팀): 48시간으로 늘림.
+ *   24시간 기준에서 취소 분쟁 문의가 전체 인입의 3할을 차지했음.
+ */
+```
+
+첫 줄은 현재 규칙이며 규칙이 바뀌면 갱신한다. 항목은 시간순이고 이유가 없으면 위반이다. 다른 레이어(View·Domain Component·Store Query·Page)에는 쓰지 않는다.
+
+전체 규칙: [결정 로그 주석](../../docs/refs/decision-log-comments.md)
+
 ### 쓰지 않는 경우
 
 ```ts
@@ -147,9 +168,9 @@ const { data } = useUserListQuery();
 |---|---|
 | 라인바이라인 단계 설명 (`// 반환`, `// 실행`) | WHAT은 코드가 말함 |
 | 함수/변수명 반복 (`// 유저 카드 렌더링` → `UserCard`) | 중복 |
-| 태스크/PR 참조 (`// GNB 이슈 수정`) | 커밋 메시지에 속함, 코드에서 썩음 |
+| 태스크/PR 참조 (`// GNB 이슈 수정`) | 커밋 메시지에 속함, 코드에서 썩음. 단, 결정 로그 항목에서 **이유를 보강하는** 출처 표기는 예외 |
 
-**한 줄 원칙: WHY가 non-obvious할 때만, WHAT은 절대 쓰지 않는다.**
+**한 줄 원칙: WHY가 non-obvious할 때만, WHAT은 절대 쓰지 않는다.** 비즈니스 로직 레이어에서는 WHY에 "왜 바뀌었나"까지 포함한다.
 
 ## 활성화 조건
 

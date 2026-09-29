@@ -70,7 +70,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 - **타입/nullable 출처 규칙(D6) — 환각 최위험:** 우선순위 ① 원본 명시값 → ② 기존 코드/ERD 추론(있으면) → ③ §3 협의(기능 그룹 단위) → ④ 못 풀면 미해소(D5). **결정론 도출 근거(컨벤션 같은)가 없으면 LLM 단독 단정 금지 — §3로 보낸다.** nullable/required는 DM이 아니라 *IF 행*에 방향(요청/응답)별로 둔다.
 - **DM-n 공유 shape 추출(D3):** IF 요청/응답에 *실제 등장한* 핵심 엔티티의 필드명+기본 타입만 `DM-n`으로 담는다(추측 엔티티 금지). 예: `Image { id:number, titleKo:string, material:string }`. nullable/required는 DM이 아니라 IF 행이 방향별 소유. **DM↔IF 양방향 링크**(DM 행에 사용 IF id, IF 행에 참조 DM id) — shape 변경 시 영향 IF 추적. 풀 저장구조(테이블·인덱스·FK·관계)는 BE(dt-bespec) 소관 → 안 담음.
 - **SP↔IF 양방향 링크(D2):** SP 행에 관련 IF id, IF 행에 from-SP를 명시. SP 변경 → 영향 IF를 기계 추적(`<!-- from: -->` 역참조 체계와 일관).
-- **출처 deep-link(D10):** 각 IF 행에 deep-read 원본 **화면 프레임** node-id 링크 `https://figma.com/design/{fileKey}/{fileName}?node-id={node-id}`(`:`→`-`), 표엔 `[SCR_XXX_01](…)`로 슬림 표기. 다중 Figma 소스면 IF별 fileKey 보관(전역 단일 가정 금지). 비-Figma 출처(문서/PDF/웹)는 범용 표기(`app-spec.md §3.2`). IF 없는 순수 UI SP만 SP 행에 직접 링크(D2 폴백).
+- **출처 deep-link(D10):** 각 IF 행에 deep-read 원본 **화면 프레임** node-id 링크 `https://figma.com/design/{fileKey}/{fileName}?node-id={node-id}`(`:`→`-`), 표엔 `[SCR_XXX_01](…)`로 슬림 표기. 다중 Figma 소스면 IF별 fileKey 보관(전역 단일 가정 금지). 비-Figma 출처(문서/PDF/웹)는 범용 표기(`mvi-spec.md §3.2`). IF 없는 순수 UI SP만 SP 행에 직접 링크(D2 폴백).
 
 ### 2.5 충실도·협의 완전성 검증 (자동 정제 게이트)
 §2의 SP/IF 초안을 사용자에게 제시(§3)하기 **전**, §1에서 확보한 **입력 원본**(Figma=deep-read 텍스트 / 문서=파싱 텍스트 / 혼합=둘 다)을 ground truth로 삼아 산출물 충실도와 협의 완전성을 검증·자동 정제한다.

@@ -22,7 +22,7 @@ Result: **OK** — git init succeeded (40 files committed), pnpm install succeed
 ## Phase 0: Worktree creation
 
 ```bash
-node <프로젝트 경로>/skills/dt-frontend-scaffold/scripts/worktree.mjs create test-comments
+node /Users/chaeseungpyo/projects/dt-frontend/skills/dt-frontend-scaffold/scripts/worktree.mjs create test-comments
 ```
 
 Output:

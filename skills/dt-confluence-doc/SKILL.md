@@ -34,7 +34,7 @@ description: Use when the user wants to write a Confluence document from their d
 
 ### 2. 수집 (Collect)
 - meeting: 사용자 수동/회의 입력(필요 시 `--note`).
-- worklog: `git log/diff`(기간) + 현재 세션 + Jira(관련 프로젝트, 예: PROJ) `searchJiraIssuesUsingJql`.
+- worklog: `git log/diff`(기간) + 현재 세션 + Jira(관련 프로젝트, 예: SAP) `searchJiraIssuesUsingJql`.
 - techdoc: git/세션 + 수동.
 - retro: `git log`(기간/태그) + Jira.
 - 기간/대상/참석자 등 불명확하면 질문.
@@ -67,7 +67,7 @@ description: Use when the user wants to write a Confluence document from their d
 
 #### 표준 역링크 코멘트 포맷
 - `📄 관련 문서: [{문서 제목}]({Confluence URL}) ({타입} · {작성일})`
-- 예: `📄 관련 문서: [5월 4주차 작업 요약](https://your-site.atlassian.net/wiki/spaces/PROJ/pages/12345) (worklog · 2026-06-05)`
+- 예: `📄 관련 문서: [5월 4주차 작업 요약](https://your-site.atlassian.net/wiki/spaces/SAP/pages/12345) (worklog · 2026-06-05)`
 
 ## MCP 도구 매핑
 | 동작 | 도구 |

@@ -43,7 +43,7 @@
 
 ## 대조 차원 (diff에 반드시 포함할 계약 요소)
 
-IF 행 수준(method·path·존재 여부)만 diff하면 내용 드리프트가 샌다 — 실측 프로젝트 사례:
+IF 행 수준(method·path·존재 여부)만 diff하면 내용 드리프트가 샌다 — mvi 실측:
 정의서 IF-1은 DM-1 전체 필드인데 auth api-contract는 축소 shape(4필드)로 작성돼 통과,
 IF-17 "최신순"은 comments api-contract에 정렬 자체가 누락된 채 통과. 그래서 diff는 최소
 다음 차원을 포함한다:

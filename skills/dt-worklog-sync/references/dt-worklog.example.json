@@ -16,6 +16,5 @@
   "issueKeyPattern": "[A-Z][A-Z0-9]+-\\d+",
   "outputFieldName": "산출물",
   "outputFieldId": "REPLACE_OR_OMIT — 산출물 커스텀 필드 id(예: customfield_10731). 생략 시 getJiraIssueTypeMetaWithFields로 outputFieldName 매칭해 발견",
-  "gitWebBaseUrl": "OMIT — 생략 시 origin 리모트에서 도출(ssh→https, GitLab /-/commit/·/-/merge_requests/). 리모트와 다른 웹호스트일 때만 지정(예: https://git.example.com/your-group/your-repo)",
-  "fixVersionsTarget": "subtask"
+  "gitWebBaseUrl": "OMIT — 생략 시 origin 리모트에서 도출(ssh→https, GitLab /-/commit/·/-/merge_requests/). 리모트와 다른 웹호스트일 때만 지정(예: https://git.example.com/rnd_dev/dt_development)"
 }

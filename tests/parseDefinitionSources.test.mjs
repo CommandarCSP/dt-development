@@ -25,7 +25,7 @@ test('parseDefinitionSources: 소스 0개면 에러', () => {
 });
 
 test('discoverLeafSpecs: pages·resources 하위 디렉터리를 leaf-spec으로 발견·태그', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-leaf-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-leaf-'));
   mkdirSync(join(root, 'docs', 'specs', 'pages', 'login'), { recursive: true });
   mkdirSync(join(root, 'docs', 'specs', 'resources', 'orders'), { recursive: true });
   const found = discoverLeafSpecs({ projectRoot: root });
@@ -37,19 +37,19 @@ test('discoverLeafSpecs: pages·resources 하위 디렉터리를 leaf-spec으로
 });
 
 test('discoverLeafSpecs: pages/resources 없으면 빈 배열(에러 아님)', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-leaf-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-leaf-'));
   assert.deepEqual(discoverLeafSpecs({ projectRoot: root }), []);
   rmSync(root, { recursive: true, force: true });
 });
 
 test('discoverDefinitions: 정의서 없으면 빈 배열', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   assert.deepEqual(discoverDefinitions({ projectRoot: root }), []);
   rmSync(root, { recursive: true, force: true });
 });
 
 test('discoverDefinitions: bare definition.md → scope null', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'definition.md'), '# x');
   const found = discoverDefinitions({ projectRoot: root });
@@ -60,7 +60,7 @@ test('discoverDefinitions: bare definition.md → scope null', () => {
 });
 
 test('discoverDefinitions: scoped definition.backoffice.md → scope backoffice', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'definition.backoffice.md'), '# x');
   const found = discoverDefinitions({ projectRoot: root });
@@ -71,7 +71,7 @@ test('discoverDefinitions: scoped definition.backoffice.md → scope backoffice'
 });
 
 test('discoverDefinitions: bare + 다중 scoped 공존', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'definition.md'), '# x');
   writeFileSync(join(root, 'docs', 'specs', 'definition.backoffice.md'), '# x');
@@ -87,7 +87,7 @@ test('discoverDefinitions: bare + 다중 scoped 공존', () => {
 });
 
 test('discoverDefinitions: docs/specs 있으나 definition* 없으면 빈 배열', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'spec.md'), '# x');
   assert.deepEqual(discoverDefinitions({ projectRoot: root }), []);
@@ -95,7 +95,7 @@ test('discoverDefinitions: docs/specs 있으나 definition* 없으면 빈 배열
 });
 
 test('discoverDefinitions: 후행 대시 슬러그(definition.x-.md)는 제외', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'definition.x-.md'), '# x');
   writeFileSync(join(root, 'docs', 'specs', 'definition.a.md'), '# x'); // 단일 문자 슬러그는 유효
@@ -107,7 +107,7 @@ test('discoverDefinitions: 후행 대시 슬러그(definition.x-.md)는 제외',
 });
 
 test('discoverDefinitions: 비대상 파일(.bak·다른 md) 제외', () => {
-  const root = mkdtempSync(join(tmpdir(), 'def-src-'));
+  const root = mkdtempSync(join(tmpdir(), 'dtdev-def-'));
   mkdirSync(join(root, 'docs', 'specs'), { recursive: true });
   writeFileSync(join(root, 'docs', 'specs', 'definition.md'), '# x');
   writeFileSync(join(root, 'docs', 'specs', 'definition.md.bak'), '# x');

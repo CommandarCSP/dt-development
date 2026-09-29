@@ -20,9 +20,9 @@ const PAGE = {
   total: 3,
   isLast: true,
   values: [
-    { id: '10001', key: 'PROJ', name: '[ACME] 주문 관리', projectCategory: { name: '2026년' } },
-    { id: '10002', key: 'SHOP', name: '[ACME] 쇼핑몰 개편', projectCategory: { name: '2026년' } },
-    { id: '10042', key: 'PORT', name: 'ACME_Portfolio', projectCategory: { name: 'In-house' } },
+    { id: '11780', key: 'SAP', name: '[SKHY] AI PoC 과제', projectCategory: { name: '2026년' } },
+    { id: '12144', key: 'S3W', name: '[SKHY] 3D Wafermap 개발', projectCategory: { name: '2026년' } },
+    { id: '10042', key: 'PORT', name: 'HNINE_Portfolio', projectCategory: { name: 'In-house' } },
   ],
 };
 const SITE = 'your-site.atlassian.net';
@@ -30,7 +30,7 @@ const SITE = 'your-site.atlassian.net';
 test('extractProjects normalizes a single-page response', () => {
   const got = extractProjects(PAGE);
   assert.equal(got.length, 3);
-  assert.deepEqual(got[0], { id: '10001', key: 'PROJ', name: '[ACME] 주문 관리', category: '2026년' });
+  assert.deepEqual(got[0], { id: '11780', key: 'SAP', name: '[SKHY] AI PoC 과제', category: '2026년' });
 });
 
 test('extractProjects flattens an array of page responses', () => {
@@ -43,7 +43,7 @@ test('extractProjects flattens an array of page responses', () => {
 test('extractProjects accepts an already-flat values array', () => {
   const got = extractProjects(PAGE.values);
   assert.equal(got.length, 3);
-  assert.equal(got[1].key, 'SHOP');
+  assert.equal(got[1].key, 'S3W');
 });
 
 test('extractProjects throws on unrecognized shape', () => {
@@ -52,11 +52,11 @@ test('extractProjects throws on unrecognized shape', () => {
 
 test('sortByRecency orders by numeric id descending (newest first)', () => {
   const sorted = sortByRecency(extractProjects(PAGE));
-  assert.deepEqual(sorted.map((p) => p.key), ['SHOP', 'PROJ', 'PORT']);
+  assert.deepEqual(sorted.map((p) => p.key), ['S3W', 'SAP', 'PORT']);
 });
 
 test('browseUrl builds the site browse link', () => {
-  assert.equal(browseUrl(SITE, 'PROJ'), 'https://your-site.atlassian.net/browse/PROJ');
+  assert.equal(browseUrl(SITE, 'SAP'), 'https://your-site.atlassian.net/browse/SAP');
 });
 
 test('renderTable outputs a newest-first lightweight table with URLs', () => {
@@ -64,19 +64,19 @@ test('renderTable outputs a newest-first lightweight table with URLs', () => {
   const lines = table.split('\n');
   assert.equal(lines[0], '| 키 | 이름 | URL |');
   assert.equal(lines[1], '|---|---|---|');
-  assert.equal(lines[2], '| SHOP | [ACME] 쇼핑몰 개편 | https://your-site.atlassian.net/browse/SHOP |');
-  assert.equal(lines[3], '| PROJ | [ACME] 주문 관리 | https://your-site.atlassian.net/browse/PROJ |');
-  assert.equal(lines[4], '| PORT | ACME_Portfolio | https://your-site.atlassian.net/browse/PORT |');
+  assert.equal(lines[2], '| S3W | [SKHY] 3D Wafermap 개발 | https://your-site.atlassian.net/browse/S3W |');
+  assert.equal(lines[3], '| SAP | [SKHY] AI PoC 과제 | https://your-site.atlassian.net/browse/SAP |');
+  assert.equal(lines[4], '| PORT | HNINE_Portfolio | https://your-site.atlassian.net/browse/PORT |');
   assert.ok(!table.includes('avatar'), 'avatarUrls가 새어나오면 안 된다');
 });
 
 test('parseKeyInput uppercases a bare key and trims', () => {
-  assert.equal(parseKeyInput(' proj '), 'PROJ');
+  assert.equal(parseKeyInput(' sap '), 'SAP');
 });
 
 test('parseKeyInput extracts the key from a browse URL', () => {
-  assert.equal(parseKeyInput('https://your-site.atlassian.net/browse/SHOP'), 'SHOP');
-  assert.equal(parseKeyInput('https://your-site.atlassian.net/browse/PROJ?filter=1'), 'PROJ');
+  assert.equal(parseKeyInput('https://your-site.atlassian.net/browse/S3W'), 'S3W');
+  assert.equal(parseKeyInput('https://your-site.atlassian.net/browse/SAP?filter=1'), 'SAP');
 });
 
 test('parseKeyInput returns empty string for nullish input', () => {
@@ -86,8 +86,8 @@ test('parseKeyInput returns empty string for nullish input', () => {
 
 test('validateKey returns the matching project for a key or URL', () => {
   const projects = extractProjects(PAGE);
-  assert.equal(validateKey(projects, 'proj').key, 'PROJ');
-  assert.equal(validateKey(projects, 'https://your-site.atlassian.net/browse/SHOP').key, 'SHOP');
+  assert.equal(validateKey(projects, 'sap').key, 'SAP');
+  assert.equal(validateKey(projects, 'https://your-site.atlassian.net/browse/S3W').key, 'S3W');
 });
 
 test('validateKey returns null for an unknown key', () => {
@@ -113,15 +113,15 @@ test('CLI table mode prints the newest-first table', () => {
     const r = spawnSync('node', [CLI, 'table', file, SITE], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     const lines = r.stdout.trim().split('\n');
-    assert.equal(lines[2], '| SHOP | [ACME] 쇼핑몰 개편 | https://your-site.atlassian.net/browse/SHOP |');
+    assert.equal(lines[2], '| S3W | [SKHY] 3D Wafermap 개발 | https://your-site.atlassian.net/browse/S3W |');
   });
 });
 
 test('CLI validate mode exits 0 and echoes the key for a known project', () => {
   withDump((file) => {
-    const r = spawnSync('node', [CLI, 'validate', file, 'proj'], { encoding: 'utf8' });
+    const r = spawnSync('node', [CLI, 'validate', file, 'sap'], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
-    assert.equal(r.stdout.trim(), 'PROJ');
+    assert.equal(r.stdout.trim(), 'SAP');
   });
 });
 
@@ -149,8 +149,8 @@ test('buildConfig injects key/site/cloudId and preserves the rest of the example
     site: 'placeholder', cloudId: 'placeholder', defaultProjectKey: 'REPLACE',
     issueTypeNames: { story: '스토리' }, issueKeyPattern: 'X',
   };
-  const cfg = buildConfig(example, 'PROJ', 'your-site.atlassian.net', 'cloud-123');
-  assert.equal(cfg.defaultProjectKey, 'PROJ');
+  const cfg = buildConfig(example, 'SAP', 'your-site.atlassian.net', 'cloud-123');
+  assert.equal(cfg.defaultProjectKey, 'SAP');
   assert.equal(cfg.site, 'your-site.atlassian.net');
   assert.equal(cfg.cloudId, 'cloud-123');
   assert.deepEqual(cfg.issueTypeNames, { story: '스토리' });
@@ -195,11 +195,11 @@ function withSetupEnv(fn) {
 
 test('CLI setup writes the three config files into the consumer root', () => {
   withSetupEnv((root, dump) => {
-    const r = spawnSync('node', [CLI, 'setup', dump, 'proj', SITE, 'cloud-123', root], { encoding: 'utf8' });
+    const r = spawnSync('node', [CLI, 'setup', dump, 'sap', SITE, 'cloud-123', root], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes('[ACME] 주문 관리'), '성공 출력에 프로젝트 이름이 보여야 한다');
+    assert.ok(r.stdout.includes('[SKHY] AI PoC 과제'), '성공 출력에 프로젝트 이름이 보여야 한다');
     const cfg = JSON.parse(readFileSync(join(root, '.dt-worklog.json'), 'utf8'));
-    assert.equal(cfg.defaultProjectKey, 'PROJ');
+    assert.equal(cfg.defaultProjectKey, 'SAP');
     assert.equal(cfg.site, SITE);
     assert.equal(cfg.cloudId, 'cloud-123');
     assert.ok(cfg.issueTypeNames, 'example의 issueTypeNames가 보존돼야 한다');
@@ -221,7 +221,7 @@ test('CLI setup exits 1 for an unknown key and writes no config', () => {
 test('CLI setup preserves an existing .dt-worklog.local.json (lastSyncSha kept)', () => {
   withSetupEnv((root, dump) => {
     writeFileSync(join(root, '.dt-worklog.local.json'), JSON.stringify({ lastSyncSha: 'abc123' }));
-    const r = spawnSync('node', [CLI, 'setup', dump, 'PROJ', SITE, 'cloud-123', root], { encoding: 'utf8' });
+    const r = spawnSync('node', [CLI, 'setup', dump, 'SAP', SITE, 'cloud-123', root], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     const local = JSON.parse(readFileSync(join(root, '.dt-worklog.local.json'), 'utf8'));
     assert.equal(local.lastSyncSha, 'abc123');
@@ -230,7 +230,7 @@ test('CLI setup preserves an existing .dt-worklog.local.json (lastSyncSha kept)'
 
 test('CLI setup exits 1 when required args are missing', () => {
   withSetupEnv((root, dump) => {
-    const r = spawnSync('node', [CLI, 'setup', dump, 'PROJ'], { encoding: 'utf8' });
+    const r = spawnSync('node', [CLI, 'setup', dump, 'SAP'], { encoding: 'utf8' });
     assert.equal(r.status, 1);
   });
 });

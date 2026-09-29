@@ -553,3 +553,50 @@ test('CLI: 모르는 플래그는 usage 와 exit 2', () => {
   assert.match(r.stderr, /^Usage: node scripts\/guide\/capture\.mjs/);
   assert.equal(r.stdout, '');
 });
+
+/**
+ * selector 는 **대기용**이고 자르기는 `crop` 이 따로 정한다.
+ *
+ * 예전에는 하나가 둘을 겸해서, 화면이 뜨기를 기다리려고 `selector: main` 을
+ * 적으면 그림도 그 요소만 잘려 나왔다. 실제 실행에서 창 전체를 찍으려고
+ * `selector: body` 로 덮어써야 했다 — 대기 대상과 찍을 범위는 다른 것이다.
+ */
+test('runCaptures: selector 는 대기에만 쓰고 그림은 창 전체를 찍는다', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cap-crop-'));
+  mkdirSync(join(dir, 'docs/guide'), { recursive: true });
+  const shots = [];
+  const texts = [];
+  const driver = {
+    async start() {}, async goto() {}, async waitFor() {},
+    async screenshot(path, opts) { shots.push(opts); writeFileSync(path, 'png'); },
+    async text(sel) { texts.push(sel); return '본문'; },
+    async close() {},
+  };
+  const plan = [{ id: 'SCR-a', mode: 'auto', route: '/', needs: [], selector: 'main' }];
+  await runCaptures({ projectRoot: dir, plan, config: { states: {}, screens: {} }, driver });
+
+  assert.equal(shots[0].selector, undefined, 'selector 가 자르기에 새어 들어갔다');
+  assert.equal(texts[0], undefined, '검사용 글자는 그림과 같은 범위에서 떠야 한다');
+});
+
+test('runCaptures: crop 을 주면 그 범위만 찍고 글자도 같은 범위에서 뜬다', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cap-crop2-'));
+  mkdirSync(join(dir, 'docs/guide'), { recursive: true });
+  const shots = [];
+  const texts = [];
+  const waits = [];
+  const driver = {
+    async start() {}, async goto() {},
+    async waitFor(sel) { waits.push(sel); },
+    async screenshot(path, opts) { shots.push(opts); writeFileSync(path, 'png'); },
+    async text(sel) { texts.push(sel); return '본문'; },
+    async close() {},
+  };
+  const plan = [{ id: 'SCR-a', mode: 'auto', route: '/', needs: [], selector: 'main' }];
+  const config = { states: {}, screens: { 'SCR-a': { crop: '#panel' } } };
+  await runCaptures({ projectRoot: dir, plan, config, driver });
+
+  assert.equal(waits[0], 'main', '대기는 여전히 selector 로 한다');
+  assert.equal(shots[0].selector, '#panel');
+  assert.equal(texts[0], '#panel');
+});

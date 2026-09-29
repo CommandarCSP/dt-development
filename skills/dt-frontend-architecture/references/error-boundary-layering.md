@@ -63,10 +63,10 @@ export function ApiErrorBoundary({ children }: { children: React.ReactNode }) {
 
 쿼리 측은 [[query-error-policy]]에 따라 `throwOnError`로 경계에 던질지(핵심 데이터) 로컬 처리할지(보조 데이터) 명시한다.
 
-## 4. onError 훅 포인트
+## 4. onError 훅 포인트 (관측 도구 연동 대비)
 
 모든 경계는 `onError={reportError}`로 단일 진입점을 호출한다. `reportError`([`examples/error/classifyError.ts`](../examples/error/classifyError.ts))는
-기본은 콘솔 로깅이며, Sentry 연동 시 이 한 곳에 `Sentry.captureException(error, { contexts, tags, fingerprint })`를
+기본은 콘솔 로깅이며, 관측 도구 연동에서 이 한 곳에 `Sentry.captureException(error, { contexts, tags, fingerprint })`를
 연결하면 관측·책임소재 자동화가 배선된다. 컴포넌트마다 capture를 흩뿌리지 않는다.
 
 ## 5. 폴백 키트 (참조 구현)

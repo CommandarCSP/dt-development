@@ -26,7 +26,7 @@ function stampReview(dir) {
 }
 
 // PDF smoke 는 playwright 패키지와 **내려받은 chromium 실행 파일**이 둘 다 있을 때만 돈다(없으면 skip — `npx playwright install chromium`).
-const PLAYWRIGHT_FROM = process.env.DT_GUIDE_PW_FROM ?? fileURLToPath(new URL('../../sample-app/', import.meta.url));   // 레포 안 상대 경로 — 없으면 아래 chromiumReady 가 false 라 skip
+const PLAYWRIGHT_FROM = process.env.DT_GUIDE_PW_FROM ?? fileURLToPath(new URL('../../mvi/', import.meta.url));   // 레포 안 상대 경로 — 없으면 아래 chromiumReady 가 false 라 skip
 const chromiumReady = (() => {
   try { return existsSync(loadChromium(PLAYWRIGHT_FROM).executablePath()); } catch { return false; }
 })();
@@ -74,7 +74,7 @@ test('runGate: 그림 옆 .txt 에 개인정보가 있으면 G6 로 막는다 �
   const g6 = r.findings.filter((f) => f.gate === 'G6');
   assert.equal(g6.length, 1);
   assert.match(g6[0].message, /SCR-home/);
-  assert.match(g6[0].message, /someone@example\.com/);
+  assert.match(g6[0].message, /someone\@example\.com/);
 });
 test('runGate: allowInShots 에 적으면 그 값은 통과한다', () => {
   const dir = tmpProject();

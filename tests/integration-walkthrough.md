@@ -4,7 +4,7 @@
 
 ## 환경
 
-- 별도 테스트 프로젝트 (예: `~/projects/sample-app`)
+- 별도 테스트 프로젝트 (예: `~/projects/dt_development/mvi`)
 - dt-spec 플러그인 로드 완료
 - Figma MCP 연결 + LoginPage용 디자인/와이어프레임 node id 확보
 

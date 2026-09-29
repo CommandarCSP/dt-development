@@ -6,7 +6,7 @@ import { parseInventory, publishedItems } from '../scripts/guide/inventory.mjs';
 const SAMPLE = `---
 version: 0.3.3
 type: electron
-product: Acme Notes
+product: Strata
 stack:
   router: none
   auth: [claude-code-oauth]
@@ -62,7 +62,7 @@ test('splitFrontMatter: front matter 없으면 null', () => {
 test('parseInventory: ok — 필수 필드와 id 규칙', () => {
   const r = parseInventory(WITH_CHAT);
   assert.equal(r.kind, 'ok');
-  assert.equal(r.inventory.product, 'Acme Notes');
+  assert.equal(r.inventory.product, 'Strata');
   assert.equal(r.inventory.screens[2].capture.mode, 'none');
 });
 

@@ -1,4 +1,4 @@
-# ACME JIRA 가이드라인 룰셋 (dt-worklog-sync 참조)
+# HNINE JIRA 가이드라인 룰셋 (dt-worklog-sync 참조)
 
 출처: 사내 "JIRA 사용자 가이드라인 v1.0". 스킬은 이 룰을 강제한다.
 

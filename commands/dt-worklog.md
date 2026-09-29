@@ -1,5 +1,5 @@
 ---
-description: 개발 작업(git + 세션 + 메모)을 ACME JIRA 가이드라인에 맞게 Jira Sub-task로 동기화한다. dry-run 승인 후 생성/상태전이/산출물 첨부. 완료 후 관련 Confluence 문서가 있으면 opt-in으로 Jira 코멘트에 역링크(문서 작성은 안 함).
+description: 개발 작업(git + 세션 + 메모)을 HNINE JIRA 가이드라인에 맞게 Jira Sub-task로 동기화한다. dry-run 승인 후 생성/상태전이/산출물 첨부. 완료 후 관련 Confluence 문서가 있으면 opt-in으로 Jira 코멘트에 역링크(문서 작성은 안 함).
 argument-hint: '[--since <sha|ref>] [--project <KEY>] [--note "<메모>"] [--dry-run]'
 allowed-tools: Read, Write, Edit, Bash, AskUserQuestion, Task, mcp__atlassian__atlassianUserInfo, mcp__atlassian__getAccessibleAtlassianResources, mcp__atlassian__getVisibleJiraProjects, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraIssue, mcp__atlassian__createJiraIssue, mcp__atlassian__getTransitionsForJiraIssue, mcp__atlassian__transitionJiraIssue, mcp__atlassian__addCommentToJiraIssue, mcp__atlassian__addWorklogToJiraIssue, mcp__atlassian__getJiraIssueTypeMetaWithFields, mcp__atlassian__searchConfluenceUsingCql
 ---

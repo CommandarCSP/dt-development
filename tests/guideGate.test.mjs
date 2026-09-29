@@ -17,7 +17,7 @@ covers:
     why: 관리자 전용
 changelogCovers: [작업 트레이 개선]
 ---
-# Acme Notes
+# Strata
 본문.
 `;
 const ITEMS = [
@@ -150,11 +150,11 @@ test('G6 — 그림 속 이메일을 잡는다(내장 패턴, 프로젝트가 �
   assert.equal(f.length, 1);
   assert.equal(f[0].gate, 'G6');
   assert.match(f[0].message, /SCR-settings/);
-  assert.match(f[0].message, /someone@example\.com/);
+  assert.match(f[0].message, /someone\@example\.com/);
 });
 
 test('G6 — 사용자 홈 경로를 잡는다(맥·윈도우 둘 다)', () => {
-  assert.equal(checkShotText({ id: 'A', text: '/Users/me/Desktop/x' }).length, 1);
+  assert.equal(checkShotText({ id: 'A', text: '/Users/chaeseungpyo/Desktop/x' }).length, 1);
   assert.equal(checkShotText({ id: 'B', text: 'C:\\Users\\chae\\Desktop' }).length, 1);
 });
 

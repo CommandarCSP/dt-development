@@ -106,7 +106,7 @@ setupTests에 이미 있음. 빠뜨리지 말 것.
 - [ ] `await expect(locator).toBeVisible()` 사용 (auto-wait)
 - [ ] `page.waitForTimeout(ms)` 금지
 - [ ] 네트워크 응답 대기는 `page.waitForResponse` 또는 MSW로 stub
-- [ ] 드롭다운·팝오버 등 오버레이 항목 클릭 전 `scrollIntoViewIfNeeded()` 또는 뷰포트 내 노출 확인 — 병렬 부하에서 뷰포트 밖 클릭은 간헐 실패한다(실측 확인)
+- [ ] 드롭다운·팝오버 등 오버레이 항목 클릭 전 `scrollIntoViewIfNeeded()` 또는 뷰포트 내 노출 확인 — 병렬 부하에서 뷰포트 밖 클릭은 간헐 실패한다(mvi 실측)
 
 ## 디버깅 팁
 

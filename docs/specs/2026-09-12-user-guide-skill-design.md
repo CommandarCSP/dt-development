@@ -4,11 +4,11 @@
 - 상태: 구현 완료(계획 A·B) — 수용 §11-2 실행 기록은 계획 B Task B6
 - 범위: 웹 프런트(React/Next) + Electron 데스크톱 프로젝트를 분석해 **사외 배포용 한글 사용자 가이드 PDF**를 프로젝트 레포 안에 만든다. 분석(4단계 역추출) · 캡처 · 집필+리뷰 · 조판/PDF/게이트 네 단계.
 - 대상 플러그인: `dt-development` (`plugin/`)
-- 선행: `2026-09-12-ko-writing-discipline-design.md`(한글 규율 — 이 스킬은 그 `ko-writing-reviewer`를 `docType: 'guide'`로 쓴다).
+- 선행: `2026-09-12-ko-writing-discipline-design.md`(한글 규율 — 이 스킬은 그 `ko-writing-reviewer`를 `docType: 'guide'`로 쓴다). 참조 구현 분석: `docs/proposals/2026-09-12-user-guide-pdf-skill.md`(Strata).
 
 ## 1. 목적
 
-제품을 처음 보는 일반 사용자가 읽는 가이드를, 사람이 처음부터 쓰지 않고 **프로젝트를 분석해 초안을 만들고 → 부족한 것만 사람에게 묻고 → 화면을 찍고 → 한글 리뷰를 거쳐 → PDF로 조판**하는 한 명령으로 만든다. 참조 구현은 이 중 조판·게이트만 스크립트로 하고 집필은 사람이 했다. 이 스킬은 앞단(분석·집필)까지 덮고, 조판 엔진은 그 참조 구현을 일반화해 플러그인에 둔다.
+제품을 처음 보는 일반 사용자가 읽는 가이드를, 사람이 처음부터 쓰지 않고 **프로젝트를 분석해 초안을 만들고 → 부족한 것만 사람에게 묻고 → 화면을 찍고 → 한글 리뷰를 거쳐 → PDF로 조판**하는 한 명령으로 만든다. Strata는 이 중 조판·게이트만 스크립트로 하고 집필은 사람이 했다. 이 스킬은 앞단(분석·집필)까지 덮고, 조판 엔진은 Strata 것을 일반화해 플러그인에 둔다.
 
 ## 2. 결정 사항 (브레인스토밍 2026-09-12)
 
@@ -18,15 +18,15 @@
 | **D2** | **역추출은 4단계** — ① 기술 스택 → ② 프로젝트 문서 → ③ 소스코드·주석·**테스트** → ④ 애매한 것만 질문해 확정 | 사용자 제안. 문서를 코드보다 먼저 읽어야 코드 읽기가 검증·보충으로 좁혀진다. 질문은 마지막에 갭·충돌만 — 사용자를 덜 괴롭힌다. 테스트(유닛·통합·E2E)는 "이 기능은 이렇게 동작해야 한다"의 목록이라 누락 잡기에 가장 좋은 소스(사용자 요구) |
 | **D3** | **인벤토리 항목은 시나리오 + 화면 두 층** | 탈락 ① 화면만: 가이드가 화면 설명서가 되어 "그래서 뭘 어떻게 하나"가 약해진다. 탈락 ② 시나리오만: 코드에서 직접 안 뽑혀 문서 없는 프로젝트에서 막힌다. 두 층이면 문서(스토리)와 코드(라우트)가 각각 한 층에 맞고, 가이드가 「기본 사용 흐름」+「화면 안내」 두 절을 가진다 |
 | **D4** | **네 단계가 하나의 산출물 `inventory.md`를 채우고 라벨을 붙인다** — `stack` / `doc:<path>` / `code:<file:line>` / `test:<file>` / `user-confirmed` / `assumed:<사유>`(무인 실행 기본값) | dt-spec의 출처 라벨·dt-explain의 근거 라벨과 같은 방식. 파일로 남겨 재실행 때 diff만 보고, 사람이 고칠 수 있고, 게이트 G2의 왼쪽 항이 된다 |
-| **D5** | **캡처 상태는 레시피 파일(`capture.config.mjs`)을 스캐폴딩하고 사용자가 채운다** | 탈락 ① dt E2E 원장 재사용: E2E 없는 프로젝트에서 방법이 없다. 탈락 ② 공개 화면만 자동: 자동화 가치가 작고 그림이 조용히 낡는다. 레시피는 커밋되어 다음 판에서 재사용(참조 구현의 `manual-shots.spec`과 같은 역할) |
+| **D5** | **캡처 상태는 레시피 파일(`capture.config.mjs`)을 스캐폴딩하고 사용자가 채운다** | 탈락 ① dt E2E 원장 재사용: E2E 없는 프로젝트(Strata 포함)에서 방법이 없다. 탈락 ② 공개 화면만 자동: 자동화 가치가 작고 그림이 조용히 낡는다. 레시피는 커밋되어 다음 판에서 재사용(Strata `manual-shots.spec`과 같은 역할) |
 | **D6** | **화면 목록 뽑기(표면 인벤토리)는 공유 스크립트** `scripts/surfaceInventory.mjs` — 가이드 스킬 3단계와 `auditor`(dt-audit)가 같이 쓴다 | 겹치는 것은 이 한 조각뿐(라우트/창 → 화면 목록). 지금 auditor에는 프롬프트 문장으로만 있어 결과가 매번 다를 수 있다. 탈락 ① auditor를 dispatch해 결과 재사용: auditor는 스펙 없으면 거의 안 돌고 판정 기구가 무겁다, Electron 없음. 탈락 ② 독립 구현: 같은 로직 두 곳 |
-| **D7** | **엔진은 플러그인, 프로젝트에는 내용만** | 탈락 ① 참조 구현식 스캐폴딩: 버그 수정이 프로젝트별로 흩어지고 버전이 갈린다. 탈락 ② 별도 npm 패키지: 배포·사내 레지스트리 문제. 프로젝트에는 `docs/guide/*` 내용만 |
-| **D8** | **PDF는 레포 안 `docs/guide/<제품명>-User-Guide.pdf`에 내고 git에 커밋한다** | 사용자 요구("레포 내부에 가이드가 떨어져서 바로 보거나 이후 업로드"). `release/`는 보통 gitignore라 레포에서 안 보인다. 파일명은 버전 없는 ASCII(참조 구현 D4 승계 — `releases/latest/download/…` 고정 링크, 한글·공백 파일명 사고 회피) |
+| **D7** | **엔진은 플러그인, 프로젝트에는 내용만** | 탈락 ① Strata식 스캐폴딩: 버그 수정이 프로젝트별로 흩어지고 버전이 갈린다. 탈락 ② 별도 npm 패키지: 배포·사내 레지스트리 문제. 프로젝트에는 `docs/guide/*` 내용만 |
+| **D8** | **PDF는 레포 안 `docs/guide/<제품명>-User-Guide.pdf`에 내고 git에 커밋한다** | 사용자 요구("레포 내부에 가이드가 떨어져서 바로 보거나 이후 업로드"). `release/`는 보통 gitignore라 레포에서 안 보인다. 파일명은 버전 없는 ASCII(Strata D4 승계 — `releases/latest/download/…` 고정 링크, 한글·공백 파일명 사고 회피) |
 | **D9** | **4단계에 「준비물 체크리스트」를 고정으로 둔다** — 코드·문서에 없는데 가이드에 보통 들어가는 것을 한 번에 묻는다 | 사용자 요구. 항목은 §5-4 표. 코드·문서에서 찾은 것은 채우고 못 찾은 것만 묶어 한 번 묻는다 |
 | **D10** | **캡처 모드는 화면별 `auto` / `manual` / `none`** — 서드파티 로그인·외부 리다이렉트처럼 못 찍는 화면은 사용자에게 받거나(manual) 글로만 안내(none) | 사용자 요구. analyze가 OAuth·외부 URL을 감지하면 후보로 표시하고 4단계에서 확정. 가이드 본문에는 그림 대신 안내 문장이 들어간다 |
 | **D11** | **사람 체크포인트는 두 개** — 인벤토리 승인, 초안 승인 | 인벤토리가 틀리면 그 뒤가 전부 헛일이고 초안은 사람이 읽어야 한다. 캡처·빌드는 기계 일이라 멈추지 않는다 |
 | **D12** | **무거운 분석·집필은 격리 워커, 질문은 조율자** — `guide-analyst`·`guide-author` 에이전트 신설 | `orchestration-policy.md` 원칙 2·3. 워커는 `needsDecision`으로 올리고 조율자가 `askquestion-principle.md` 형식으로 묻는다(dt-spec과 같은 계약) |
-| **D13** | **범용성 원칙 — 스크립트는 힌트, 판단은 스킬 지침을 따르는 AI. 특정 프로젝트에 의존하지 않는다** | 사용자 강조(2026-09-12: "내부에 어떤 라우팅을 사용했는지 알 수가 없고 그때마다 AI가 스킬의 지침에 따라 판단해야 한다… [참조 구현] 같은 특정 프로젝트가 예시는 될 수 있어도 거기에만 의존해서는 안 됨"). 웹·Electron이라는 타입은 알아도 프로젝트마다 라우팅·화면 전환·인증·기동 방식이 다르다. 그래서 (a) `surfaceInventory.mjs`는 아는 패턴만 결정적으로 뽑고 모르면 `router: unknown` + `hints`로 **모른다고 말한다**, (b) 스킬 3단계 지침은 스크립트 결과를 출발점으로만 쓰고 **AI가 진입 파일부터 import를 따라가 화면 전환 방식을 직접 찾아** `stack.router: custom — <설명>`으로 기록하게 한다, (c) 스크립트 결과가 있어도 빠진 화면이 없는지 AI가 코드로 검증한다, (d) 참조 구현·sample-app은 예시·실측 대상일 뿐 수용 기준의 정의가 아니며 픽스처에 미지원 패턴(vue-router) 케이스를 둔다. 새 패턴을 만나 감지기를 더하는 것은 후속 개선이고, 감지기가 없어도 스킬은 완결 동작해야 한다(`skill-sdd-layering.md` 원칙 1과 같은 태도) |
+| **D13** | **범용성 원칙 — 스크립트는 힌트, 판단은 스킬 지침을 따르는 AI. 특정 프로젝트에 의존하지 않는다** | 사용자 강조(2026-09-12: "내부에 어떤 라우팅을 사용했는지 알 수가 없고 그때마다 AI가 스킬의 지침에 따라 판단해야 한다… Strata 같은 특정 프로젝트가 예시는 될 수 있어도 거기에만 의존해서는 안 됨"). 웹·Electron이라는 타입은 알아도 프로젝트마다 라우팅·화면 전환·인증·기동 방식이 다르다. 그래서 (a) `surfaceInventory.mjs`는 아는 패턴만 결정적으로 뽑고 모르면 `router: unknown` + `hints`로 **모른다고 말한다**, (b) 스킬 3단계 지침은 스크립트 결과를 출발점으로만 쓰고 **AI가 진입 파일부터 import를 따라가 화면 전환 방식을 직접 찾아** `stack.router: custom — <설명>`으로 기록하게 한다, (c) 스크립트 결과가 있어도 빠진 화면이 없는지 AI가 코드로 검증한다, (d) Strata·mvi는 예시·실측 대상일 뿐 수용 기준의 정의가 아니며 픽스처에 미지원 패턴(vue-router) 케이스를 둔다. 새 패턴을 만나 감지기를 더하는 것은 후속 개선이고, 감지기가 없어도 스킬은 완결 동작해야 한다(`skill-sdd-layering.md` 원칙 1과 같은 태도) |
 
 ## 3. 산출물
 
@@ -40,8 +40,8 @@
 | `agents/guide-analyst.md` | 1~3단계 격리 워커 → `{ inventory, needsDecision[], summary }` | 신규 |
 | `agents/guide-author.md` | 집필 워커 → `{ draft, coverage, summary }` | 신규 |
 | `scripts/surfaceInventory.mjs` + `tests/surfaceInventory.test.mjs` | 웹·Electron 화면 목록 결정적 추출(공유) | 신규 |
-| `scripts/guide/gate.mjs` · `assemble.mjs` · `build.mjs` · `capture.mjs` + 테스트 | 조판·PDF·게이트·캡처 엔진(참조 구현 이식·일반화) | 신규 |
-| `templates/guide-theme.html` | 참조 구현의 `theme.html` 이식(A4 인쇄 CSS) | 신규 |
+| `scripts/guide/gate.mjs` · `assemble.mjs` · `build.mjs` · `capture.mjs` + 테스트 | 조판·PDF·게이트·캡처 엔진(Strata 이식·일반화) | 신규 |
+| `templates/guide-theme.html` | Strata `theme.html` 이식(A4 인쇄 CSS) | 신규 |
 | `templates/guide.md.tmpl` · `inventory.md.tmpl` · `capture.config.mjs.tmpl` · `dt-guide.json.tmpl` | 프로젝트에 스캐폴딩되는 파일 원형 | 신규 |
 | `agents/auditor.md` §2 fe | "라우트 정의→페이지 목록"을 `surfaceInventory.mjs` 호출로 바꿈(한 줄) | 수정 |
 | `README.md` · `.claude-plugin/plugin.json` | 스킬·커맨드·에이전트 등록, 버전 | 수정 |
@@ -95,7 +95,7 @@ front matter YAML + 사람용 본문(표). 기계는 front matter만 읽는다.
 version: 0.3.3                 # 마지막 analyze 시점의 프로젝트 version
 analyzedAt: 2026-09-12
 type: electron                 # web | electron
-product: Acme Notes
+product: Strata
 stack:
   router: hash                 # web: react-router | next-app | next-pages · electron: hash | window
   ui: tailwind
@@ -134,7 +134,7 @@ prep:                                      # §5-4 준비물 — 채워진 값 �
   dataNotice: "질문·답변 본문을 포함한 실행 기록을 배포자 서버로 전송"
   supportChannel: null
   knownLimitations: [...]
-  branding: { productName: Acme Notes, logo: null }
+  branding: { productName: Strata, logo: null }
   distribution: [github-release, confluence]
 ---
 ```
@@ -221,14 +221,14 @@ export default {
 ### 6-2. 엔진 `scripts/guide/capture.mjs`
 
 - 대상 프로젝트에 `@playwright/test`가 없으면 **사용자 확인 후** `devDependencies`에 추가·설치한다(web: chromium 브라우저 설치 포함, electron: 브라우저 설치 불필요). 확인 없이 설치하지 않는다.
-- **격리 강제**: web은 새 브라우저 컨텍스트(저장된 세션 없음), electron은 임시 `userData`(`--user-data-dir=<tmp>`) + `ELECTRON_RUN_AS_NODE` 제거(참조 구현의 `tests/e2e/README.md`의 함정). 개발자 실계정이 공개 PDF에 찍힌 사고를 기본값으로 막는다.
+- **격리 강제**: web은 새 브라우저 컨텍스트(저장된 세션 없음), electron은 임시 `userData`(`--user-data-dir=<tmp>`) + `ELECTRON_RUN_AS_NODE` 제거(Strata `tests/e2e/README.md`의 함정). 개발자 실계정이 공개 PDF에 찍힌 사고를 기본값으로 막는다.
 - 화면별: `states`를 `needs` 순서로 실행 → `route`로 이동(electron은 해시/IPC) → `readySelector`·`selector` 대기 → `beforeShot` → 스크린샷 `docs/guide/shots/<SCR-id>.png`.
 - `mode: manual|none`은 건너뛴다. 실패한 화면은 그 화면만 `skipped`로 표에 남기고 계속한다. 결과 표 `[SCR-id | mode | 결과 | 사유]`를 조율자가 보인다.
 - 산출 `docs/guide/shots/capture-receipt.json`(찍은 시각·version·화면 목록) — G4 판단 근거.
 
 ## 7. write — `docs/guide/guide.md` 초안 + 한글 리뷰 1회
 
-### 7-1. 절 템플릿 (`references/guide-outline.md`) — 참조 구현 10절 일반화
+### 7-1. 절 템플릿 (`references/guide-outline.md`) — Strata 10절 일반화
 
 | 절 | 채우는 재료 | 없으면 |
 |---|---|---|
@@ -237,7 +237,7 @@ export default {
 | 2. 설치 · 접근 | `prep.systemRequirements`·설치 방법(electron: dmg/exe, web: URL) | 웹 서비스는 "접근" 한 줄로 |
 | 3. 처음 설정 | 계정·서드파티 준비물·요금 고지 | 준비물이 없으면 절 삭제 |
 | 4. 기본 사용 흐름 | `scenarios` 순서대로, 단계마다 화면 1장 | 필수 |
-| 5. 화면 안내 | `screens`(publish) 각각: 목적·주요 기능·그림 1장(같은 그림은 4절과 중복 사용 안 함 — 참조 구현 규칙) | 필수 |
+| 5. 화면 안내 | `screens`(publish) 각각: 목적·주요 기능·그림 1장(같은 그림은 4절과 중복 사용 안 함 — Strata 규칙) | 필수 |
 | 6. 알아두면 편한 기능 | 시나리오에 안 들어간 features | 없으면 삭제 |
 | 7. 데이터는 어디에 저장되나 (+ 전송 고지) | `prep.dataNotice` | **고지가 있으면 절대 삭제 금지** |
 | 8. 알아두어야 할 제약 | `prep.knownLimitations` | 없으면 삭제 |
@@ -246,13 +246,13 @@ export default {
 
 `mode: none` 화면은 그림 자리에 안내 문장("여기서 OO 계정 로그인 화면이 열립니다. 로그인하면 자동으로 돌아옵니다.")을 넣는다. `mode: manual`은 `shots/manual/<SCR-id>.png`를 참조한다.
 
-### 7-2. front matter — 참조 구현 계약 승계, 왼쪽 항만 교체
+### 7-2. front matter — Strata 계약 승계, 왼쪽 항만 교체
 
 ```yaml
 ---
 version: 0.3.3
 manualShotsReviewedAt: 0.3.3
-covers:                          # 인벤토리 id 를 가리킨다 (참조 구현은 CHANGELOG 제목이었음)
+covers:                          # 인벤토리 id 를 가리킨다 (Strata 는 CHANGELOG 제목이었음)
   - item: S1
     section: 기본 사용 흐름
   - item: SCR-workbench
@@ -262,7 +262,7 @@ covers:                          # 인벤토리 id 를 가리킨다 (참조 구�
   - item: SCR-admin-tools
     guide: n/a
     why: 관리자 전용 (publish false)
-changelogCovers: [...]           # CHANGELOG 가 있을 때만 — 이번 버전 굵은 제목 (참조 구현 G2 그대로)
+changelogCovers: [...]           # CHANGELOG 가 있을 때만 — 이번 버전 굵은 제목 (Strata G2 그대로)
 ---
 ```
 
@@ -276,7 +276,7 @@ changelogCovers: [...]           # CHANGELOG 가 있을 때만 — 이번 버전
 ### 8-1. 대상 프로젝트에 남는 것
 
 ```
-.dt-guide.json                        { product, language: "ko", pdfName: "AcmeNotes-User-Guide.pdf",
+.dt-guide.json                        { product, language: "ko", pdfName: "Strata-User-Guide.pdf",
                                         forbiddenMarkers: [...], type?: "web"|"electron", distribution: [...] }
 docs/guide/inventory.md               analyze 산출
 docs/guide/capture.config.mjs         캡처 레시피
@@ -290,7 +290,7 @@ docs/guide/theme.override.html        (선택) 테마 덮어쓰기
 ```
 `package.json`에는 스크립트를 넣지 않는다 — 빌드는 `/dt-guide build`(플러그인 경로 의존). D7의 '스크립트 한 줄'은 이 판에서 뺀다.
 
-### 8-2. 엔진 `scripts/guide/{gate,assemble,build}.mjs` — 참조 구현의 `src/guide/*` 이식
+### 8-2. 엔진 `scripts/guide/{gate,assemble,build}.mjs` — Strata `src/guide/*` 이식
 
 - **순수 함수 + I/O 분리** 유지: `gate.mjs`(G1~G5 판정, fs 모름), `assemble.mjs`(마크다운+테마 → 단일 HTML, 이미지·글꼴 data URI), `build.mjs`(CLI — 게이트 → 조립 → Playwright PDF → 영수증). 영수증에는 `pdf`(PDF 를 실제로 만들었는지 — `--no-pdf` 영수증은 배포 검사에서 거부)를 함께 적는다.
 - **함정 4개 승계**(주석으로 남긴다): ① `document.fonts.ready` 대기(안 하면 조용히 폴백 글꼴) ② `setContent`(file:// 아님) ③ `{{CONTENT}}` 마지막 치환 ④ 게이트를 조립보다 먼저.
@@ -302,9 +302,9 @@ docs/guide/theme.override.html        (선택) 테마 덮어쓰기
 | | 검사 | 왼쪽 항 | 실패 메시지가 짚는 것 |
 |---|---|---|---|
 | G1 | `guide.md version` = 프로젝트 `package.json version` | package.json | 두 값 |
-| G2 | `covers` ↔ 인벤토리 `publish: true` 항목 **양방향** (+ CHANGELOG가 있으면 `changelogCovers` ↔ 이번 버전 굵은 제목 — 참조 구현 G2) | inventory.md · CHANGELOG | 누락 id / 인벤토리에 없는 id / `n/a`인데 `why` 없음 |
+| G2 | `covers` ↔ 인벤토리 `publish: true` 항목 **양방향** (+ CHANGELOG가 있으면 `changelogCovers` ↔ 이번 버전 굵은 제목 — Strata G2) | inventory.md · CHANGELOG | 누락 id / 인벤토리에 없는 id / `n/a`인데 `why` 없음 |
 | G3 | 화면 항목: `mode auto|manual` → shot 파일 실존, `mode none` → 면제 | shots/ | 파일 경로 |
-| G4 | MINOR 오르면 `manualShotsReviewedAt` 갱신 요구(재촬영은 강제 안 함 — 참조 구현 D9) | — | 두 버전 |
+| G4 | MINOR 오르면 `manualShotsReviewedAt` 갱신 요구(재촬영은 강제 안 함 — Strata D9) | — | 두 버전 |
 | G5 | 사외 금칙어 — `.dt-guide.json forbiddenMarkers` + 기본(`/Users/`, `GH_TOKEN`, `.env.`, 티켓 키 패턴 `[A-Z]{2,}-\d+`) | — | 행 번호·마커 |
 
 전부 돌려 findings를 모아 한 번에 보인다(첫 실패에서 멈추지 않음). 설정·버전을 못 읽는 경우(`package.json`·`.dt-guide.json`)는 `G0`으로 한 줄 보고한다(스택 트레이스 금지). 영수증 `guide-receipt.json { version, sourceHash(docs/guide/ 전체, PDF·영수증 제외), shotsRefreshed, pdf(PDF 를 실제로 만들었는지 — `--no-pdf` 영수증은 배포 검사에서 거부), builtAt }`.
@@ -318,9 +318,9 @@ docs/guide/theme.override.html        (선택) 테마 덮어쓰기
 ## 10. 비목표
 
 - BE API 사용 안내서(화면 없는 프로젝트).
-- Confluence 발행 — 후속: `dt-confluence-doc`으로 "이번 버전 요약 + PDF 링크" 얇은 안내(참조 구현 D3).
+- Confluence 발행 — 후속: `dt-confluence-doc`으로 "이번 버전 요약 + PDF 링크" 얇은 안내(Strata D3).
 - 다국어 가이드.
-- 앱 안에 가이드 열기 버튼 넣기(제품 코드 수정은 스킬 범위 밖 — 참조 구현 §7은 프로젝트가 직접 했다).
+- 앱 안에 가이드 열기 버튼 넣기(제품 코드 수정은 스킬 범위 밖 — Strata §7은 프로젝트가 직접 했다).
 - 캡처 이미지의 자동 크롭·주석(화살표 등).
 - 유료 LLM 호출이 필요한 상태 준비의 비용 통제(레시피 작성자 책임 — 안내만).
 
@@ -328,14 +328,14 @@ docs/guide/theme.override.html        (선택) 테마 덮어쓰기
 
 ### 11-1. 단위
 - `surfaceInventory.test.mjs` — 픽스처 디렉터리 4종(react-router · next-app · next-pages · electron)에서 화면 목록·authHint·externalRedirects.
-- `guide/gate.test.mjs` — G1~G5 양성·음성(참조 구현의 `tests/guide/gate.test.ts` 이식 + G2 인벤토리 항, G3 `mode none` 면제).
+- `guide/gate.test.mjs` — G1~G5 양성·음성(Strata `tests/guide/gate.test.ts` 이식 + G2 인벤토리 항, G3 `mode none` 면제).
 - `guide/assemble.test.mjs` — 이미지 data URI 치환, `{{CONTENT}}` 마지막 치환, 외부 URL 통과.
 - `guide/capture.test.mjs` — 레시피 스캐폴딩(needs 합집합 → states 키), `manual|none` 건너뜀, 실패 화면 `skipped` 집계(Playwright는 mock).
 
 ### 11-2. 수용 (구현 완료 판정)
-참조 구현·sample-app은 **손에 있는 실측 대상**일 뿐이다(D13). 수용 기준은 "이 두 프로젝트에서 되는가"가 아니라 "이 두 프로젝트 **처럼 서로 다른** 프로젝트에서 스킬 지침만으로 되는가"다 — 두 프로젝트 이름이 스킬·에이전트·스크립트 본문에 나오면 안 된다(테스트 픽스처·계획 문서의 예시는 예외).
-1. **참조 구현**(electron)에 `/dt-guide analyze` → 인벤토리의 화면 목록이 현재 가이드 13장의 화면과 대응하고(누락 0), `SCR-login-oauth`류가 `mode: none` 후보로 표시된다. 4단계 질문에 준비물 체크리스트가 한 질문으로 묶여 나온다.
-2. **sample-app**(web, react-router)에 `/dt-guide` 끝까지 → 라우트→화면 인벤토리, 레시피 스캐폴딩, 캡처 ≥ 1장, 초안 + `ko-writing-reviewer` before→after 표, `docs/guide/<Product>-User-Guide.pdf`(ASCII 파생 — 예: `sample-app-User-Guide.pdf`) 생성, 영수증. G5가 `PROJ-43` 같은 티켓 키를 잡는다.
+Strata·mvi는 **손에 있는 실측 대상**일 뿐이다(D13). 수용 기준은 "이 두 프로젝트에서 되는가"가 아니라 "이 두 프로젝트 **처럼 서로 다른** 프로젝트에서 스킬 지침만으로 되는가"다 — 두 프로젝트 이름이 스킬·에이전트·스크립트 본문에 나오면 안 된다(테스트 픽스처·계획 문서의 예시는 예외).
+1. **Strata**(electron)에 `/dt-guide analyze` → 인벤토리의 화면 목록이 현재 가이드 13장의 화면과 대응하고(누락 0), `SCR-login-oauth`류가 `mode: none` 후보로 표시된다. 4단계 질문에 준비물 체크리스트가 한 질문으로 묶여 나온다.
+2. **mvi**(web, react-router)에 `/dt-guide` 끝까지 → 라우트→화면 인벤토리, 레시피 스캐폴딩, 캡처 ≥ 1장, 초안 + `ko-writing-reviewer` before→after 표, `docs/guide/<Product>-User-Guide.pdf`(ASCII 파생 — 예: `mvi-User-Guide.pdf`) 생성, 영수증. G5가 `PROJ-43` 같은 티켓 키를 잡는다.
 3. `auditor.md`가 `surfaceInventory.mjs`를 가리키고 `dt-audit` 기존 테스트가 그대로 통과한다.
 4. 재실행 `/dt-guide analyze`에서 `user-confirmed` 필드가 덮어써지지 않는다.
 
@@ -348,6 +348,6 @@ docs/guide/theme.override.html        (선택) 테마 덮어쓰기
 
 - 빌드가 플러그인 경로에 의존한다(`/dt-guide build`) — 플러그인 없이도 빌드하고 싶으면 그때 엔진을 npm 패키지로 뽑는다(D7 탈락안 재검토 지점).
 - 3단계의 "주요 핸들러 읽기" 깊이 — 첫 판은 파일 머리 주석·JSDoc·테스트 이름까지. 핸들러 본문 해석은 비용을 보고 조정.
-- 준비물 체크리스트·질문 종류는 성장형 — 실제 두 프로젝트(참조 구현·sample-app)를 돌린 뒤 표를 다듬는다.
+- 준비물 체크리스트·질문 종류는 성장형 — 실제 두 프로젝트(Strata·mvi)를 돌린 뒤 표를 다듬는다.
 - Confluence 얇은 안내(비목표)를 `distribution`에 `confluence`가 있으면 `dt-confluence-doc`으로 이어 주는 것.
 - Electron 캡처 드라이버는 실제 앱에 아직 닿지 않았다(픽스처·단위 테스트만) — 첫 Electron 프로젝트 실행에서 확인한다.

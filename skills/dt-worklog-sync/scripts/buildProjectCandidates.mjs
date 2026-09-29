@@ -54,7 +54,7 @@ export function renderTable(projects, site) {
 }
 
 // 사용자 입력(키 또는 브라우즈 URL)에서 프로젝트 키를 추출해 대문자로 정규화한다.
-// "PROJ", " proj ", "https://x/browse/PROJ", "https://x/browse/PROJ?foo" → "PROJ".
+// "SAP", " sap ", "https://x/browse/SAP", "https://x/browse/SAP?foo" → "SAP".
 // URL 패턴 [A-Za-z][A-Za-z0-9]+ 는 Jira 프로젝트 키 최소 2자 규칙을 전제로 한다.
 export function parseKeyInput(input) {
   if (input == null) return '';

@@ -22,7 +22,7 @@ cd <project-root>
 그다음 `dt-frontend-architecture` 컨벤션에 맞게 설정한다(상세는 해당 Atlas 참조):
 - **스타일**: Tailwind CSS v4(`@tailwindcss/vite`) + shadcn/ui(Radix) + `src/styles/globals.css`(CSS변수 토큰) + `src/lib/utils.ts`(`cn`). `@` alias를 `vite.config.ts`·`tsconfig`에 추가.
 - **테스트**: Vitest + Testing Library + MSW, Playwright(e2e). `vite.config.ts`/`vitest.config.ts` 분리.
-- **린트(a11y)**: `eslint-plugin-jsx-a11y`를 배선한다. 클릭 핸들러가 달린 비인터랙티브 요소(`<div onClick>` 등 — 키보드로 접근 불가)를 lint가 작성 시점에 자동 차단한다(도그푸딩 발견 — 리뷰 엔진 룰이 아니라 스캐폴드가 켜는 린트가 담당).
+- **린트(a11y)**: `eslint-plugin-jsx-a11y`를 배선한다. 클릭 핸들러가 달린 비인터랙티브 요소(`<div onClick>` 등 — 키보드로 접근 불가)를 lint가 작성 시점에 자동 차단한다(mvi 도그푸딩 발견 — 리뷰 엔진 룰이 아니라 스캐폴드가 켜는 린트가 담당).
   ```bash
   pnpm add -D eslint-plugin-jsx-a11y
   ```

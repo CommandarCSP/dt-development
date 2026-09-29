@@ -76,7 +76,7 @@ function useFollowToggleViewModel() {
 **dt-frontend 적용:**
 - 한 컴포넌트에 기능을 추가하다 옆의 무관한 dead UI/코드를 발견해도 — 이번 변경 범위 밖이면 **언급만 하고 건드리지 않는다.**
 - 새 콜백/인터랙션을 붙일 땐 같은 도메인의 기존 패턴(예: 다른 카드 컴포넌트의 `onClick` 전달 방식)을 따른다 — 새 패턴 발명 X.
-- 주석도 같은 원칙 — WHAT 주석/포맷 드리프트 금지 (`dt-frontend-architecture`의 주석 규칙과 연결).
+- 주석도 같은 원칙 — WHAT 주석/포맷 드리프트 금지 (`dt-frontend-architecture`의 주석 규칙과 연결). 단, **내가 바꾼 비즈니스 규칙의 결정 로그를 갱신하는 것은 드리프트가 아니다** — 그 규칙이 요구하는 작업이다.
 
 ## 4. Goal-Driven Execution — 검증 가능한 성공 기준을 정하고 루프
 

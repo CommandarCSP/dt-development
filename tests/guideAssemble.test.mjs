@@ -65,7 +65,7 @@ test('목차 — 번호를 스스로 매기지 않는다 (절 제목이 이미 "
   assert.ok(toc.html.includes('0. 이 문서에 대하여'));
 });
 test('목차 — 표지(h1) 는 목차에 넣지 않는다', () => {
-  const toc = buildToc(renderMarkdown('# Acme Notes\n\n## 1. 시작하기'));
+  const toc = buildToc(renderMarkdown('# Strata\n\n## 1. 시작하기'));
   assert.equal(toc.entries.length, 1);
 });
 test('목차 — 같은 제목이 두 번 나와도 id 가 겹치지 않는다', () => {

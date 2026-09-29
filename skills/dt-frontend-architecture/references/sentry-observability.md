@@ -3,7 +3,7 @@
 선언적 에러 처리 위에 Sentry 계측을 얹는 SOT. 캡처는 두 촉킹포인트로만 모으고,
 분류를 level/tag/fingerprint에 매핑하며, PII·필터는 init 한 곳에 둔다.
 관련 룰: [[sentry-single-capture]] · [[sentry-breadcrumb-no-pii]] · [[query-error-policy]].
-전체 설명(예시 포함): Confluence "dt-frontend Sentry 에러 관측" 문서 참고.
+전체 설명(예시 포함): Confluence "dt-frontend Sentry 에러 관측" (DTDEV/2601975829).
 
 ## 1. 두 촉킹포인트 → 단일 진입점
 | 촉킹포인트 | 잡는 것 |

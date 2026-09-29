@@ -96,12 +96,18 @@ DTO (경계 계약)  ·  Entity/Model (내부 도메인)  ·  Module (DI 와이�
 - **queue-through-bull-module** _(important)_ — Service는 bullmq/bull 직접 import 금지 — 주입된 큐 producer 경유 [상세](patterns/queue-through-bull-module.md)
 - **service-requires-unit-test** _(important)_ — 모든 Service는 형제 단위 테스트(*.unit.test.ts) 필수 [상세](patterns/service-requires-unit-test.md)
 - **validation-at-boundary** _(important)_ — 요청 DTO는 class-validator 데코레이터로 경계에서 검증 — 검증은 Controller 경계에서만 [상세](patterns/validation-at-boundary.md)
+- **decision-log-format** _(minor)_ — Service의 결정 로그 주석은 제목 줄 + 시간순 `- YYYY-MM · 출처: 무엇을. 왜.` 형식 — 이유 없는 출처 표기 금지 [상세](patterns/decision-log-format.md)
+- **decision-log-scope** _(minor)_ — 결정 로그 주석은 Service에만 — Controller/Repository/DTO에는 쓰지 않는다 [상세](patterns/decision-log-scope.md)
 
 <!-- ATLAS:END -->
 
 ## 주석 규칙
 
-**기본: 주석 없음.** 이름이 잘 지어진 코드는 설명이 필요 없다. WHY가 코드만으론 안 보일 때만 쓰고, WHAT(단계 설명/함수명 반복/태스크 참조)은 절대 쓰지 않는다. (FE `dt-frontend-architecture`와 동일 원칙.)
+**기본: 주석 없음.** 이름이 잘 지어진 코드는 설명이 필요 없다. WHY가 코드만으론 안 보일 때만 쓰고, WHAT(단계 설명/함수명 반복)은 절대 쓰지 않는다. (FE `dt-frontend-architecture`와 동일 원칙.)
+
+**예외 하나 — 결정 로그.** `src/**/*.service.ts` 의 비즈니스 규칙은 왜 그렇게 변해왔는지를 메서드 위 누적 블록으로 남긴다. 첫 줄은 현재 규칙(바뀌면 갱신), 항목은 `- YYYY-MM · 출처: 무엇을. 왜.` 시간순. 이유 없는 티켓 참조는 여전히 금지다. 다른 레이어(Controller·Repository·DTO)에는 쓰지 않는다.
+
+전체 규칙: [결정 로그 주석](../../docs/refs/decision-log-comments.md)
 
 ## 활성화 조건
 

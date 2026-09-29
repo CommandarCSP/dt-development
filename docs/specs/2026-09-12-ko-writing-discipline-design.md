@@ -12,7 +12,7 @@
 **AI가 쓴 티와 번역 티를 없앤다.** 지금 `readable-writing.md`는 이해 장벽(묶음 A)과 문장 다듬기(묶음 B)만 다루어,
 다음 세 가지를 잡지 못한다.
 
-| 못 잡는 것 | 실제 예 (AcmeNotes 사용자 가이드 0.3.3 본문) |
+| 못 잡는 것 | 실제 예 (Strata 사용자 가이드 0.3.3 본문) |
 |---|---|
 | 의인화 — 기계에 사람 행위를 붙임 | `트레이가 알려 줍니다`, `앱이 필요한 것을 이미 품고 있습니다` |
 | 번역투 — 영어 구문 직역 | `설정에 의해 결정됩니다`, `가장 중요한 기능 중 하나` |
@@ -299,13 +299,13 @@ LLM 리뷰어는 이 계층에 붙이지 않는다. 필요해지면 §12 후속�
 
 ### 9-2. 수용 기준 (구현 완료 판정)
 1. `npm test`(plugin) 전부 통과.
-2. AcmeNotes 가이드 `docs/guide/guide.md` 4절(기본 사용 흐름)을 `ko-writing-reviewer`에 `docType: 'guide'`로 넣었을 때:
+2. Strata 가이드 `docs/guide/guide.md` 4절(기본 사용 흐름)을 `ko-writing-reviewer`에 `docType: 'guide'`로 넣었을 때:
    - `트레이가 알려 줍니다`가 C1로 잡히고 자연스러운 after가 나온다.
    - `앱이 필요한 것을 이미 품고 있습니다`가 C1로 잡힌다.
-   - 코드·파일명·버전 숫자(`0.3.3`, `AcmeNotes-0.3.3-arm64.dmg`)는 before/after에서 그대로다.
+   - 코드·파일명·버전 숫자(`0.3.3`, `Strata-0.3.3-arm64.dmg`)는 before/after에서 그대로다.
    - `changeRatio` < 0.5.
 3. `dt-worklog-sync` 드라이런 한 번을 실제 세션에서 돌려 before→after 표가 승인 전에 나오고, 승인 후 재리뷰가 돌지 않는다.
-4. 기존 산출물 `sample-app/docs/specs/pages/feed-detail/requirements.md`(183줄)에 `--docType spec`으로 lint를 돌렸을 때:
+4. 기존 산출물 `mvi/docs/specs/pages/feed-detail/requirements.md`(183줄)에 `--docType spec`으로 lint를 돌렸을 때:
    - EARS 키워드 자체·UI 요소 목록 줄·주석 줄에서 finding이 0건이다(마스킹·예외 확인). EARS 줄의 한글 부분은 검사된다.
    - 한글 서술의 finding은 사람이 봐서 오탐이 절반 미만이다(사전·정규식 조정 기준). 계획 검증 시 결과: finding 6건, 전부 C3(해당×3·발생·제공×2).
 5. `plugin.json` 0.9.0, README 서브에이전트 표 9개.
