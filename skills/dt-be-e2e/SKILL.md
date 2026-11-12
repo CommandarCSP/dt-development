@@ -6,7 +6,7 @@ description: Use after /dt-be-implement to author and verify scenario-based acce
 # dt-be-e2e — 시나리오 기반 BE 수용 e2e
 
 > 산출: 시나리오 원장(`docs/specs/resources/<resource>/<resource>.e2e-scenarios.md`, 크로스리소스는 `docs/specs/e2e/be-journeys.md`) + Jest e2e(`test/<resource>.e2e.test.ts`, 여정은 `test/journeys/<journey>.e2e.test.ts`).
-> 설계: `docs/superpowers/specs/2026-07-15-dt-be-e2e-design.md` (방법론 어휘는 dt-e2e와 공유)
+> 설계: `docs/specs/2026-07-15-dt-be-e2e-design.md` (방법론 어휘는 dt-e2e와 공유)
 
 ## 불변 원칙
 1. 스펙 기반이 하드 요구 — 모든 시나리오는 `METHOD /path` + IF-n(있으면 REQ 병기) 근거를 명시한다.

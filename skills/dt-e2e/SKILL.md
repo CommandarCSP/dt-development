@@ -6,7 +6,7 @@ description: Use after /dt-implement to author and verify scenario-based accepta
 # dt-e2e — 시나리오 기반 수용 e2e
 
 > 산출: 시나리오 원장(`docs/specs/pages/<page>/<page>.e2e-scenarios.md` — 파일명에 페이지명 포함(IDE 탭·검색 구분), 크로스페이지는 `docs/specs/e2e/journeys.md`) + Playwright spec(`e2e/<page>.spec.ts`, `e2e/journeys/<journey>.spec.ts`).
-> 설계: `docs/superpowers/specs/2026-07-13-dt-e2e-acceptance-design.md`
+> 설계: `docs/specs/2026-07-13-dt-e2e-acceptance-design.md`
 
 ## 불변 원칙
 1. 스펙 기반이 하드 요구 — 모든 시나리오는 FR-n/IF-n/interaction 근거를 명시한다.

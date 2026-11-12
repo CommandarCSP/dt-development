@@ -6,7 +6,7 @@ description: Use when auditing whether the implemented app (static code + runnin
 # dt-audit — 스펙↔구현 정합 감사 리포트
 
 > 산출물: `docs/audits/YYYY-MM-DD-<scope>/report.md` + `traceability.md`. 설계 SOT:
-> `docs/superpowers/specs/2026-07-24-dt-audit-design.md`. 방법론: spec-kit converge(인텐트
+> `docs/specs/2026-07-24-dt-audit-design.md`. 방법론: spec-kit converge(인텐트
 > 인벤토리·gap 분류) + Reversa(신뢰도·traceability) + 자체 git 드리프트 축.
 
 ## dt-review와의 경계

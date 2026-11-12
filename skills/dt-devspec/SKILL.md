@@ -6,7 +6,7 @@ description: Use when starting a new project/feature and the team needs a projec
 # dt-devspec — 개발 정의서(프로젝트 SOT) 생성
 
 > 산출물: `docs/specs/definition.md` (프로젝트당 1개). dt-spec·dt-bespec이 이 정의서가 있으면 게이트(§0)에서 소비한다(없거나 엉성해도 소프트 게이트로 분기).
-> 설계: `docs/superpowers/specs/2026-06-09-dev-definition-sot-design.md` + 후속 `docs/superpowers/specs/2026-06-10-devspec-bidirectional-reconcile-design.md`
+> 설계: `docs/specs/2026-06-09-dev-definition-sot-design.md` + 후속 `docs/specs/2026-06-10-devspec-bidirectional-reconcile-design.md`
 
 ## 불변 원칙
 1. **발견은 경량, 계약은 우측 주석만 타깃.** 페이지 구조 발견은 `get_metadata`(프레임 전체 순회 + 텍스트)로 한다. IF 계약(쿼리/필터/정렬)은 화면 주석 패널에 있고 `get_metadata`로는 `Description` placeholder만 나오므로 본문이 필요한데, 이 팀 Figma는 화면이 [좌측 UI] + [우측 주석/규칙 글] 레이아웃이다. 그래서 **데이터 흐름·IF 후보가 있는 대상 스크린의 *우측 주석 영역*(x-range로 식별)만 `get_design_context`로 deep-read**해 규칙 전문을 확보한다(우측 글에 IF 규칙이 있고 좌측 UI는 불필요 → 토큰 절감). 우측 영역 식별이 **불확실하면 스크린 통째로 폴백**. 토큰 가드는 **대상 스크린당 1라운드**(우측 주석 묶음 또는 통째 1회분)로 유지하고, 순수 정적·비데이터 스크린은 스킵. deep-read는 IF 계약 추출 용도로만 쓰고 페이지 내부 요소·스타일은 담지 않는다(불변원칙 2). 토큰 폭발 방지.

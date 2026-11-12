@@ -37,15 +37,16 @@ M4 언어  ─ GEN-15 → GEN-16 → GEN-17
 - 할 일:
   - 픽스처를 중립 값(`jane.doe@example.com`, `/Users/alice`, `ACME`, `PROJ-1`)으로 교체.
   - 스킬 본문·patterns·references의 예시 티켓 키·팀명(정산팀/CS팀)·제품명을 중립 예시로 교체.
-  - `tools/scan-public-export.mjs`를 `plugin` 테스트(또는 pre-push)에 편입해 재유입 차단.
-- 완료 기준: `node tools/scan-public-export.mjs plugin`이 `docs/plans`·`docs/specs`(GEN-02 대상) 밖에서 0건.
+  - 금칙어 스캐너를 플러그인 테스트에 편입해 재유입 차단.
+- 결정(2026-11-13): 엔진은 `scripts/scanForbidden.mjs`(내장 규칙: 이메일·cloudId, `npm run scan`·`npm test` 포함). 조직별 금칙어 목록은 목록 자체가 식별자라 저장소 밖 JSON(`--rules` / `DT_FORBIDDEN_RULES`)으로 받는다. 공개 GitHub 저장소를 단일 원본으로 삼는다.
+- 완료 기준: 저장소에 올라갈 파일에서 스캔 0건(내장 규칙 + 조직 목록). — 완료(DEV-6)
 
 ### GEN-02 런타임 문서와 개발 이력 문서 분리
-- 문제: 스킬이 배포되지 않는 내부 설계 문서(`docs/superpowers/specs/...`, `docs/specs/2026-*`)를 런타임에 참조. `docs/plans`의 원 프로젝트 마이그레이션 문서 등 과거 이력이 플러그인과 같이 배포됨.
-- 할 일:
-  - 런타임에 필요한 내용은 `skills/*/references` 또는 `docs/refs`로 옮기고, 스킬 본문의 내부 설계 문서 링크 제거.
-  - 과거 plans/specs는 플러그인 밖(저장소 루트 `docs/history/` 등)으로 이동하거나 배포 제외.
-- 완료 기준: `skills/`·`agents/`·`commands/`에서 `docs/plans`·`docs/specs/20`·`docs/superpowers` 참조 0건.
+- 문제: 스킬이 배포되지 않는 설계 문서(모노레포 루트 `docs/superpowers/specs/...`)를 "설계 SOT"로 참조해, 설치한 사람에겐 링크가 끊긴다. `docs/plans`·사내판 `docs/specs`의 원 프로젝트 이력 문서가 플러그인 폴더 안에 있다.
+- 결정(2026-11-13):
+  - 스킬이 참조하는 설계 문서(dt-audit·dt-e2e·dt-be-e2e·dt-devspec 2건)는 식별자를 정리해 `docs/specs/`로 들여오고 링크를 고친다(가이드·핸드북·한글 규율 설계와 같은 방식).
+  - 이력 문서(`docs/plans` 22개, 사내판 `docs/specs` 11개)는 저장소 밖 로컬 `dt_development/docs/history/plugin/`으로 옮긴다.
+- 완료 기준: 런타임 파일(`skills/`·`agents/`·`commands/`·`scripts/`·`templates*/`)이 참조하는 문서가 모두 저장소 안에 있고, `docs/plans`·`docs/superpowers` 참조 0건.
 
 ### GEN-03 공통 설정 스키마와 로더
 - 문제: 팀·프로젝트별로 달라야 할 값이 본문에 하드코딩. `.dt-frontend.json`은 `coverage`·`overrides`만 실제로 읽힘.
