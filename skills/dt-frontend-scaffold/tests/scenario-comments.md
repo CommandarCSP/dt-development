@@ -1,7 +1,7 @@
 # E2E scenario: comments domain (manual)
 
 Date: 2026-05-22  
-Plan: Plan 3, Task 14  
+Origin: scaffold workflow 초기 검증 시나리오  
 Scenario: Walk Phase 0 + Phase 1 + Phase 2 (partial) of new-domain.md using a temp directory + template copy.
 
 ## Setup
@@ -100,7 +100,7 @@ Exit: **0** — review passed.
 ### Review output (direct run)
 
 ```
-### Manual Review (heuristic stubs, see Plan 3 for AST analysis)
+### Manual Review (heuristic stubs — AST analysis not implemented yet)
 
 - src/store/queries/comments/useCommentListQuery.ts — where-does-business-logic-go — (heuristic description)
 - src/store/queries/comments/useCommentListQuery.ts — avoid-effect-for-derived-state — (heuristic description)
@@ -146,7 +146,7 @@ Result: **OK** — worktree removed cleanly via `git worktree remove --force`, t
 - Full Phase 2 parallel dispatch is not exercised here (requires Task tool from Claude session)
 - Coverage gate not exercised (no real Vitest runs in scenario)
 - Phase 3-5 not exercised (requires full domain implementation: view components, business hook, domain component)
-- The review output is heuristic stubs (plan notes AST analysis planned for Plan 3) — rule checks are present but pattern-based rather than full AST
+- The review output is heuristic stubs (AST analysis is not implemented yet) — rule checks are present but pattern-based rather than full AST
 - > Note: In some pnpm versions, `esbuild` and `msw` postinstall scripts may require `pnpm approve-builds` once per machine. This is a pnpm UX wrinkle, not part of dt-frontend scaffold. If the install completes (even with warnings), proceed.
 
 ## Verification of next plan readiness

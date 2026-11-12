@@ -89,7 +89,7 @@ coverage: {
 
 ## Diff baseline 계산
 
-(Plan 2의 review가 구현하는 알고리즘)
+(dt-frontend-review가 구현하는 알고리즘)
 1. HEAD coverage 측정
 2. baselineRef를 임시 worktree에 체크아웃해 coverage 측정 (캐싱)
 3. per-file LCOV 비교

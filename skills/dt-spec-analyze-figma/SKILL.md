@@ -6,6 +6,8 @@ description: Use when dt-spec needs to analyze a Figma design page (the screen t
 
 # AnalyzeFigmaFrame
 
+> 설계: `docs/specs/2026-06-01-dt-spec-multi-source-design.md` — 본문의 "dt-spec 설계 §N"은 이 문서의 절을 가리킨다.
+
 Figma 디자인 페이지(사용자가 만들 화면)를 분석해 UI tree + API 필요 지점을 추출한다.
 
 ## 책임 (design doc 5-2)
@@ -37,9 +39,9 @@ Figma 디자인 페이지(사용자가 만들 화면)를 분석해 UI tree + API
 
 > **출력 필드 상세** (위 JSON의 축약 항목 — 기존 정의 유지):
 > - `uiTree`: Figma get_design_context 응답의 node tree 보존: `{ id, name, type, children }`.
-> - `components[]`: 각 항목은 `{ name: string, _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (design doc(2026-06-01) §5-1).
-> - `semanticUIElements[]`: 각 항목은 `{ id, role, sourceNodeId, parentContext, _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (design doc(2026-06-01) §5-1).
-> - `apiCandidates[]`: 각 항목은 `{ featureName, kind: 'list' | 'detail' | 'mutation' | 'delete' | 'paginated-list' | 'upload' | 'search', sourceUiElement, confidence: 'confident' | 'ambiguous', _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (design doc(2026-06-01) §5-1).
+> - `components[]`: 각 항목은 `{ name: string, _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (dt-spec 설계 §5-1).
+> - `semanticUIElements[]`: 각 항목은 `{ id, role, sourceNodeId, parentContext, _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (dt-spec 설계 §5-1).
+> - `apiCandidates[]`: 각 항목은 `{ featureName, kind: 'list' | 'detail' | 'mutation' | 'delete' | 'paginated-list' | 'upload' | 'search', sourceUiElement, confidence: 'confident' | 'ambiguous', _provenance: { type: 'figma', locator: <figmaPageNodeId> } }` 형태. 머지 레이어가 소스 추적 시 사용 (dt-spec 설계 §5-1).
 > - `designTokens`: `{ colors: { [name]: string }, typography: { [name]: { fontFamily, fontSize, fontWeight, lineHeight? } }, spacing: number[], radius: number[], shadow?: { [name]: string } }` (Step 1.5에서 추출; `shadow`는 get_design_context가 CSS var로 반환하는 elevation/drop-shadow).
 > - `assets[]`: 각 항목 `{ nodeId, name, localPath, format: 'svg'|'png'|'jpg', usage }` — Step 1에서 `download_assets`로 `docs/specs/assets/<page>/`에 저장한 실제 파일 매니페스트. GeneratePageDevSpec이 `design.md ## 에셋 매니페스트`로 직렬화하고, 구현 단계가 이 경로로 실제 `<img src>`/SVG import를 배선한다(플레이스홀더 금지).
 

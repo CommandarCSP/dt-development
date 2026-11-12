@@ -20,8 +20,9 @@ Procedure:
    - `${CLAUDE_PLUGIN_ROOT}/skills/dt-backend-scaffold/checklist/<variant>.md`
 
 4. Follow the checklist step by step. Use Bash to run the shared worktree/gate scripts
-   (`${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/`). Use Task to dispatch Phase 2
-   agents (prompts at `${CLAUDE_PLUGIN_ROOT}/skills/dt-backend-scaffold/prompts/<agent>.md`).
+   (`${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/`). Use Task to dispatch the
+   `be-builder` agent (`${CLAUDE_PLUGIN_ROOT}/agents/be-builder.md`) for each phase and the `reviewer`
+   agent (`${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`) for reviews, as the checklist says.
 
 5. After completion (or critical failure after 1 repair attempt), summarize:
    - Worktree path

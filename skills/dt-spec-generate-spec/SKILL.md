@@ -5,17 +5,19 @@ description: Use when the user runs /dt-spec to build SDD spec documents for a p
 
 # GeneratePageDevSpec
 
+> 설계: `docs/specs/2026-06-01-dt-spec-multi-source-design.md` — 본문의 "dt-spec 설계 §N"은 이 문서의 절을 가리킨다.
+
 dt-spec의 오케스트레이터. 전체 워크플로 [0]~[7]을 수행하고 4개 산출물을 저장한다.
 
-## 책임 (design doc(2026-06-01) §3)
+## 책임 (dt-spec 설계 §3)
 
 - Pre-flight Check (Figma MCP 연결/권한/node 조회 — Figma 소스가 있을 때만)
 - 입력 수집 — 다중 소스 locator 파싱 + 소스 해석 레이어 [A]
 - 4개 스킬 오케스트레이션 (소스 어댑터 병렬 분배 + 2단계 머지)
 - `templates/*.tmpl` 기반 산출물 빌드
-- raw → EARS 변환 (design doc(2026-06-01) §7-2 라벨 체계)
+- raw → EARS 변환 (dt-spec 설계 §7-2 라벨 체계)
 - 일관성 검증
-- 파일 저장 (재실행 정책 적용 — design doc(2026-06-01) §8-4)
+- 파일 저장 (재실행 정책 적용 — dt-spec 설계 §8-4)
 
 ## 입력
 
@@ -23,7 +25,7 @@ dt-spec의 오케스트레이터. 전체 워크플로 [0]~[7]을 수행하고 4�
 - `--source <locator>[@role]` (옵셔널 — 명시 수단. 자동감지가 틀릴 때 `type:locator` prefix 사용)
 - `--api-doc <path>` (옵셔널)
 - `--design-system-node-id <id>` (옵셔널)
-- `--only requirements|design|tasks|layout-skeleton` (옵셔널 — 재실행 시 부분 갱신, design doc(2026-06-01) §8-4)
+- `--only requirements|design|tasks|layout-skeleton` (옵셔널 — 재실행 시 부분 갱신, dt-spec 설계 §8-4)
 
 ## 출력
 
@@ -45,7 +47,7 @@ dt-spec의 오케스트레이터. 전체 워크플로 [0]~[7]을 수행하고 4�
 
 > 두 모드는 **아래 [1]~[7] 동일 절차**를 따른다(분기 없음). 차이는 "누가 실행하고 어디서 묻느냐"(격리 여부)뿐 — 정확성 문제가 아니라 컨텍스트 경제 문제. `spec-author` 정의는 `${CLAUDE_PLUGIN_ROOT}/agents/spec-author.md`.
 
-## 절차 (design doc(2026-06-01) §7-1 워크플로 [0]~[7])
+## 절차 (dt-spec 설계 §7-1 워크플로 [0]~[7])
 
 ### §0. 정의서 게이트 (소프트)
 
@@ -86,7 +88,7 @@ Figma 소스가 1개 이상이면 순서대로 확인:
 5. 각 figma@wireframe 소스의 nodeId 조회 가능 → 동일 검사.
 6. `designSystemNodeId` (있다면) 조회 가능 → 실패 시 경고만 + 계속 (사용자 confirm).
 
-### [1] 입력 수집 + 소스 해석 (design doc(2026-06-01) §4)
+### [1] 입력 수집 + 소스 해석 (dt-spec 설계 §4)
 
 #### 소스 파싱 + 타입 자동감지
 
@@ -123,7 +125,7 @@ Figma 소스가 1개 이상이면 순서대로 확인:
 | 입력 | 처리 |
 |---|---|
 | Figma 노드, `@role` 명시 (`235:1412@design`) | 명시값 사용, 질문 안 함 |
-| Figma 노드, 역할 미지정 | **항상 AskUserQuestion으로 확인** (design doc(2026-06-01) §2 결정 9) |
+| Figma 노드, 역할 미지정 | **항상 AskUserQuestion으로 확인** (dt-spec 설계 §2 결정 9) |
 | 문서 소스 (md/pdf/web) | 역할 불필요 — 질문 안 함 |
 
 역할 미지정 Figma 노드가 있을 때 AskUserQuestion 예:
@@ -136,7 +138,7 @@ Figma 소스가 1개 이상이면 순서대로 확인:
 design 최대 1개, wireframe 최대 1개. 위반 시 에러:
 - design 2개 → "Figma 디자인 노드는 1개만 지원합니다. 한 화면이 여러 프레임으로 나뉘어 있으면 **그 프레임들을 감싸는 상위 프레임 노드 id**를 주세요(상위 노드로 우회)." + 중단.
 
-#### 부분 로드 실패 처리 (design doc(2026-06-01) §4-5)
+#### 부분 로드 실패 처리 (dt-spec 설계 §4-5)
 
 단일 소스 로드 실패(파일 없음 / fetch 401 / MCP 미연결):
 - 해당 소스 보고 + AskUserQuestion: `header` "소스 로드 실패", `question` "[소스 locator] 로드에 실패했습니다(이유: <에러>). 나머지 소스로만 계속 진행할까요? 계속 선택 시 이 소스가 빠진 상태로 스펙이 생성되며 `status: draft`로 저장됩니다. 빠진 소스가 design 노드라면 layout-skeleton.md가 구조 스켈레톤 또는 스텁이 됩니다.", options: label `"나머지 소스로 계속"`(description `"실패 소스를 제외하고 진행. 산출물 헤더에 (load-failed) 노트로 표시, status: draft 강제"`) / label `"중단"`(description `"소스를 수정한 후 다시 실행")`.
@@ -152,7 +154,7 @@ Figma URL(`figma.com/design/:fileKey/...`)이 있으면 fileKey를 파싱한다.
 - `question`: "산출물이 저장될 디렉토리명을 정합니다. Figma 페이지 노드명에서 'SCR_FLE_01'을 추출했는데, `docs/specs/pages/<이름>/`의 <이름>으로 쓸까요? (kebab-case로 변환: scr-fle-01)"
 - options: label `"scr-fle-01 사용"`(description `"추출된 이름 그대로 디렉토리 생성"`) / label `"직접 입력"`(description `"다른 이름을 지정"`)
 
-### [1-재실행] 재실행 시 소스 복원 (design doc(2026-06-01) §7-1-재실행)
+### [1-재실행] 재실행 시 소스 복원 (dt-spec 설계 §7-1-재실행)
 
 대상 페이지 디렉토리(`docs/specs/pages/<page-kebab>/`)가 이미 존재하면 재실행으로 판단하고 아래를 수행한다.
 
@@ -183,7 +185,7 @@ Figma URL(`figma.com/design/:fileKey/...`)이 있으면 fileKey를 파싱한다.
 
 > 실행 모드는 `../../docs/orchestration-policy.md` 원칙 1을 따른다 — 소스 2개 이상이면 시작 시 병렬/순차를 1회 확인(기본 병렬). 순차 선택 시 어댑터를 직렬 서브에이전트로 분석.
 
-### [3] 소스 분석 (어댑터 분배, 병렬) (design doc(2026-06-01) §3·§6)
+### [3] 소스 분석 (어댑터 분배, 병렬) (dt-spec 설계 §3·§6)
 
 union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터로 분배한다. Task 도구로 **병렬** dispatch:
 
@@ -195,7 +197,7 @@ union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터�
 
 각 어댑터는 부분 `ExtractionResult`를 반환한다 (동일 IR 계약; 채울 수 있는 필드만 채움).
 
-### [3-merge] 머지 2단계 (design doc(2026-06-01) §5-2)
+### [3-merge] 머지 2단계 (dt-spec 설계 §5-2)
 
 #### (a) 순수 구조 머지 — `scripts/mergeExtractionResults.mjs`
 
@@ -206,7 +208,7 @@ union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터�
    - 한쪽만 값, 다른 쪽 빈 → **채움(null 보완)**. 머지의 유일한 자동 채택.
    - 양쪽 값이 있고 다름 → `_conflicts`에 적재 (자동 선택 **금지**).
    - 양쪽 값이 같음 → 그대로.
-3. **`_inferred` 소거**: 병합 항목 중 한쪽이라도 실제 소스 `_provenance`가 있으면 결과의 `_inferred` 제거 (항목 단위). `_provenance`에 inferred 출처 흔적은 남긴다. **이 소거는 (a) 정확 키 병합 시점 + [4] ask-missing의 동일요소 병합 확정 직후, 두 시점에서 적용한다** — 키가 달라 (a)에서 못 합쳐진 figma 실제항목 + 문서 inferred항목은 사용자 확정 병합 때 비로소 한 항목이 되므로, 그 순간 `_inferred`를 재소거해야 부당한 `[inferred]` 라벨·draft 트리거를 막는다 (design doc(2026-06-01) §5-2 (a) 3항).
+3. **`_inferred` 소거**: 병합 항목 중 한쪽이라도 실제 소스 `_provenance`가 있으면 결과의 `_inferred` 제거 (항목 단위). `_provenance`에 inferred 출처 흔적은 남긴다. **이 소거는 (a) 정확 키 병합 시점 + [4] ask-missing의 동일요소 병합 확정 직후, 두 시점에서 적용한다** — 키가 달라 (a)에서 못 합쳐진 figma 실제항목 + 문서 inferred항목은 사용자 확정 병합 때 비로소 한 항목이 되므로, 그 순간 `_inferred`를 재소거해야 부당한 `[inferred]` 라벨·draft 트리거를 막는다 (dt-spec 설계 §5-2 (a) 3항).
 4. **자유텍스트 영역** (businessRules/userStories/scenarios/edgeCases): 식별자 없으므로 무조건 union.
 5. **시각 값** (designTokens / layoutTree): figma@design 어댑터만 기여 → 충돌 없음. 기존 [3.5] 토큰 merge 그대로.
 
@@ -291,7 +293,7 @@ union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터�
 
 `AskMissingRequirement`가 계속 진행 (design doc 6절 [6]).
 
-### [6.5] UI 구조 0개 빌드 게이트 (design doc(2026-06-01) §7-2 case3)
+### [6.5] UI 구조 0개 빌드 게이트 (dt-spec 설계 §7-2 case3)
 
 **[3-merge] 완료 후, [7] 산출물 빌드 진입 전에** 이 게이트를 실행한다.
 
@@ -410,7 +412,7 @@ union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터�
 - **금지**: 구체 파일 경로(`src/...`), 레이어/훅 이름(`useXxxQuery`/`useXxxUiStore`/`XxxView` 등), `단위 테스트 작성`·`테스트 실패 확인`·`구현`·`테스트 통과 확인`·`커밋` 같은 TDD 실행 절차 줄, 테스트 프레임워크 언급(Vitest/RTL/MSW).
 - 마지막에 **전체 플로우 완료 기준** Task 1개 추가 — 개별 FR 횡단(명시 표기). 예: `목록 로딩 → 검색/정렬 → 업로드 → 삭제 → 일괄 다운로드가 끊김 없이 동작`.
 
-**layout-skeleton.md `{{SKELETON_TSX}}`** — 3-way 분기 (design doc(2026-06-01) §7-2):
+**layout-skeleton.md `{{SKELETON_TSX}}`** — 3-way 분기 (dt-spec 설계 §7-2):
 
 분기는 머지 결과에 따라 결정된다:
 
@@ -448,7 +450,7 @@ UI 구조를 추출/추론할 수 없습니다. Figma 디자인 노드나 화면
 ```
 헤더에 `<!-- stub -->` 플래그.
 
-**스텁/구조 → 정밀 전환 규칙** (design doc(2026-06-01) §7-2 Important-4):
+**스텁/구조 → 정밀 전환 규칙** (dt-spec 설계 §7-2 Important-4):
 - 스텁(`<!-- stub -->`) 또는 구조 스켈레톤(`<!-- structural -->`) 파일은 machine-generated 마킹된 상태.
 - 이후 재실행에서 layoutTree를 확보하면(Figma 소스 추가), 정밀 스켈레톤으로의 전환은 **diff-then-confirm 예외** — 마킹된 파일은 "사용자 편집 우선" 보호에서 제외하고 confirm 1회 후 통째 교체.
 - 단, 사용자가 직접 편집한 흔적(플래그 제거 또는 본문 내용 변경)이 있으면 보호 대상으로 복귀 — 일반 diff-then-confirm 적용.
@@ -481,7 +483,7 @@ UI 구조를 추출/추론할 수 없습니다. Figma 디자인 노드나 화면
   - [4]를 중간 중단해 **미해소 `_possibleDuplicates`가 남음** ([4]에서 양쪽 후보에 `<!-- 미확정 중복후보 -->` 주석 부착)
 - draft 상태는 헤더 메타(`<!-- status: draft -->`)에 표시 — 다른 도구가 이를 인식하고 경고.
 
-#### [7-7] 파일 저장 — 재실행 정책 (design doc(2026-06-01) §8-4)
+#### [7-7] 파일 저장 — 재실행 정책 (dt-spec 설계 §8-4)
 
 `docs/specs/pages/<page-kebab>/` 디렉토리:
 
@@ -537,7 +539,7 @@ docs/specs/pages/<page-kebab>/
 
 ## 단일 출처 참조
 
-- **체크리스트 단일 출처**: design doc(2026-06-01) §7-1 [4-2] (c) — `AskMissingRequirement`가 처리
+- **체크리스트 단일 출처**: dt-spec 설계 §7-1 [4-2] (c) — `AskMissingRequirement`가 처리
 - **라벨 정의 단일 출처**: `${CLAUDE_PLUGIN_ROOT}/docs/refs/ears-patterns.md` — 출처 라벨(`ai-confirmed`/`ai-edited`/`user-added`/`[inferred]`/`[user-resolved]`) + 패턴 라벨(`Event-driven` 등) + EARS 6패턴 분류표
 - **소스 해석 단일 출처**: `scripts/parseSources.mjs` — 타입 자동감지 우선순위 + 카디널리티 검증
 - **머지 (a) 단일 출처**: `scripts/mergeExtractionResults.mjs` — 정확 키 union + `_conflicts` + `_inferred` 소거

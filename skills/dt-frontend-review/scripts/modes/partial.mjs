@@ -13,7 +13,7 @@ import { renderReport } from '../lib/reporter.mjs';
 import { loadOverrideKeys } from '../lib/overrides.mjs';
 
 // Partial mode: review only a specific set of paths (no coverage).
-// Used by Plan 3 scaffold for per-phase mini-reviews.
+// Used by the scaffold workflow for per-phase mini-reviews.
 // args: { pluginRoot, projectRoot, paths: string[], ruleLocations, configFileName }
 export async function runPartialMode({ pluginRoot, projectRoot, paths, verbose = false, ruleLocations = undefined, configFileName = '.dt-frontend.json' }) {
   const rules = await loadAllRules(pluginRoot, ruleLocations);

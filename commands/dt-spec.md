@@ -4,6 +4,8 @@ argument-hint: '<locator>[@role] [<locator>[@role] ...] [--source <locator>[@rol
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion, WebFetch, mcp__claude_ai_Notion__notion-fetch, mcp__claude_ai_Atlassian__fetch, mcp__claude_ai_Atlassian__getConfluencePage
 ---
 
+> 설계: `docs/specs/2026-06-01-dt-spec-multi-source-design.md` — 본문의 "dt-spec 설계 §N"은 이 문서의 절을 가리킨다.
+
 Run dt-spec to generate SDD spec documents for a page.
 
 Raw arguments: `$ARGUMENTS`
@@ -18,7 +20,7 @@ Raw arguments: `$ARGUMENTS`
 - `--source <locator>[@role]` (옵셔널): positional과 동일 의미. 자동감지가 틀릴 때 `type:locator` prefix 사용 (예: `--source markdown:./weird:name.txt`)
 - `--api-doc <path>` (옵셔널): OpenAPI 3.x (`.yaml`/`.json`) 또는 Markdown API 문서 경로 — 사전 매칭에만 사용
 - `--design-system-node-id <id>` (옵셔널): Figma 디자인 시스템 node id — 디자인 토큰/컴포넌트 매칭에 사용
-- `--only requirements|design|tasks|layout-skeleton` (옵셔널): 재실행 시 일부 산출물만 갱신. 지정 파일만 재생성하며 다른 파일(헤더 포함)은 일절 건드리지 않음 — 헤더 버전 혼합 허용 (design doc(2026-06-01) §8-4)
+- `--only requirements|design|tasks|layout-skeleton` (옵셔널): 재실행 시 일부 산출물만 갱신. 지정 파일만 재생성하며 다른 파일(헤더 포함)은 일절 건드리지 않음 — 헤더 버전 혼합 허용 (dt-spec 설계 §8-4)
 
 ## 흐름
 
@@ -42,4 +44,4 @@ Raw arguments: `$ARGUMENTS`
 
 ## 재실행
 
-기존 산출물이 있으면 헤더 sources를 복원해 소스 union 후 diff 표시 + 사용자 confirm (자동 덮어쓰기 금지). 상세는 design doc(2026-06-01) §8-4.
+기존 산출물이 있으면 헤더 sources를 복원해 소스 union 후 diff 표시 + 사용자 confirm (자동 덮어쓰기 금지). 상세는 dt-spec 설계 §8-4.

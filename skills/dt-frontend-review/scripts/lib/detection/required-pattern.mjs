@@ -1,6 +1,6 @@
 // v1: handles a small set of known patterns by description string.
 // Unknown descriptions emit a "manualReview" finding so reviewers know
-// to inspect manually. Plan 3+ can add AST-based detection.
+// to inspect manually. AST-based detection is not implemented yet (roadmap GEN-23).
 
 export function detectRequiredPattern(code, cfg) {
   const desc = (cfg.description || '').toLowerCase();

@@ -1,6 +1,6 @@
 // AST rule detection — v1 stub. Always returns a "manualReview" finding
 // so reports include the rule but flag it as needing human inspection.
-// Plan 3+ will integrate ts-morph for real AST analysis.
+// Real AST analysis (ts-morph) is not implemented yet — see roadmap GEN-23.
 
 export function detectAstRule(_code, cfg) {
   return [{

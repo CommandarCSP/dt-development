@@ -37,7 +37,7 @@ export function renderReport({ findings, coverage, overrides }, { verbose = fals
 
   if (manualReviews.length) {
     if (verbose) {
-      sections.push('### Manual Review (heuristic stubs, see Plan 3 for AST analysis)');
+      sections.push('### Manual Review (heuristic stubs — AST analysis not implemented yet)');
       for (const f of manualReviews) {
         sections.push(`- ${f.file}${f.line ? ':' + f.line : ''} — ${f.ruleId} — ${f.hint || f.message || ''}`);
       }

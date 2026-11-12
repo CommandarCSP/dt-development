@@ -153,7 +153,7 @@
 ### GEN-18 감사 중 발견한 결함 묶음
 - `dt-fullstack`: 부분 실행 모드 단계 번호가 파이프라인과 불일치("BE만 → [2]·[4]"인데 [4]는 FE).
 - `ko-writing-reviewer`: docType 목록에 `spec` 누락(`dt-ko`는 전달함). 임시 파일을 `/tmp`에 씀.
-- `commands/dt-be-scaffold.md`: 없는 `prompts/<agent>.md` 참조, 쓰지 않는 worktree 언급.
+- `commands/dt-scaffold.md`·`dt-be-scaffold.md`: 없는 `prompts/<agent>.md` 참조. — GEN-20에서 수정(DEV-26). "쓰지 않는 worktree 언급"은 잘못된 지적이었다(worktree.mjs·extend-domain 체크리스트가 실제로 쓴다).
 - `dt-be-e2e`: 없는 설계 문서 참조.
 - 완료 기준: 항목별 수정 + 해당 테스트/문서 확인.
 
@@ -169,7 +169,8 @@
 ### GEN-20 구조 검사 — 머리말·이름·링크 자동 점검
 - 문제: 스킬·에이전트·명령 머리말 형식을 검사하지 않는다. 없는 문서("design doc(2026-06-01)")를 인용하고, 내부 개발 용어("Plan 1·Plan 2")가 스킬 설명에 남아 있다. README 개수가 실제와 다르다.
 - 할 일: 구조 테스트(머리말 필수 필드, `name`=폴더, `${CLAUDE_PLUGIN_ROOT}` 경로·문서 링크 실재)를 만들고, 찾아낸 것을 정리한다.
-- 완료 기준: 구조 테스트가 `npm test`에서 통과.
+- 결정(2026-11-13): "design doc(2026-06-01)" 인용 32곳은 원 프로젝트 폴더에 있던 dt-spec 설계 문서를 `docs/specs/2026-06-01-dt-spec-multi-source-design.md`로 들여와 연결(파일 머리에 경로 한 줄 + 본문은 "dt-spec 설계 §N"). 구조 테스트는 `tests/pluginStructure.test.mjs`. 스킬이 사용자 프로젝트에 만드는 산출물 경로(`docs/specs/pages/…`·`docs/project-context.md`)는 검사하지 않는다.
+- 완료 기준: 구조 테스트가 `npm test`에서 통과. — 완료(DEV-26)
 
 ### GEN-21 결정 기록 체계(ADR) — 팀 정책 TP · 프로젝트 결정 PD
 - 문제: 결정이 5곳(결정 로그 주석·정의서 상태·감사 decisions.md·needsDecision·overrides)에 흩어져 있다. 스펙 질문에 대한 답은 git 무시 폴더에만 남아 재실행 때 다시 묻는다. overrides에 근거가 없고, 팀 규칙의 "왜"가 남지 않는다.

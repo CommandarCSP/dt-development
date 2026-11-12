@@ -6,9 +6,11 @@ description: Use when dt-spec needs to extract intent/flow/rules/API candidates 
 
 # AnalyzeDocument
 
+> 설계: `docs/specs/2026-06-01-dt-spec-multi-source-design.md` — 본문의 "dt-spec 설계 §N"은 이 문서의 절을 가리킨다.
+
 문서 콘텐츠(Markdown/PDF/웹)에서 페이지의 의도/흐름/규칙/API 후보를 추출하고, 필요한 경우 UI 구조를 추론한다.
 
-## 책임 (design doc(2026-06-01) §6-1)
+## 책임 (dt-spec 설계 §6-1)
 
 - 문서 콘텐츠 → 의도/흐름/규칙/API 후보 추출 (의도 영역 풍부).
 - UI **구조**(components/semanticUIElements + 계층 parentContext)는 문서에 화면 단서가 있으면 추출, 없으면 요구사항으로부터 추론(`_inferred`).
@@ -19,7 +21,7 @@ description: Use when dt-spec needs to extract intent/flow/rules/API candidates 
 ## 입력
 
 - `source` — `{ type: 'markdown' | 'pdf' | 'web', locator, content }` (단일 ResolvedSource)
-  - **`content`는 소스 해석 레이어 [A]가 이미 로드한 값** — 이 스킬은 파일 읽기/PDF 추출/URL fetch를 직접 수행하지 않는다 (design doc(2026-06-01) §6-4).
+  - **`content`는 소스 해석 레이어 [A]가 이미 로드한 값** — 이 스킬은 파일 읽기/PDF 추출/URL fetch를 직접 수행하지 않는다 (dt-spec 설계 §6-4).
   - PDF가 이미지 위주이면 `content`에 이미지가 포함되며, 이 스킬은 멀티모달로 읽는다.
 - `projectContext` — CollectProjectContext 출력
 
@@ -47,7 +49,7 @@ figma 어댑터와 동일 계약. 단 시각 영역(designTokens/layoutTree)은 
 
 ### 출력 필드 상세
 
-**_provenance** — 항목 출처 표기 (design doc(2026-06-01) §5-1):
+**_provenance** — 항목 출처 표기 (dt-spec 설계 §5-1):
 - 문서에서 직접 추출한 항목: `{ type: 'markdown' | 'pdf' | 'web', locator }` (입력 source와 동일 타입/locator)
 - 요구사항으로부터 **추론**한 구조 항목: `{ type: 'inferred' }`
 
@@ -60,7 +62,7 @@ figma 어댑터와 동일 계약. 단 시각 영역(designTokens/layoutTree)은 
 
 **parentContext** (`semanticUIElements[].parentContext`) — 부모 컨테이너 id. 계층은 구조 정보이므로 추론 가능. 이 계층이 layout-skeleton.md 구조 스켈레톤(§7-2 case 2)의 중첩 입력이 된다.
 
-## 절차 (design doc(2026-06-01) §6-3)
+## 절차 (dt-spec 설계 §6-3)
 
 ### Step 1: 문서 구조 파악
 
@@ -97,7 +99,7 @@ figma 어댑터와 동일 계약. 단 시각 영역(designTokens/layoutTree)은 
 
 ### Step 3: API 후보 추출
 
-**값은 절대 추정하지 않는다.** (design doc(2026-06-01) 핵심 결정 6)
+**값은 절대 추정하지 않는다.** (dt-spec 설계 핵심 결정 6)
 
 - **명시적 API표/엔드포인트/HTTP 메서드** → `apiCandidates` (있는 값 그대로, `confidence: 'confident'`). method/endpoint/requestSchema/responseSchema를 문서에서 읽어 채운다.
 - **동작 서술만 있고 API 값 없음** → 후보만 등록(`confidence: 'ambiguous'`), method/endpoint/schema는 비운다. AskMissingRequirement가 사용자로부터 받음.
@@ -115,7 +117,7 @@ figma 어댑터와 동일 계약. 단 시각 영역(designTokens/layoutTree)은 
 **경우 B — 화면 단서 없음** (순수 요구사항/정책/API 문서):
 - 요구사항·사용자 스토리·비즈니스 규칙으로부터 **합리적인 UI 구조를 추론**한다.
 - 추론 항목에 `_inferred: true` + `_provenance: { type: 'inferred' }` 부여.
-- parentContext(부모-자식 계층)도 함께 추론한다 — 계층은 구조 정보이므로 추론 대상 (design doc(2026-06-01) §6-3 결정 6 정합).
+- parentContext(부모-자식 계층)도 함께 추론한다 — 계층은 구조 정보이므로 추론 대상 (dt-spec 설계 §6-3 결정 6 정합).
 - **추론 대상은 구조뿐** — designTokens·layoutTree(시각 값)는 단서가 있어도 채우지 않는다.
 - 추론된 구조가 전혀 없는 경우(순수 API/정책 문서): components/semanticUIElements를 비워서 반환한다. 이 경우 orchestrator(GeneratePageDevSpec)가 §7-2 case 3 빌드 게이트를 통해 사용자에게 확인한다 — 이 스킬은 게이트를 직접 실행하지 않는다.
 
@@ -129,12 +131,12 @@ figma 어댑터와 동일 계약. 단 시각 영역(designTokens/layoutTree)은 
 - 머지·충돌 탐지는 머지 레이어 [C]가 수행.
 - `_inferred` 항목이 포함된 경우 orchestrator가 산출물 status를 draft로 설정한다 (이 스킬은 status를 직접 설정하지 않음).
 
-## 콘텐츠 실패 계약 (design doc(2026-06-01) §6-5)
+## 콘텐츠 실패 계약 (dt-spec 설계 §6-5)
 
 - `content`가 비었거나 의미 추출이 불가능할 경우 → **빈 IR을 반환하지 말고 에러를 throw**한다. orchestrator(GeneratePageDevSpec)가 사용자에게 보고한다.
-- 이 스킬에 도달한 시점에 `content`는 항상 존재한다 (web fetch 실패 등은 소스 해석 레이어 [A]가 처리 — design doc(2026-06-01) §4-5).
+- 이 스킬에 도달한 시점에 `content`는 항상 존재한다 (web fetch 실패 등은 소스 해석 레이어 [A]가 처리 — dt-spec 설계 §4-5).
 - 에러 규약은 sibling analyze 스킬(`analyze-figma`)과 동일하다.
 
 ## 병렬 실행
 
-입력이 ResolvedSource 단일 객체(+ projectContext)로 독립적이므로, 다른 어댑터(`analyze-figma`)와 **병렬 실행 OK** (design doc(2026-06-01) §3 레이어 [B]).
+입력이 ResolvedSource 단일 객체(+ projectContext)로 독립적이므로, 다른 어댑터(`analyze-figma`)와 **병렬 실행 OK** (dt-spec 설계 §3 레이어 [B]).

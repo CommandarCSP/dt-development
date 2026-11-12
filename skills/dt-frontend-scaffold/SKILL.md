@@ -1,6 +1,6 @@
 ---
 name: dt-frontend-scaffold
-description: Use when the user requests creating a new React project following dt-frontend architecture, adding a new domain (e.g. "comments 도메인 추가"), or extending an existing domain (e.g. "좋아요 기능 추가"). Orchestrates a 5-phase multi-agent workflow with phase-level mini-reviews and a final full review. Requires Plan 1 patterns and Plan 2 review runtime to be installed.
+description: Use when the user requests creating a new React project following dt-frontend architecture, adding a new domain (e.g. "comments 도메인 추가"), or extending an existing domain (e.g. "좋아요 기능 추가"). Orchestrates a 5-phase multi-agent workflow with phase-level mini-reviews and a final full review. Uses the dt-frontend-architecture/testing rules and the dt-frontend-review engine.
 ---
 
 # dt-frontend Scaffold
@@ -55,7 +55,7 @@ Final: Critical 잔존 시 1회 repair, 그래도 실패면 사용자 보고
 - `scripts/gate.mjs`: tsc + vitest + dt-frontend-review partial 게이트
 - `${CLAUDE_PLUGIN_ROOT}/agents/fe-builder.md`: 5레이어 구현 워커(Task dispatch). 레이어 룰은 `dt-frontend-architecture`/`-testing`(레이어별 prompt 없음 — 통합됨).
 - `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`: 격리 리뷰 워커(`stack:frontend`, verdict만 반환)
-- `dt-frontend-review`(Plan 2): partial mode (phase mini-review), full mode (final review)
+- `dt-frontend-review`: partial mode (phase mini-review), full mode (final review)
 
 ## 활성화 조건
 
@@ -71,13 +71,13 @@ variant: `new-project | new-domain | extend-domain` (생략 시 의도 추론)
 
 ## 의존성
 
-- Plan 1: architecture/testing patterns (신규 프로젝트는 공식 CLI 스캐폴드 — 보일러플레이트 템플릿 미사용)
-- Plan 2: dt-frontend-review (partial + full mode)
+- `dt-frontend-architecture`·`dt-frontend-testing`: 레이어·테스트 규칙 (신규 프로젝트는 공식 CLI 스캐폴드 — 보일러플레이트 템플릿 미사용)
+- `dt-frontend-review`: 리뷰 엔진(partial + full mode)
 - Node 18+
 - 사용자 프로젝트에 `pnpm`, `npx tsc`, `npx vitest` 가용
 
-## 한계 (Plan 3 v1)
+## 한계
 
-- Contract validator는 tsc에 의존 (ts-morph 기반 export-name 검증은 Plan 3+로 연기)
+- Contract validator는 tsc에 의존 (ts-morph 기반 export-name 검증은 아직 없음)
 - repair loop는 1회만 (실패 시 사용자 개입 필요)
 - new-project 분기에서 사용자 입력 부족 시 prompt로 보완
