@@ -37,7 +37,7 @@ export function FollowedUserList() {
   );
 }
 ```
-(현재 mvi `FollowedUserList`/`RecommendedUserList` 케이스 — `users.length === 0 && !isLoading`
+(흔한 사례: 팔로우·추천 사용자 목록 — `users.length === 0 && !isLoading`
 빈 상태 분기가 없어 0건일 때 안내가 표시되지 않는다.)
 
 ## ✅ Correct

@@ -17,7 +17,7 @@ covers:
     why: 관리자 전용
 changelogCovers: [작업 트레이 개선]
 ---
-# Strata
+# Acme Notes
 본문.
 `;
 const ITEMS = [

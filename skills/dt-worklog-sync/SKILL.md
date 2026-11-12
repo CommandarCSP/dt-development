@@ -1,12 +1,12 @@
 ---
 name: dt-worklog-sync
 description: >-
-  Use when a developer (FE/BE) wants to sync their development work to Jira following the HNINE JIRA guideline — summarize git commits/diff + current session + manual notes into Jira Sub-tasks (the developer's unit) under a Story/Task, transition status, and attach deliverable links. If no parent Story/Task exists, asks the user and (on consent) creates one — Story for screen/feature dev, Task for non-screen dev work (요구사항분석·설계·인프라·배포 등) under the 수행 Epic. Out of scope: design(UX/Visual) sub-tasks, QA bug verification, PM Epic/Story management. Also optionally attaches an existing Confluence doc link as a Jira comment (read-only — doc authoring is dt-confluence-doc). Triggers on "작업 Jira에 정리/등록", "worklog 동기화", "/dt-worklog".
+  Use when a developer (FE/BE) wants to sync their development work to Jira following the the organization Jira guideline preset — summarize git commits/diff + current session + manual notes into Jira Sub-tasks (the developer's unit) under a Story/Task, transition status, and attach deliverable links. If no parent Story/Task exists, asks the user and (on consent) creates one — Story for screen/feature dev, Task for non-screen dev work (요구사항분석·설계·인프라·배포 등) under the 수행 Epic. Out of scope: design(UX/Visual) sub-tasks, QA bug verification, PM Epic/Story management. Also optionally attaches an existing Confluence doc link as a Jira comment (read-only — doc authoring is dt-confluence-doc). Triggers on "작업 Jira에 정리/등록", "worklog 동기화", "/dt-worklog".
 ---
 
 # dt-worklog-sync
 
-**개발자(FE/BE)의 개발 작업**을 **HNINE JIRA 가이드라인**(`references/jira-guideline.md`)에 맞게 Jira에 동기화한다.
+**개발자(FE/BE)의 개발 작업**을 **조직 Jira 가이드라인**(`references/jira-guideline.md`)에 맞게 Jira에 동기화한다.
 기본 단위는 **Sub-task**(가이드라인 "개인이 수행할 실제 업무 단위"). 모든 쓰기는 **dry-run 승인 후** 실행한다.
 
 ## 범위 (개발자 전용)

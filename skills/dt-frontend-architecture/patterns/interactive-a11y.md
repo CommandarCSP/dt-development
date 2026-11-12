@@ -34,7 +34,7 @@ export function FeedPostCard({ postId, onClick }: Props) {
   );
 }
 ```
-(현재 mvi `FeedPostCard`의 카드 컨테이너 `<article>` 케이스 — 작성자 영역은 3종을
+(흔한 사례: 피드 카드의 컨테이너 `<article>` — 작성자 영역은 3종을
 갖췄으나 상세로 이동하는 컨테이너는 `onClick`만 있어 키보드로 게시물 상세 진입 불가.)
 
 ## ✅ Correct

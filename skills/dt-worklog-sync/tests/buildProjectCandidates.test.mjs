@@ -20,9 +20,9 @@ const PAGE = {
   total: 3,
   isLast: true,
   values: [
-    { id: '11780', key: 'SAP', name: '[SKHY] AI PoC 과제', projectCategory: { name: '2026년' } },
-    { id: '12144', key: 'S3W', name: '[SKHY] 3D Wafermap 개발', projectCategory: { name: '2026년' } },
-    { id: '10042', key: 'PORT', name: 'HNINE_Portfolio', projectCategory: { name: 'In-house' } },
+    { id: '11780', key: 'SAP', name: '[ACME] AI PoC 과제', projectCategory: { name: '2026년' } },
+    { id: '12144', key: 'S3W', name: '[ACME] 3D 뷰어 개발', projectCategory: { name: '2026년' } },
+    { id: '10042', key: 'PORT', name: 'Company_Portfolio', projectCategory: { name: 'In-house' } },
   ],
 };
 const SITE = 'your-site.atlassian.net';
@@ -30,7 +30,7 @@ const SITE = 'your-site.atlassian.net';
 test('extractProjects normalizes a single-page response', () => {
   const got = extractProjects(PAGE);
   assert.equal(got.length, 3);
-  assert.deepEqual(got[0], { id: '11780', key: 'SAP', name: '[SKHY] AI PoC 과제', category: '2026년' });
+  assert.deepEqual(got[0], { id: '11780', key: 'SAP', name: '[ACME] AI PoC 과제', category: '2026년' });
 });
 
 test('extractProjects flattens an array of page responses', () => {
@@ -64,9 +64,9 @@ test('renderTable outputs a newest-first lightweight table with URLs', () => {
   const lines = table.split('\n');
   assert.equal(lines[0], '| 키 | 이름 | URL |');
   assert.equal(lines[1], '|---|---|---|');
-  assert.equal(lines[2], '| S3W | [SKHY] 3D Wafermap 개발 | https://your-site.atlassian.net/browse/S3W |');
-  assert.equal(lines[3], '| SAP | [SKHY] AI PoC 과제 | https://your-site.atlassian.net/browse/SAP |');
-  assert.equal(lines[4], '| PORT | HNINE_Portfolio | https://your-site.atlassian.net/browse/PORT |');
+  assert.equal(lines[2], '| S3W | [ACME] 3D 뷰어 개발 | https://your-site.atlassian.net/browse/S3W |');
+  assert.equal(lines[3], '| SAP | [ACME] AI PoC 과제 | https://your-site.atlassian.net/browse/SAP |');
+  assert.equal(lines[4], '| PORT | Company_Portfolio | https://your-site.atlassian.net/browse/PORT |');
   assert.ok(!table.includes('avatar'), 'avatarUrls가 새어나오면 안 된다');
 });
 
@@ -113,7 +113,7 @@ test('CLI table mode prints the newest-first table', () => {
     const r = spawnSync('node', [CLI, 'table', file, SITE], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     const lines = r.stdout.trim().split('\n');
-    assert.equal(lines[2], '| S3W | [SKHY] 3D Wafermap 개발 | https://your-site.atlassian.net/browse/S3W |');
+    assert.equal(lines[2], '| S3W | [ACME] 3D 뷰어 개발 | https://your-site.atlassian.net/browse/S3W |');
   });
 });
 
@@ -197,7 +197,7 @@ test('CLI setup writes the three config files into the consumer root', () => {
   withSetupEnv((root, dump) => {
     const r = spawnSync('node', [CLI, 'setup', dump, 'sap', SITE, 'cloud-123', root], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes('[SKHY] AI PoC 과제'), '성공 출력에 프로젝트 이름이 보여야 한다');
+    assert.ok(r.stdout.includes('[ACME] AI PoC 과제'), '성공 출력에 프로젝트 이름이 보여야 한다');
     const cfg = JSON.parse(readFileSync(join(root, '.dt-worklog.json'), 'utf8'));
     assert.equal(cfg.defaultProjectKey, 'SAP');
     assert.equal(cfg.site, SITE);

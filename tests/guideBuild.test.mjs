@@ -26,8 +26,10 @@ function stampReview(dir) {
 }
 
 // PDF smoke 는 playwright 패키지와 **내려받은 chromium 실행 파일**이 둘 다 있을 때만 돈다(없으면 skip — `npx playwright install chromium`).
-const PLAYWRIGHT_FROM = process.env.DT_GUIDE_PW_FROM ?? fileURLToPath(new URL('../../mvi/', import.meta.url));   // 레포 안 상대 경로 — 없으면 아래 chromiumReady 가 false 라 skip
+// DT_GUIDE_PW_FROM = playwright 가 설치된 프로젝트 루트(예: 웹 앱 하나). 없으면 skip.
+const PLAYWRIGHT_FROM = process.env.DT_GUIDE_PW_FROM;
 const chromiumReady = (() => {
+  if (!PLAYWRIGHT_FROM) return false;
   try { return existsSync(loadChromium(PLAYWRIGHT_FROM).executablePath()); } catch { return false; }
 })();
 

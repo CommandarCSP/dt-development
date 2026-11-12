@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import {
   parseStatus,
@@ -49,12 +48,10 @@ test('assignIntent: 주입된 existingDomains로 결정', () => {
   assert.deepEqual(assignIntent(['files'], []), [{ name: 'files', intent: 'new-domain' }]);
 });
 
-const SPEC_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../mvi/docs/specs/pages/file-management',
-);
+// DT_SPEC_FIXTURE_DIR = dt-spec 으로 만든 실제 페이지 스펙 폴더(file-management, proposed API 5개). 없으면 건너뛴다.
+const SPEC_DIR = process.env.DT_SPEC_FIXTURE_DIR ?? '';
 
-const hasSpecFixture = existsSync(join(SPEC_DIR, 'requirements.md'));   // 레포 밖 실측 스펙 — 없으면 건너뛴다
+const hasSpecFixture = SPEC_DIR !== '' && existsSync(join(SPEC_DIR, 'requirements.md'));
 
 test('parseSpecForScaffold: file-management 픽스처 (existingDomains=[])', { skip: !hasSpecFixture }, () => {
   const seed = parseSpecForScaffold(SPEC_DIR, { existingDomains: [] });
