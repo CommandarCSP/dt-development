@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # git-flow·hooks 테스트가 임시 저장소에 커밋을 만든다 — CI 러너에는 git 사용자 설정이 없다.
+      - name: git 사용자 설정
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "ci@example.com"
+          git config --global init.defaultBranch main
+
+      # 조직별 금칙어 목록은 목록 자체가 식별자라 저장소에 두지 않는다.
+      # 저장소 Secret DT_FORBIDDEN_RULES_JSON 이 있으면 파일로 풀어 스캔에 더한다.
+      # 없으면(포크 PR 등) 내장 규칙(이메일·cloudId)만 돈다.
+      - name: 금칙어 목록 준비
+        env:
+          RULES_JSON: ${{ secrets.DT_FORBIDDEN_RULES_JSON }}
+        run: |
+          if [ -n "$RULES_JSON" ]; then
+            printf '%s' "$RULES_JSON" > "$RUNNER_TEMP/forbidden-patterns.json"
+            echo "DT_FORBIDDEN_RULES=$RUNNER_TEMP/forbidden-patterns.json" >> "$GITHUB_ENV"
+            echo "조직 금칙어 목록 사용"
+          else
+            echo "조직 금칙어 목록 없음 — 내장 규칙만 검사"
+          fi
+
+      - name: 테스트
+        run: npm test
+
+      - name: 금칙어 스캔
+        run: npm run scan

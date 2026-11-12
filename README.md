@@ -92,10 +92,13 @@ Jira 연동 위저드는 cloudId·site를 `getAccessibleAtlassianResources`로 �
 ## 개발
 
 ```bash
-npm test
+npm test        # tests/ · skills/*/tests/ · hooks/tests/ 전부
+npm run scan    # 금칙어 스캔(이메일·cloudId 내장 규칙)
 ```
 
-스킬·룰·스크립트는 모두 텍스트와 작은 `.mjs` 헬퍼로 이루어져 있어, 빌드(코드를 실행 가능한 형태로 미리 묶어 두는 과정) 없이 Node만으로 테스트가 돌아갑니다.
+스킬·룰·스크립트는 모두 텍스트와 작은 `.mjs` 헬퍼로 이루어져 있어, 빌드(코드를 실행 가능한 형태로 미리 묶어 두는 과정) 없이 Node만으로 테스트가 돌아갑니다. push·PR마다 GitHub Actions가 같은 두 명령을 Node 22로 돌립니다.
+
+조직별 금칙어(회사·고객사 이름 등)는 목록 자체가 식별자라 저장소에 넣지 않습니다. 저장소 밖 JSON을 `DT_FORBIDDEN_RULES=<파일> npm test`로 넘기고, CI에는 저장소 Secret `DT_FORBIDDEN_RULES_JSON`에 같은 JSON을 넣습니다. 형식은 `scripts/scanForbidden.mjs` 머리 주석에 있습니다.
 
 ---
 
