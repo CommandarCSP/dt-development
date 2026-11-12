@@ -57,11 +57,13 @@ auditor 워커와 dt-audit 조율자가 공유하는 판정 어휘. 여기 없�
 
 ## 워커 → 조율자 반환 계약
 
-원자료(코드 본문·snapshot 전문·git diff 전문)는 워커 컨텍스트에 격리하고 이 구조만 반환한다:
+원자료(코드 본문·snapshot 전문·git diff 전문)는 워커 컨텍스트에 격리하고 이 구조만 반환한다. 판정형 봉투(`docs/orchestration-policy.md` 원칙 5)다 — 공통 필드 `verdict`·`findings`·`summary` 위에 감사 고유 필드를 얹는다.
 
 ```
-{ track,
+{ verdict: CLEAN | GAPS,           # findings(확인 필요 🔴 제외)가 0건이면 CLEAN
   findings: [Finding...],          # id는 비워서 반환(조율자가 부여)
+  summary: "<track> — 단위 N개 검사·finding M건(🔴 K건)",
+  track,
   surface: {...},                  # 크로스스택용 — fe: 호출 API 목록(IF-ID 매핑 포함), be: 노출 엔드포인트 목록
   traceability: [ {sourceRef, files: [...]} ],
   checked: { units: N, skipped: [{unit, 사유}] },

@@ -43,18 +43,20 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 - 필수 산출물이 빈 placeholder면 검증 실패(존재-게이트).
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
-## 핸드오프 (반환 — D4 계약)
-파일로 쓰고 조율자엔 **요약만** 반환한다:
+## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
+파일로 쓰고 조율자엔 **봉투만** 반환한다:
 ```
-{ units: [{ page, status: finalized|draft, artifacts:[docs/specs/pages/<page>/*.md] }],
+{ status: done | draft | blocked,                              // 모든 페이지 finalized → done, 하나라도 draft → draft
+  artifacts: [docs/specs/pages/<page>/*.md, docs/specs/interactions.md?],
+  needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],   // 사람 결정 목록 (자립적)
+  summary: "페이지 N개·FR 합계·크로스페이지 상호작용 M건·미해소 K건",
+  units: [{ page, status: finalized|draft, artifacts:[docs/specs/pages/<page>/*.md] }],   // 역할별 필드
   interactions: "docs/specs/interactions.md" | null,           // 2개 이상 페이지면 산출
-  needsDecision: [{ topic, options, evidence, reflectsTo }],   // 사람 결정 목록 (자립적)
   definitionImpact?: [{ if, change }],                          // 상향 정합 결과
-  writingLint: { fixed: <n>, kept: <n> },                        // 한글 lint 자기 수정 결과
-  summary: "페이지 N개·FR 합계·크로스페이지 상호작용 M건·미해소 K건" }
+  writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
-- `needsDecision`이 비어 있지 않으면 조율자가 AskUserQuestion → 답과 함께 **재dispatch**(나는 `.dt-spec/<page>/`에서 이어서 재개).
+- `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 **재dispatch**한다(나는 `.dt-spec/<page>/`에서 이어서 재개). `answers`에 있는 `id`는 다시 묻지 않는다.
 - 컴팩팅이 나도 각 페이지 progress.md + extraction/merged.json + 이미 쓴 스펙 파일로 내용이 보존됨(홀리스틱이어도 파일 우선이라 안전).
 
 ## 안 하는 것

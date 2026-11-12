@@ -25,8 +25,8 @@ description: Use when the user wants to build a full web app end-to-end from req
 - **[plan]**(durable 3겹의 셋째 — `definition → spec → plan`): 구현 직전 **`plan-author`(model: opus)**가 **한 스택의 전 유닛 스펙 + interactions.md를 한 시야로** 읽어 유닛별 코드-레벨 체크박스(`docs/specs/<unit>/plan.md`)에 **크로스유닛 배선(`[X]`)** 까지 박고(강한 모델이 판단 소진), builder(model: sonnet)가 그 체크박스를 유닛 격리로 실행(컴팩팅 헷지). 조율자가 plan-author dispatch(스택당 1회) → 사용자 **plan 승인 게이트** → builder. plan.md 최신이면 재생성 생략.
 
 ## 얇은 조율자 규칙
-- **포인터만 보유**: 각 단계는 산출물을 파일로 쓰고 조율자엔 `{위치, 상태, needsDecision, 요약}`만 반환(이중 동작 계약). 조율자 컨텍스트는 단계 레지스터로만 부푼다.
-- **HITL은 조율자에만**: 단계 진입 게이트(스펙 확정·**plan 승인**)와 워커의 `needsDecision`은 조율자가 `AskUserQuestion`으로 묻고, 답과 함께 워커를 **재dispatch**한다(워커는 `.dt-spec/`·`.dt-impl/`에서 재개). 사용자 채널은 조율자(메인 세션)에만 있음.
+- **포인터만 보유**: 각 단계는 산출물을 파일로 쓰고 조율자엔 봉투(`{ status, artifacts, needsDecision, summary }` — `docs/orchestration-policy.md` 원칙 5·6)만 반환(이중 동작 계약). 조율자 컨텍스트는 단계 레지스터로만 부푼다.
+- **HITL은 조율자에만**: 단계 진입 게이트(스펙 확정·**plan 승인**)와 워커의 `needsDecision`은 조율자가 `AskUserQuestion`으로 묻고(원칙 6: 묶음·`recommended`·왕복 상한 2회), `answers`와 함께 워커를 **재dispatch**한다(워커는 `.dt-spec/`·`.dt-impl/`에서 재개). 사용자 채널은 조율자(메인 세션)에만 있음.
 - **스펙·플랜은 홀리스틱(병렬 아님)**: 유닛별로 spec-author/plan-author를 병렬 dispatch하지 **않는다** — 스택당 **한 번** dispatch해 전 유닛을 한 컨텍스트에서 짓게 한다(크로스유닛 상호작용 포착). 이게 이전 "페이지별 병렬 스펙"에서 바뀐 핵심.
 - **구현(builder)만 유닛 간 병렬**: 서로 다른 리소스/페이지의 builder는 **병렬 dispatch**(다른 경로라 충돌 없음 — 원칙 1). 유닛 내부는 순차. 각 builder는 자기 plan(크로스유닛 `[X]` 배선 포함) + interactions.md를 소비. **단 BE 예외**: 모든 리소스가 `prisma/schema.prisma`를 공유하므로 **스키마 머지(Phase 1~2) 구간은 순차화**하고, FK/조인으로 다른 리소스를 참조하는 리소스(예: feed→posts·users)는 **의존 리소스 뒤로** 둔다(순서 근거는 plan/interactions.md의 크로스리소스 노트). FE는 경로 분리라 페이지 간 완전 병렬.
 - **수정 루프**: reviewer가 `NEEDS_REPAIR`면 일회성 builder는 죽었으므로 **verdict(repairTargets) + `.dt-impl/<unit>` 상태로 같은 builder를 재dispatch**해 그 부분만 수정(메인 직접수정 X). **1회 repair 후 실패면 사용자 보고·중단**(자동 무한루프 금지).

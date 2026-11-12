@@ -40,10 +40,10 @@ description: Use when the user wants an end-user guide (사용자 가이드·사
 4. **무인 규칙** — 무인이면 §0의 질문은 묻지 않는다 — 타입은 감지값(감지 불가면 `web`, `assumed:타입 미감지`), 제품명은 `package.json name`(`assumed:제품명`), 사내 표지(`forbiddenMarkers`)는 기본값만, `.gitignore` 추가는 하고 기록한다.
 
 ### §1. analyze
-1. `guide-analyst` dispatch — 입력 `{ projectRoot, config, priorInventoryPath?, unattended }`. 반환은 `{ inventoryPath, needsDecision, surface, writingLint, summary }`.
-2. `needsDecision`이 있으면 **한 번에 묶어** `AskUserQuestion`으로 묻는다(항목이 4개를 넘으면 나눈다). 각 항목은 자립적이니 `topic`·`options[].label`·`options[].description`·`evidence`·`reflectsTo`를 그대로 옮긴다.
-3. 무인이면 사람 대신 고른다 — **`label` 끝에 `(기본값)`이 붙은 옵션**을 고르는 것이 1순위다. 표시가 없으면 `${CLAUDE_PLUGIN_ROOT}/skills/dt-guide/references/prep-checklist.md`의 「무인 기본값」 열, 그것도 없으면 안전한 쪽으로 — 사외 공개가 애매하면 숨김, 캡처가 애매하면 `manual`, 문서와 코드가 어긋나면 코드. 고른 답에는 `assumed:<사유>` 라벨을 붙인다.
-4. 답을 `answers: [{ topic, answer, label }]`로 실어 `guide-analyst`를 다시 dispatch 한다. 돌아온 `needsDecision`이 비면 이 단계는 끝이다.
+1. `guide-analyst` dispatch — 입력 `{ projectRoot, config, priorInventoryPath?, unattended }`. 반환은 작업형 봉투 `{ status, artifacts, needsDecision, summary, inventoryPath, surface, writingLint }`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6).
+2. `needsDecision`이 있으면 **한 번에 묶어** `AskUserQuestion`으로 묻는다(항목이 4개를 넘으면 나눈다). 각 항목은 자립적이니 `question`·`options[].label`·`options[].description`·`evidence`·`reflectsTo`를 그대로 옮기고, `recommended` 선택지는 맨 앞에 두고 label 끝에 "(권장)"을 붙인다(원칙 6).
+3. 무인이면 사람 대신 고른다 — **`recommended`로 지정된 옵션**을 고르는 것이 1순위다. 표시가 없으면 `${CLAUDE_PLUGIN_ROOT}/skills/dt-guide/references/prep-checklist.md`의 「무인 기본값」 열, 그것도 없으면 안전한 쪽으로 — 사외 공개가 애매하면 숨김, 캡처가 애매하면 `manual`, 문서와 코드가 어긋나면 코드. 고른 답에는 `assumed:<사유>` 라벨을 붙인다.
+4. 답을 `answers: [{ id, choice, note }]`로 실어 `guide-analyst`를 다시 dispatch 한다 — `note`에는 사람이 고르면 `user-confirmed`, 무인으로 골랐으면 `assumed:<사유>`를 적는다(인벤토리 출처 라벨이 된다). 왕복은 2회까지(원칙 6). 돌아온 `needsDecision`이 비면 이 단계는 끝이다.
 5. **체크포인트 1** — 인벤토리 표(시나리오·화면·캡처 모드·공개·준비물), `surface` 요약(`type`·`router`·`confidence`·`hints`·`screenCount`·`externalRedirects`), `writingLint`(고친 수·남긴 수), `summary` 한 줄을 보이고 승인받는다. `confidence`가 `fallback`이거나 `router`가 `custom — …`이면 "스크립트가 라우터를 몰라 워커가 코드에서 직접 찾았다"고 밝힌다. 무인이면 "자동 승인(무인)"을 `.dt-guide/progress.md`에 적는다.
 
 ### §2. capture

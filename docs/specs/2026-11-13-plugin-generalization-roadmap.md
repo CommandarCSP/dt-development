@@ -241,3 +241,6 @@
 | GEN-39 전문 에이전트 보강 | P4 | e2e-author 신설, 페이지 조립 fe-builder로, 읽기 전용 에이전트 도구 제한, tracer needsDecision, ko-writing-reviewer 계약 |
 
 기존 피처에 붙인 원칙 리뷰 항목: GEN-09(DEV-14) Git 호스트별 URL, GEN-12(DEV-17) 기본 브랜치, GEN-05(DEV-10) BE 비기본 스택 감지.
+
+### M6 진행 기록
+- **GEN-35 완료(DEV-42, 2026-11-13).** 결정: 프로토콜은 `docs/orchestration-policy.md` 원칙 5~7로 둔다(기존 SSOT 확장). 에이전트를 작업형(11)·판정형(3)으로 나눈다 — 작업형 공통 `{status: done|draft|blocked, artifacts, needsDecision, summary}`, 판정형 공통 `{verdict, findings, summary}`, 역할별 필드는 유지. needsDecision 항목 `{id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo}`, 답 `answers:[{id, choice, note?}]`, 왕복 상한 2회, 권장 선택지는 `recommended` 필드(질문 창에서 "(권장)"). 구조 테스트가 봉투·항목 모양·분류 누락을 잡는다. 이 과정에서 GEN-39 항목 중 두 가지를 먼저 처리했다: dt-handbook이 tracer의 needsDecision을 처리하지 않던 것, dt-handbook이 ko-writing-reviewer의 `PASS`를 `OK`로 기다리던 것.

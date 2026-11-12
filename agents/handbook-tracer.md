@@ -54,6 +54,11 @@ description: /dt-handbook trace 워커 — 시나리오 하나의 호출 사슬�
 
 ## 반환
 
-`{ tracePath, partial, stepCount, needsDecision }`
+작업형 봉투(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6):
 
-**직접 묻지 않는다.** 진입점이 실제로 무엇을 가리키는지 코드만으로 못 정하면 `needsDecision` 으로 올린다.
+`{ status: done | draft | blocked, artifacts: [tracePath], needsDecision, summary, tracePath, partial, stepCount }`
+
+- `status`: 사슬을 끝까지 따라갔으면 `done`, 끊겨서 `partial: true` 이거나 needsDecision이 남으면 `draft`.
+- `summary`: "<flow> — 단계 N개(끊김 여부)" 한 줄.
+
+**직접 묻지 않는다.** 진입점이 실제로 무엇을 가리키는지 코드만으로 못 정하면 `needsDecision: [{ id, topic, question, options: [{ label, description }], recommended, evidence, reflectsTo }]` 으로 올린다.

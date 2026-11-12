@@ -30,13 +30,14 @@ description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict
    - **매니페스트 미배선:** `design.md ## 에셋 매니페스트`에 실 에셋(`(미수거)` 아님)이 있는데 컴포넌트가 그 파일을 참조하지 않고 플레이스홀더로 남아 있으면 → `rule: design-fidelity`(hint: 어느 에셋이 미배선인지). 정적 `<img>`-no-src·빈 src·임의 팔레트는 review.mjs가 이미 잡으니 중복 보고 금지. Figma 소스/토큰/매니페스트가 애초에 없으면 검증 안 함(과검 금지).
 4. **코드는 수정하지 않는다.**
 
-## 반환 (verdict — 이것만 조율자/빌더에 돌려준다, D4 계약)
+## 반환 (판정형 봉투 — `docs/orchestration-policy.md` 원칙 5, 이것만 조율자에 돌려준다)
 ```
 { verdict: PASS | NEEDS_REPAIR,
-  critical: <N>,
+  findings: [ { file, rule, violation, hint } ],      // = repairTargets (같은 배열) — 자립적, 빌더가 "뭘 왜" 알고 고침
+  summary: "<stack> <mode> — critical N·위반 M·coverage <pass|fail>",
+  critical: <N>,                                       // 판정 고유 필드
   coverage: <pass|fail (수치)>,
-  repairTargets: [ { file, rule, violation, hint } ]   // 자립적 — 빌더가 "뭘 왜" 알고 고침
-}
+  repairTargets: [ { file, rule, violation, hint } ] }
 ```
 - `repairTargets`는 **자립적**이어야 한다(file:rule:violation:hint) — needsDecision과 같은 원리. 레이어 힌트도 hint에 포함:
   - frontend 레이어 어휘: `store-query | view | ui-store | business-hook | page`

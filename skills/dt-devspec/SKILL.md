@@ -35,7 +35,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 
 - **dispatched (기본 — 서브에이전트 가용 시):**
   1. `Task`로 `definition-author` dispatch — `{ sources, --scope }` 전달. **워커가 §1~§2.5(발견·deep-read·역합치·경계추론·충실도검증)를 수행하고, §3 협의가 필요한 것은 직접 AskUserQuestion 하지 않고 `needsDecision`으로 모아 반환**하며 중간물을 `.dt-devspec/<scope>/`에 영속화.
-  2. 조율자는 `{ artifacts(draft), needsDecision[], writingLint, summary }`만 받는다(deep-read 원자료는 워커에 격리). `needsDecision`이 있으면 **조율자가 §3 협의 AskUserQuestion**(아래 §3 규칙·기초→파생·군집화·큐 완전소진)으로 묻고 → 답과 함께 `definition-author`를 **재dispatch**(워커가 §3.5 점검 + §4 산출/갱신을 `.dt-devspec/<scope>/`에서 재개). 완료 보고의 summary 끝에 `한글 lint: 고침 N·유지 M`(writingLint)을 한 줄로 보인다.
+  2. 조율자는 작업형 봉투(`{ status, artifacts, needsDecision[], summary, writingLint }` — `docs/orchestration-policy.md` 원칙 5·6)만 받는다(deep-read 원자료는 워커에 격리). `needsDecision`이 있으면 **조율자가 §3 협의 AskUserQuestion**(아래 §3 규칙·기초→파생·군집화·큐 완전소진 + 원칙 6의 묶음·`recommended`·왕복 상한 2회)으로 묻고 → `answers: [{ id, choice, note? }]`와 함께 `definition-author`를 **재dispatch**(워커가 §3.5 점검 + §4 산출/갱신을 `.dt-devspec/<scope>/`에서 재개). 완료 보고의 summary 끝에 `한글 lint: 고침 N·유지 M`(writingLint)을 한 줄로 보인다.
 - **inline degrade (원칙 4 — 서브에이전트 미지원 시):** 조율자가 아래 §1~§4를 **직접** 수행(현행 동작 — §2.5/§3.5는 종전대로 검증 서브에이전트만 격리). 워커를 안 거칠 뿐 **같은 절차·같은 산출**.
 
 > 두 모드는 **아래 §1~§4 동일 절차**를 따른다(분기 없음). 사용자 채널(§3 협의 AskUserQuestion)은 **항상 조율자(메인)에만** — 워커는 needsDecision 반환만. `definition-author` 정의는 `${CLAUDE_PLUGIN_ROOT}/agents/definition-author.md`.

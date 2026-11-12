@@ -54,16 +54,18 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 ## 게이트 (필수)
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
-## 핸드오프 (반환 — D4)
-파일로 쓰고 조율자엔 요약만:
+## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
+파일로 쓰고 조율자엔 봉투만:
 ```
-{ units: [{ unit, status: ready|draft, artifacts:[docs/specs/<...>/plan.md] }],
-  needsDecision: [{topic,options,evidence,reflectsTo}],   // 스펙 미확정분
-  writingLint: { fixed: <n>, kept: <n> },                        // 한글 lint 자기 수정 결과
-  summary: "유닛 N개·Phase 합계·크로스유닛 배선 M건·위험구간 K" }
+{ status: done | draft | blocked,                              // 모든 유닛 ready → done, 하나라도 draft → draft
+  artifacts: [docs/specs/<pages|resources>/<unit>/plan.md],
+  needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],   // 스펙 미확정분
+  summary: "유닛 N개·Phase 합계·크로스유닛 배선 M건·위험구간 K",
+  units: [{ unit, status: ready|draft, artifacts:[docs/specs/<pages|resources>/<unit>/plan.md] }],   // 역할별 필드
+  writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
-- `needsDecision` 있으면 조율자가 AskUserQuestion → 재dispatch. 비고 **사용자 플랜 승인 게이트** 후 builder가 실행.
+- `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch한다. 비어 있으면 **사용자 플랜 승인 게이트** 후 builder가 실행한다.
 
 ## 안 하는 것
 - 코드 실제 작성(builder 소관 — plan-author는 플랜만) · 사용자 직접 질문 · draft 스펙으로 추측 플랜 · 스펙에 없는 결정 임의 추가 · **크로스유닛 배선 누락**(interactions.md 액션→리액션을 plan에 안 박으면 builder가 놓침).

@@ -54,4 +54,8 @@ description: /dt-handbook write 워커 — 인벤토리·structure.json·추적 
 
 ## 반환
 
-`{ draftPath, coverage: { covered, missing }, gate: { ok, findings }, figures: { mermaid, svg }, summary }`
+작업형 봉투(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5):
+
+`{ status: done | draft | blocked, artifacts: [draftPath, 그림 파일], needsDecision: [], summary, draftPath, coverage: { covered, missing }, gate: { ok, findings }, figures: { mermaid, svg } }`
+
+- `status`: 게이트 통과·`coverage.missing` 없음이면 `done`, 아니면 `draft`. 빈 곳은 needsDecision이 아니라 `coverage`·`gate`로 보고한다.

@@ -37,16 +37,18 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 - phase 끝/최종에 **reviewer dispatch**(`stack:frontend`, `mode:partial|full`, `baseRef`=Phase 0 SHA) → verdict 수신. **직접 review.mjs 실행 안 함**(격리).
 - `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl` 상태로 fe-builder를 **재dispatch(1회)** → 그 부분만 수정·재커밋·재리뷰. 1회 후에도 실패면 사용자 보고·중단(자동 진행 금지).
 
-## 핸드오프 (반환 — D4)
-파일로 쓰고 **phase별 커밋** + `.dt-impl/<page>/progress.md` 기록. 조율자엔 요약만:
+## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
+파일로 쓰고 **phase별 커밋** + `.dt-impl/<page>/progress.md` 기록. 조율자엔 봉투만:
 ```
-{ unit:"<page>", status: done|needs_repair|blocked,
+{ status: done | draft | blocked,          // done=전 레이어 완료·리뷰 PASS · draft=미완 레이어 또는 리뷰 NEEDS_REPAIR 남음 · blocked=진행 불가
+  artifacts: [src 경로],
+  needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],
+  summary: "<한 줄>",
+  unit: "<page>",                          // 역할별 필드
   layersDone: [contract,services,business,view,page],
-  reviewVerdict: PASS|NEEDS_REPAIR,
-  needsDecision: [{topic,options,evidence,reflectsTo}],
-  artifacts:[src 경로], summary }
+  reviewVerdict: PASS | NEEDS_REPAIR }
 ```
-- 사람 결정(스펙 모호·계약 충돌 등)은 직접 묻지 말고 `needsDecision`으로 → 조율자 AskUserQuestion → 재dispatch.
+- 사람 결정(스펙 모호·계약 충돌 등)은 직접 묻지 말고 `needsDecision`으로 올린다 → 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch.
 
 ## 안 하는 것
 - 페이지 스펙 생성(spec-author) · BE(be-builder) · 직접 review.mjs(reviewer) · **스펙에 없는 라우트 임의 결정**(미정이면 needsDecision) · 페이지 누적 처리(1개만).

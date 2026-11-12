@@ -33,17 +33,18 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 - `확정` IF는 lock — 무확인 변경 금지. 전역 규약은 명시 요청 없으면 재추론 안 함(불변원칙 4).
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
-## 핸드오프 (반환 — D4 계약)
-파일로 쓰고 조율자엔 **요약만**:
+## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
+파일로 쓰고 조율자엔 **봉투만**:
 ```
-{ unit: "definition[.<scope>]", status: finalized|draft,
+{ status: done | draft | blocked,                              // 정의서 status: finalized → done, draft → draft
   artifacts: [docs/specs/definition[.scope].md],
-  needsDecision: [{ topic, options, evidence, reflectsTo }],   // §3 협의 큐 (자립적)
-  writingLint: { fixed: <n>, kept: <n> },                        // 한글 lint 자기 수정 결과
-  summary: "SP N·IF M(확정/협의중/미해소 분포)·역합치 K건" }
+  needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],   // §3 협의 큐 (자립적)
+  summary: "SP N·IF M(확정/협의중/미해소 분포)·역합치 K건",
+  unit: "definition[.<scope>]",                                 // 역할별 필드
+  writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
-- `needsDecision` 비어있지 않으면 조율자가 AskUserQuestion(§3) → 답과 함께 재dispatch(`.dt-devspec/<scope>/`에서 §3.5·§4 재개).
+- `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch한다(`.dt-devspec/<scope>/`에서 §3.5·§4 재개). `answers`에 있는 `id`는 다시 묻지 않는다.
 
 ## 안 하는 것
 - 사용자 직접 질문(§3 협의) — 조율자만. · 페이지/리소스 내부 요소·NFR·풀 엔티티 모델(leaf 소관) · `확정`/전역규약 무확인 변경 · 다른 스코프 정의서 덮어쓰기.

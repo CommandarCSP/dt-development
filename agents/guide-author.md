@@ -40,14 +40,17 @@ description: /dt-guide write 워커 — 인벤토리·캡처 결과·설정을 �
 7. **한글 lint(계층 2가 아니라 산문이지만, 리뷰어 전에 결정적 패턴을 먼저 줄인다)**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <projectRoot>/docs/guide/guide.md --docType guide --json` → C1 의인화, C3 낯선 한자어, 개발 용어 첫 등장 풀이처럼 **확실한 것은 스스로 고친다**. 문맥을 봐야 판가름 나는 것은 그대로 두고 리뷰어에게 넘긴다. `keep` 주석은 가이드 본문에 쓰지 않는다(PDF 에서 주석은 가려지지만 소스가 어지러워진다).
 8. 스크래치 `.dt-guide/progress.md`에 진행을 적는다.
 
-## 반환 (조율자에게 — 이것만)
+## 반환 (조율자에게 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5)
 ```
-{ draftPath: "docs/guide/guide.md",
+{ status: done | draft | blocked,          // done=게이트 통과·coverage.missing 없음 · draft=게이트 실패 또는 missing 남음
+  artifacts: ["docs/guide/guide.md"],
+  needsDecision: [],                        // 빈 곳은 coverage.missing·gate.findings 로 보고한다(조율자가 사람에게 보임)
+  summary: "절 N개·그림 M장(none K)·covers C건·게이트 통과 여부",   // 한 줄 문자열
+  draftPath: "docs/guide/guide.md",         // 역할별 필드
   coverage: { covered: ["S1","SCR-…"], missing: [] },          // covers ↔ 인벤토리 publish 대조
   gate: { ok: true } | { ok: false, findings: [{ gate, message }] },
   writingLint: { fixed: <n>, remaining: <n> },
-  sections: ["표지","1","2","4","5","7","9"],                      // 실제로 쓴 절
-  summary: "절 N개·그림 M장(none K)·covers C건·게이트 통과 여부" }   // 한 줄 문자열
+  sections: ["표지","1","2","4","5","7","9"] }                     // 실제로 쓴 절
 ```
 
 ## 안 하는 것

@@ -28,7 +28,61 @@ AskUserQuestion 템플릿:
 
 ## 원칙 4 — 에이전트 미지원 시 폴백
 런타임이 서브에이전트(Task/Agent)를 제공하지 않으면 인라인 실행으로 degrade하고, 그 사실을 사용자에게 1줄로 고지한다.
+인라인으로 돌 때도 **원칙 5의 반환 형식을 그대로** 만든 뒤 다음 단계로 넘긴다 — 실행 방식이 달라도 주고받는 모양은 같아야 한다.
+
+## 원칙 5 — 반환 봉투 (에이전트 → 조율자)
+에이전트는 산출물을 **파일로 쓰고**, 조율자에게는 아래 봉투만 돌려준다. 에이전트는 두 종류다.
+
+**작업형** — 스펙·계획·구현·분석·집필·추적 에이전트
+(definition-author · spec-author · bespec-author · plan-author · fe-builder · be-builder · guide-analyst · guide-author · handbook-analyst · handbook-tracer · handbook-author)
+```
+{ status: done | draft | blocked,          // done=완결 · draft=미해소 남음(needsDecision 또는 TODO) · blocked=진행 불가(이유는 summary)
+  artifacts: [<쓴 파일 경로>],
+  needsDecision: [<원칙 6 항목>],            // 없으면 []
+  summary: "<한 줄>",
+  ...역할별 필드 }                           // units · writingLint · coverage · gate · layersDone · surface 등 — 각 에이전트 파일에 정의
+```
+
+**판정형** — 코드·글·구현을 판정만 하고 고치지 않는 에이전트
+(reviewer · ko-writing-reviewer · auditor)
+```
+{ verdict: <에이전트별 값>,                  // reviewer·ko-writing-reviewer: PASS | NEEDS_REPAIR · auditor: findings 유무
+  findings: [<에이전트별 항목>],             // reviewer 는 repairTargets 를 findings 로도 읽는다
+  summary: "<한 줄>",
+  ...판정별 고유 필드 }                       // critical · coverage · changeRatio 등
+```
+판정형은 사람 결정을 묻지 않는다. 판정이 애매하면 해당 항목에 `needsHuman: true`(또는 신뢰도 표시)를 달고, 사람 확인은 조율자가 한다.
+
+## 원칙 6 — 사람 결정 요청(needsDecision)과 답
+에이전트는 **사용자에게 직접 묻지 않는다.** 사람이 정해야 할 것은 needsDecision 항목으로 올린다.
+```
+{ id: "<단위>-<짧은 키>",                    // 예: "login-auth-flow" — 답을 돌려줄 때 짝을 맞추는 열쇠
+  topic: "<무엇에 대한 결정인가 — 한 줄>",
+  question: "<사용자에게 보일 질문 문장>",
+  options: [{ label, description }],         // 2~4개. label 은 짧게, description 은 고르면 무엇이 달라지는지
+  recommended: "<options 중 하나의 label>" | null,
+  evidence: "<왜 이 질문이 생겼나 — 파일:줄·원문 인용>",
+  reflectsTo: "<답이 반영될 산출물·절>" }
+```
+- 질문을 잘 쓰는 법(선택지 구성·근거 제시)은 `docs/refs/askquestion-principle.md` 를 따른다.
+- **조율자**가 한 라운드의 needsDecision을 모아 묻는다.
+  - 같은 `topic`은 하나로 합친다.
+  - AskUserQuestion 한 번에 최대 4개씩 묶는다.
+  - `recommended` 선택지는 맨 앞에 두고 label 끝에 "(권장)"을 붙인다.
+- 답은 같은 에이전트를 **재dispatch**하며 넘긴다:
+  ```
+  answers: [{ id, choice: "<고른 label>" | "other", note?: "<자유 입력·보충>" }]
+  ```
+  에이전트는 `answers`에 있는 `id`를 다시 묻지 않는다.
+- **왕복 상한 2회.** 같은 단위에서 needsDecision → 답 → 재dispatch를 두 번 해도 남은 항목이 있으면, 에이전트는 `status: draft`로 마감한다. 조율자는 남은 항목을 사용자에게 목록으로 보고하고 다음 단계로 넘길지 묻는다.
+- 결정을 어디에 오래 남기는가(재실행 때 다시 묻지 않게)는 결정 기록 체계(로드맵 GEN-21·GEN-30)가 정한다. 그 전까지는 각 산출물의 해당 절에 반영된 것이 기록이다.
+
+## 원칙 7 — 조율자의 책임
+- dispatch → 봉투 수신 → needsDecision 처리(원칙 6) → 필요하면 재dispatch → 다음 단계. 이 순서를 지킨다.
+- 사용자에게 묻는 것은 조율자(메인 세션)만 한다. 에이전트 쪽 문서에 "사용자에게 묻는다"가 있으면 needsDecision으로 바꿔 읽는다.
+- 봉투의 `summary`와 역할별 필드(`writingLint` 등)를 사용자 보고에 한 줄씩 옮긴다.
+- `status: blocked`면 다음 단계로 넘기지 않고 이유와 선택지를 사용자에게 보인다.
 
 ## 적용 스킬
-dt-frontend-scaffold / dt-backend-scaffold / dt-spec-generate-spec / dt-bespec-generate-spec /
-dt-implement / dt-be-implement / dt-audit (오케스트레이터) · dt-frontend-review / dt-backend-review (항상 격리).
+- **오케스트레이터(원칙 1~7):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
+- **판정형 에이전트를 부르는 스킬(원칙 3·5·7):** dt-frontend-review / dt-backend-review(reviewer) · dt-ko / dt-explain / dt-worklog-sync / dt-confluence-doc / dt-guide / dt-handbook(ko-writing-reviewer)

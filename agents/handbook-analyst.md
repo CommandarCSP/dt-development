@@ -53,8 +53,10 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/analyze.mjs" <projectRoot> --since-
 
 ## 반환
 
-`{ inventoryPath, structurePath, needsDecision, summary }`
+작업형 봉투(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6):
 
-**직접 묻지 않는다.** 사람이 정해야 할 것은 `needsDecision: [{ topic, options: [{ label, description }], evidence, reflectsTo }]` 로 올린다. 형식은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`. 기본값으로 삼을 선택지의 `label` 끝에 `(기본값)` 을 붙인다.
+`{ status: done | draft | blocked, artifacts: [inventoryPath, structurePath], needsDecision, summary, inventoryPath, structurePath }`
+
+**직접 묻지 않는다.** 사람이 정해야 할 것은 `needsDecision: [{ id, topic, question, options: [{ label, description }], recommended, evidence, reflectsTo }]` 로 올린다. 질문 작성법은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`. 기본으로 삼을 선택지는 `recommended` 에 그 `label` 을 적는다. needsDecision이 남으면 `status: draft`.
 
 `needsDecision` 에 올릴 만한 것: 군집을 어떻게 접을지, 주인이 둘인 데이터를 결함으로 볼지 의도로 볼지, 시나리오 목록의 가감, 이름이 어긋나는 기존 문서와 코드 중 무엇을 따를지.

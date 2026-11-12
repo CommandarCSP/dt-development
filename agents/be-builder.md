@@ -38,16 +38,18 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 - phase 끝/최종에 **reviewer dispatch**(`stack:backend`, `mode:partial|full`, `baseRef`=Phase 0 SHA) → verdict 수신. 직접 review.mjs 실행 안 함.
 - `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl` 상태로 be-builder를 **재dispatch(1회)** → 그 부분만 수정·재커밋·재리뷰. 1회 후 실패면 사용자 보고·중단.
 
-## 핸드오프 (반환 — D4)
-파일로 쓰고 **phase별 커밋** + `.dt-impl/<resource>/progress.md`. 조율자엔 요약만:
+## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
+파일로 쓰고 **phase별 커밋** + `.dt-impl/<resource>/progress.md`. 조율자엔 봉투만:
 ```
-{ unit:"<resource>", status: done|needs_repair|blocked,
+{ status: done | draft | blocked,          // done=전 계층 완료·리뷰 PASS · draft=미완 계층 또는 리뷰 NEEDS_REPAIR 남음 · blocked=진행 불가
+  artifacts: [src 경로],
+  needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],
+  summary: "<한 줄>",
+  unit: "<resource>",                      // 역할별 필드
   layersDone: [contract,repository,dto,service,controller,module],
-  reviewVerdict: PASS|NEEDS_REPAIR,
-  needsDecision: [{topic,options,evidence,reflectsTo}],
-  artifacts:[src 경로], summary }
+  reviewVerdict: PASS | NEEDS_REPAIR }
 ```
-- 사람 결정은 직접 묻지 말고 `needsDecision`으로 → 조율자 AskUserQuestion → 재dispatch.
+- 사람 결정은 직접 묻지 말고 `needsDecision`으로 올린다 → 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch.
 
 ## 안 하는 것
 - 리소스 스펙 생성(bespec-author) · FE(fe-builder) · 직접 review.mjs(reviewer) · 스펙/계약에 없는 엔드포인트 임의 결정(미정이면 needsDecision) · 리소스 누적 처리(1개만).

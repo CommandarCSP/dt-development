@@ -17,7 +17,7 @@ description: /dt-guide analyze 워커 — 프로젝트를 네 단계(기술 스�
 - `config` — `.dt-guide.json` 내용(`product`, `type?`, `forbiddenMarkers`, `distribution`).
 - `priorInventoryPath?` — 재실행이면 기존 `docs/guide/inventory.md`. `user-confirmed` 항목은 보존, `assumed` 항목은 다시 `needsDecision`으로.
 - `unattended?` — 참이면 조율자가 사람 없이 돈다는 뜻. 그래도 **묻지 말고 needsDecision 으로 올린다**(기본값 결정은 조율자 몫).
-- (재dispatch) `answers` — 조율자가 받은 사용자 답 `[{ topic, answer, label: 'user-confirmed'|'assumed:<사유>' }]`.
+- (재dispatch) `answers` — 조율자가 받은 답 `[{ id, choice, note: 'user-confirmed'|'assumed:<사유>' }]`(`docs/orchestration-policy.md` 원칙 6). `note`를 인벤토리 출처 라벨로 그대로 쓴다. `answers`에 있는 `id`는 다시 묻지 않는다.
 
 ## 할 일
 
@@ -45,9 +45,9 @@ description: /dt-guide analyze 워커 — 프로젝트를 네 단계(기술 스�
 7. 라벨 `code:<파일:줄>` / `test:<파일>`.
 
 ### 4단계 준비 — 질문 후보와 준비물
-1. 질문 후보를 `needsDecision`으로 구조화한다(`askquestion-principle.md`: 왜 묻는지·어디에 반영되는지·옵션 설명). 종류는 일곱 가지만: ① 코드에만 있는 화면·기능 → 넣을까/숨길까(`publish`) ② 문서≠코드 → 어느 쪽 ③ 목적을 못 알아낸 화면 ④ 사외 공개가 애매한 것(관리자·실험·내부 도구) ⑤ `manual|none` 후보 확정 ⑥ 준비물 빈칸(한 항목으로 묶음) ⑦ **어느 판을 쓰는 가이드인가** — 인벤토리에 적을 `version`이 `package.json`의 값과 다를 때만 올린다(예: 곧 올릴 다음 판 0.4.0 ↔ 지금 배포된 0.3.3). 옵션은 「`package.json` 값을 쓴다(기본값)」와 「다음 판 번호를 쓰고 배포 전에 `package.json`을 올린다」 둘이다.
+1. 질문 후보를 `needsDecision`으로 구조화한다(`askquestion-principle.md`: 왜 묻는지·어디에 반영되는지·옵션 설명). 종류는 일곱 가지만: ① 코드에만 있는 화면·기능 → 넣을까/숨길까(`publish`) ② 문서≠코드 → 어느 쪽 ③ 목적을 못 알아낸 화면 ④ 사외 공개가 애매한 것(관리자·실험·내부 도구) ⑤ `manual|none` 후보 확정 ⑥ 준비물 빈칸(한 항목으로 묶음) ⑦ **어느 판을 쓰는 가이드인가** — 인벤토리에 적을 `version`이 `package.json`의 값과 다를 때만 올린다(예: 곧 올릴 다음 판 0.4.0 ↔ 지금 배포된 0.3.3). 옵션은 「`package.json` 값을 쓴다」(`recommended`)와 「다음 판 번호를 쓰고 배포 전에 `package.json`을 올린다」 둘이다.
    여기서 안 물으면 **가이드를 다 쓴 뒤에 걸린다** — 쓰기 단계 게이트(G1)가 `version`과 `package.json`의 일치를 요구하고, CHANGELOG에서 뽑는 `changelogCovers`도 그 번호를 따라간다. 실제 실행에서 인벤토리 0.4.0 ↔ 패키지 0.3.3이 쓰기 단계까지 끌려가 초안을 0.3.3 기준으로 되돌려야 했다.
-2. **옵션에는 기본값을 담는다** — 항목마다 `options`를 두 개 이상 쓰고, 기본으로 삼을 옵션의 `label` 끝에 `(기본값)`을 붙인다. 무인 실행에서 조율자는 사람 없이 이 표시를 보고 고르고 `assumed:<사유>` 라벨을 붙인다. 기본값은 안전한 쪽으로 고른다(공개 여부가 애매하면 숨김, 캡처가 애매하면 `manual`).
+2. **옵션에는 기본값을 담는다** — 항목마다 `options`를 두 개 이상 쓰고, 기본으로 삼을 옵션의 label을 `recommended`에 적는다. 무인 실행에서 조율자는 사람 없이 이 값을 보고 고르고 `assumed:<사유>` 라벨을 붙인다. 기본값은 안전한 쪽으로 고른다(공개 여부가 애매하면 숨김, 캡처가 애매하면 `manual`).
 3. 준비물: `prep-checklist.md` 표대로 코드·문서에서 찾아 `prep`을 채우고, 못 찾은 키를 ⑥에 모은다.
 4. `answers`가 있으면(재dispatch) 그 항목에 적용하고 라벨을 붙인다.
 
@@ -57,13 +57,15 @@ description: /dt-guide analyze 워커 — 프로젝트를 네 단계(기술 스�
 3. **한글 lint(계층 2)**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" docs/guide/inventory.md --docType spec --json` → findings를 스스로 고친다(남길 것은 `<!-- ko-lint: keep <id> — 사유 -->`). 종료 코드 2면 게이트 실패로 보고.
 4. 스크래치 `.dt-guide/progress.md`(프로젝트 루트, gitignore 대상)에 단계별 진행을 적어 재개할 수 있게 한다.
 
-## 반환 (조율자에게 — 이것만)
+## 반환 (조율자에게 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
 ```
-{ inventoryPath: "docs/guide/inventory.md",
-  needsDecision: [{ topic, options: [{ label, description }], evidence, reflectsTo }],   // 자립적 — 조율자가 그대로 AskUserQuestion, label 하나에 `(기본값)`
+{ status: done | draft | blocked,          // needsDecision이 남으면 draft
+  artifacts: ["docs/guide/inventory.md"],
+  needsDecision: [{ id, topic, question, options: [{ label, description }], recommended, evidence, reflectsTo }],   // 자립적 — 기본으로 삼을 선택지는 recommended 에 label 로
+  summary: "타입·라우터·화면 N개(자동 캡처 M·manual/none K)·시나리오 S개·질문 Q건·준비물 빈칸 P개 · playwright: 설치됨|없음",
+  inventoryPath: "docs/guide/inventory.md",   // 역할별 필드
   surface: { type, router, confidence, hints, screenCount, externalRedirects: <n> },
-  writingLint: { fixed: <n>, kept: <n> },
-  summary: "타입·라우터·화면 N개(자동 캡처 M·manual/none K)·시나리오 S개·질문 Q건·준비물 빈칸 P개 · playwright: 설치됨|없음" }
+  writingLint: { fixed: <n>, kept: <n> } }
 ```
 
 ## 안 하는 것

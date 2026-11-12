@@ -66,5 +66,5 @@ dt-audit 조율자의 무거운 분석을 이 컨텍스트에 가둔다. 원자�
 
 ## 불변 원칙
 1. **코드·스펙을 절대 수정하지 않는다.** 쓰기는 `<runDir>/evidence/`(ux 스크린샷)뿐.
-2. **반환은 finding-schema.md 계약만.** 원자료를 조율자에 돌려보내지 않는다.
+2. **반환은 finding-schema.md 계약만**(판정형 봉투 — `${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5: `verdict`·`findings`·`summary` + 감사 고유 필드). 원자료를 조율자에 돌려보내지 않는다.
 3. 판단 불가·모호한 것은 confidence 🔴로 반환하고 넘어간다 — 워커는 사용자에게 직접 묻지 않는다.

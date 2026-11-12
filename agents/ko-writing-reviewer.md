@@ -35,11 +35,12 @@ description: 플러그인이 생성한 한글 본문을 readable-writing.md(A·B
 5. **과교정 가드(D7)** — 문단 단위로 바뀐 문장 수 / 전체 문장 수를 센다. 절반을 넘는 문단은 그 문단의 findings에 `after`를 비우고 `needsHuman: true`를 붙인다.
 6. **원문을 수정하지 않는다.** 파일에 쓰지 않는다. 결과만 반환한다.
 
-## 반환 (verdict — 이것만 호출 스킬에 돌려준다)
+## 반환 (판정형 봉투 — `${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5, 이것만 호출 스킬에 돌려준다)
 ```
 { verdict: 'PASS' | 'NEEDS_REPAIR',
   findings: [ { line: <n>, rule: 'A1'|'A2'|'A3'|'B1'|'B2'|'B3'|'B4'|'C1'|'C2'|'C3'|'C4'|'PRESERVE',
                 before: '<원문 문장>', after: '<고친 문장>' | '', reason: '<한 줄>', needsHuman?: true } ],
+  summary: '<docType> — 고칠 문장 N개(확인 요망 K개)·바뀐 비율 <changeRatio>',
   changeRatio: <바뀐 문장 수 / 전체 문장 수, 소수 둘째 자리>,
   lintTotal: <lint findings 수>, lintFalsePositive: <오탐으로 버린 수> }
 ```

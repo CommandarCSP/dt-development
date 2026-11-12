@@ -66,8 +66,8 @@ description: Use when the user wants a developer handbook for an existing codeba
 
 ### §1. analyze
 
-1. `handbook-analyst` dispatch — 입력 `{ projectRoot, config, priorInventoryPath?, area?, unattended }`. 반환 `{ inventoryPath, structurePath, needsDecision, summary }`.
-2. `needsDecision` 이 있으면 **한 번에 묶어** `AskUserQuestion` 으로 묻는다(4개를 넘으면 나눈다). 답을 `answers` 로 실어 다시 dispatch 한다.
+1. `handbook-analyst` dispatch — 입력 `{ projectRoot, config, priorInventoryPath?, area?, unattended }`. 반환은 작업형 봉투 `{ status, artifacts, needsDecision, summary, inventoryPath, structurePath }`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6).
+2. `needsDecision` 이 있으면 **한 번에 묶어** `AskUserQuestion` 으로 묻는다(4개를 넘으면 나눈다 · `recommended` 선택지는 맨 앞에 "(권장)"). 답을 `answers: [{ id, choice, note? }]` 로 실어 다시 dispatch 한다. 왕복은 2회까지(원칙 6).
 3. **[체크포인트 1] 구조 승인** — 군집 표·데이터 주인 표(주인이 둘인 것 강조)·경계 표·핫스팟 상위를 보이고 승인받는다. 여기가 틀리면 뒤가 전부 틀린다.
 4. **[체크포인트 2] 시나리오 목록 승인** — [시나리오 · 진입점 · 근거(수입/자동) · 점수]를 보이고 가감받는다. 문서 비용이 여기서 정해진다. `--flow` 가 주어졌으면 그 목록으로 대신한다.
 
@@ -75,7 +75,8 @@ description: Use when the user wants a developer handbook for an existing codeba
 
 1. 채택된 시나리오마다 `handbook-tracer` dispatch — 입력 `{ projectRoot, flow, structure, config }`. 여러 시나리오는 한 메시지에서 함께 보낸다.
 2. 반환의 `partial: true` 는 결함이 아니다. 어디서 왜 끊겼는지를 모아 두었다가 체크포인트 3에서 함께 보인다.
-3. `--area` 만 준 실행은 이 단계를 돌지 않는다.
+3. 반환 봉투에 `needsDecision` 이 있으면(진입점이 코드만으로 정해지지 않을 때) 모든 시나리오의 것을 모아 **한 번에** 묻고, 답을 `answers` 로 실어 해당 시나리오의 `handbook-tracer` 만 다시 dispatch 한다(원칙 6, 왕복 2회까지). 2회 뒤에도 남으면 그 시나리오는 `partial` 로 두고 체크포인트 3에서 보인다.
+4. `--area` 만 준 실행은 이 단계를 돌지 않는다.
 
 ### §3. write
 
@@ -87,7 +88,7 @@ description: Use when the user wants a developer handbook for an existing codeba
    1. `ko-writing-reviewer` dispatch `{ path: '<projectRoot>/docs/handbook/handbook.md', docType: 'handbook' }`. 2회차부터는 **직전 회차에 고친 범위**를 함께 알려 그쪽을 집중해 보게 한다.
    2. `after` 가 있는 finding 을 그 문장에 그대로 끼운다. `after` 가 비었거나 `needsHuman: true` 인 것은 **손대지 않고** 따로 모은다 — 이런 항목은 루프를 늘리지 않는다.
    3. 고친 뒤 기계 검사를 다시 돌린다: `node -e` 로 `lintKoWriting(본문, { docType: 'handbook' })`. 여기서 findings 가 나오면 **내가 고치다 새로 만든 것**이다.
-   4. 멈추는 조건 — ① 리뷰어가 `OK` 를 주고 린트도 0건이거나 ② 남은 것이 전부 `needsHuman` 이거나 ③ 3회를 채웠다. 그 밖에는 다음 회차를 돈다.
+   4. 멈추는 조건 — ① 리뷰어가 `PASS` 를 주고 린트도 0건이거나 ② 남은 것이 전부 `needsHuman` 이거나 ③ 3회를 채웠다. 그 밖에는 다음 회차를 돈다.
 
    영수증 `docs/handbook/ko-review.json` 에 회차 기록을 남긴다 — `{ verdict, at, rounds: [{ n, applied, needsHuman, lintAfter }], bodyHash }`. `bodyHash` 는 **마지막으로 고친 뒤의** 본문(front matter 제외) sha256(`koReviewHash`). G7 이 이 파일을 본다. **`lintAfter` 가 0 이 아닌 채로 끝나면 G7 이 빌드를 막는다.**
 
