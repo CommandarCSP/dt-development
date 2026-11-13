@@ -1,6 +1,7 @@
 ---
 name: reviewer
 model: opus
+tools: Read, Grep, Glob, Bash
 description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict만 반환하는 격리 리뷰 워커. 코드를 수정하지 않는다(진단만). 사용자 호출 불가(agents/ — 조율자가 dispatch). FE·BE 공유(스택 파라미터).
 ---
 

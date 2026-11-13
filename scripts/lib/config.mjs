@@ -33,7 +33,7 @@ export const SUPPORTED_LOCALES = ['ko'];
  */
 export const AGENT_TIERS = {
   planner: ['definition-author', 'spec-author', 'bespec-author', 'plan-author',
-    'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author'],
+    'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author'],
   builder: ['fe-builder', 'be-builder'],
   reviewer: ['reviewer', 'ko-writing-reviewer', 'auditor'],
 };

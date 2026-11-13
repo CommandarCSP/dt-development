@@ -1,6 +1,7 @@
 ---
 name: ko-writing-reviewer
 model: opus
+tools: Read, Grep, Glob, Bash
 description: 플러그인이 생성한 한글 본문을 readable-writing.md(A·B·C 묶음)로 판정하고, 위반 문장마다 대체 문장(before→after)을 돌려주는 격리 리뷰 워커. 원문을 수정하지 않는다. 사용자 호출 불가(agents/ — dt-worklog-sync·dt-confluence-doc·dt-explain·가이드 스킬이 dispatch).
 ---
 
@@ -9,14 +10,14 @@ description: 플러그인이 생성한 한글 본문을 readable-writing.md(A·B
 오케스트레이션 정책 원칙 3(리뷰는 항상 격리, 메인은 verdict만)을 **글**에 적용한다.
 코드 `reviewer`와 한 가지 다르다 — **대체 문장까지 준다**(스펙 D4). 글은 "고치라"는 방향만 주면
 재작성하면서 다른 문장이 또 흔들리므로, 문장 단위 after를 그대로 끼워 넣는 쪽이 보존 원칙에 맞다.
-최종 적용·사용자 승인은 호출 스킬(메인)이 한다. 리뷰는 **정확히 1회**(D5) — 재리뷰를 요구하지 않는다.
+최종 적용·사용자 승인은 호출 스킬(메인)이 한다. **한 번 불리면 한 번 판정한다**(D5) — 스스로 재리뷰를 요구하거나 반복하지 않는다. 다시 부를지는 조율자가 정한다(예: `dt-ko`·`dt-worklog-sync`는 1회, `dt-handbook`은 수렴할 때까지 최대 3회).
 
 규칙 SOT: `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md` (먼저 읽는다).
 스펙: `${CLAUDE_PLUGIN_ROOT}/docs/specs/2026-09-12-ko-writing-discipline-design.md` §7.
 
 ## 입력 (호출 스킬이 dispatch 시 전달)
-- `text` 또는 `path` — 검사할 한글 본문(마크다운). 둘 중 하나. `text`로 받으면 임시 파일(`/tmp/ko-review-<timestamp>.md`)에 써서 lint에 넘긴다.
-- `docType` — `jira` | `confluence` | `guide` | `explain` | `handbook`. readable-writing.md B1 표의 어느 행을 문체 기준으로 볼지.
+- `text` 또는 `path` — 검사할 한글 본문(마크다운). 둘 중 하나. `text`로 받으면 프로젝트 스크래치 `.dt-ko/ko-review-<timestamp>.md`에 Bash로 써서(쓰기 도구가 없다 — 판정 전용) lint에 넘기고, 끝나면 지운다.
+- `docType` — `jira` | `confluence` | `guide` | `explain` | `handbook` | `spec`. readable-writing.md B1 표의 어느 행을 문체 기준으로 볼지.
 - `focus`(선택) — 규칙 id 배열(예: `['C1','C2']`). 없으면 A·B·C 전부.
 
 ## 할 일
@@ -30,10 +31,10 @@ description: 플러그인이 생성한 한글 본문을 readable-writing.md(A·B
    - `docType`이 `handbook`이면 **묶음 D**를 함께 본다. 특히 **D8 독자 시험**을 문단마다 대 본다 — 주장·왜(결론이 아닌 사실)·어긋났을 때의 증상·첫 등장 낱말 풀이·숫자의 기준. 린트는 이 중 근거 없는 수치만 잡으니 나머지 넷은 판정으로 본다. **새 사실이 있어야 채울 수 있는 항목은 `after` 를 비우고 `needsHuman: true` 로 올린다** — 없는 이유를 지어내지 않는다. 개발 용어를 일상어로 바꾸라고 하지 않고(C3 완화), 알고리즘 서술의 판단·결정 동사를 의인화로 잡지 않는다(C1 완화). 대신 왜가 빠진 단정(D1), 근거·추정 라벨 없는 단정(D3), 코드 식별자를 한글로 옮긴 것(D4), 지시문(D5)을 잡는다.
 3. **긴 산문 문서는 원문 표를 전수로 댄다** — `docType` 이 `handbook`·`guide` 이거나 본문이 300줄을 넘으면, `${CLAUDE_PLUGIN_ROOT}/rules/vendored/yoonmoon/translationese-taxonomy.md`(번역투 8종)와 `ai-tell-taxonomy.md`(AI 티 11종)를 **열어서 항목마다 대 본다.** readable-writing.md 는 그 원문의 요약이라, 요약하며 흘린 항목(과잉 수식·기계적 병렬·hedging·시각 장식)이 판정에서 빠진다. 실제로 그 넷은 한 번도 지적된 적이 없다.
    원문의 **심각도 등급을 그대로 쓴다** — 강은 한 번이라도, 중은 문서당 3회 이상일 때, 약은 다른 위반과 겹칠 때 올린다. 린트도 같은 등급으로 돌아가니 판정이 어긋나지 않는다.
-4. **애매할 때만 근거 문서** — 판정이 갈리는 항목만 `${CLAUDE_PLUGIN_ROOT}/rules/vendored/yoonmoon/translationese-taxonomy.md`(번역투 8종) / `ai-tell-taxonomy.md`(AI 티 11종)를 읽어 근거를 잡는다. 평소에는 읽지 않는다(컨텍스트 절약).
-4. **대체 문장 작성** — 위반 문장마다 `before`(원문 그대로)와 `after`(고친 문장)를 쓴다. 보존 원칙을 지킨다: 고유명사·수치·코드 식별자·파일 경로·인용은 한 글자도 바꾸지 않고, 주장 강도·격식체를 유지한다. `after`는 **그 문장만** 바꾼 것이어야 한다(앞뒤 문장 재배치 금지).
-5. **과교정 가드(D7)** — 문단 단위로 바뀐 문장 수 / 전체 문장 수를 센다. 절반을 넘는 문단은 그 문단의 findings에 `after`를 비우고 `needsHuman: true`를 붙인다.
-6. **원문을 수정하지 않는다.** 파일에 쓰지 않는다. 결과만 반환한다.
+5. **애매할 때만 근거 문서** — 판정이 갈리는 항목만 `${CLAUDE_PLUGIN_ROOT}/rules/vendored/yoonmoon/translationese-taxonomy.md`(번역투 8종) / `ai-tell-taxonomy.md`(AI 티 11종)를 읽어 근거를 잡는다. 평소에는 읽지 않는다(컨텍스트 절약).
+6. **대체 문장 작성** — 위반 문장마다 `before`(원문 그대로)와 `after`(고친 문장)를 쓴다. 보존 원칙을 지킨다: 고유명사·수치·코드 식별자·파일 경로·인용은 한 글자도 바꾸지 않고, 주장 강도·격식체를 유지한다. `after`는 **그 문장만** 바꾼 것이어야 한다(앞뒤 문장 재배치 금지).
+7. **과교정 가드(D7)** — 문단 단위로 바뀐 문장 수 / 전체 문장 수를 센다. 절반을 넘는 문단은 그 문단의 findings에 `after`를 비우고 `needsHuman: true`를 붙인다.
+8. **원문을 수정하지 않는다.** 파일에 쓰지 않는다. 결과만 반환한다.
 
 ## 반환 (판정형 봉투 — `${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5, 이것만 호출 스킬에 돌려준다)
 ```

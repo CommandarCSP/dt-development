@@ -23,7 +23,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 | `hooks.commitThreshold` | 정리 안 된 커밋이 몇 개부터 마무리 루틴을 권할지. 1 이상 정수 | `1` | `hooks/scripts/lib/pipeline-state.mjs` |
 | `hooks.startReminder` | main에서 구현을 시작하면 피처 브랜치를 권할지 | `true` | `hooks/scripts/lib/pipeline-state.mjs` |
 | `team.execution` | 여러 단위 작업의 실행 방식. `ask`=시작할 때 한 번 묻는다 · `parallel` · `sequential`=묻지 않고 그 방식으로 | `"ask"` | `docs/orchestration-policy.md` |
-| `team.models.planner` | 스펙·정의서·플랜·분석·집필 에이전트의 모델. `opus`·`sonnet`·`haiku`·`fable` 또는 `null` | `null`(에이전트 파일의 `model`) | `docs/orchestration-policy.md` |
+| `team.models.planner` | 스펙·정의서·플랜·분석·집필·e2e 작성 에이전트의 모델. `opus`·`sonnet`·`haiku`·`fable` 또는 `null` | `null`(에이전트 파일의 `model`) | `docs/orchestration-policy.md` |
 | `team.models.builder` | 구현 에이전트(fe-builder·be-builder)의 모델 | `null` | `docs/orchestration-policy.md` |
 | `team.models.reviewer` | 판정 에이전트(reviewer·ko-writing-reviewer·auditor)의 모델 | `null` | `docs/orchestration-policy.md` |
 | `team.locale` | 산출물 언어. 지금은 `ko`만 지원한다. 다른 값이면 경고하고 `ko`로 쓴다 | `"ko"` | `docs/orchestration-policy.md` |

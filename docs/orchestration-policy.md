@@ -39,7 +39,7 @@ AskUserQuestion 템플릿:
 에이전트는 산출물을 **파일로 쓰고**, 조율자에게는 아래 봉투만 돌려준다. 에이전트는 두 종류다.
 
 **작업형** — 스펙·계획·구현·분석·집필·추적 에이전트
-(definition-author · spec-author · bespec-author · plan-author · fe-builder · be-builder · guide-analyst · guide-author · handbook-analyst · handbook-tracer · handbook-author)
+(definition-author · spec-author · bespec-author · plan-author · fe-builder · be-builder · e2e-author · guide-analyst · guide-author · handbook-analyst · handbook-tracer · handbook-author)
 ```
 { status: done | draft | blocked,          // done=완결 · draft=미해소 남음(needsDecision 또는 TODO) · blocked=진행 불가(이유는 summary)
   artifacts: [<쓴 파일 경로>],

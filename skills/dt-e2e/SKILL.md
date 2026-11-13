@@ -11,6 +11,12 @@ description: Use after /dt-implement to author and verify scenario-based accepta
 ## 시작 전 — 스택 사전 점검
 시나리오를 쓰기 전에 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차로 **스택 사전 점검**을 한 번 돈다(`--stack frontend`). 기본 기술과 다른 영역은 묻고 PD로 남기며, 정해진 스택 결정은 빌더에 `decisions`로 넘긴다. e2e 러너 영역(`stack.fe.e2e`·`stack.be.httpTest`·`stack.be.testDb`)이 기본과 다르면 특히 이 답을 따라 러너를 고른다.
 
+## 실행 모드 (격리 워커 + 사람 검증)
+이 스킬은 **얇은 조율자**다. 무거운 일(스펙 읽기·원장 쓰기·테스트 저작·headless 사전 실행)은 `${CLAUDE_PLUGIN_ROOT}/agents/e2e-author.md`(`stack:frontend`)가 자기 컨텍스트에서 하고 봉투만 돌려준다(`docs/orchestration-policy.md` 원칙 5). 아래 "반복 루프"의 단계별 주체는 다음과 같다.
+- **e2e-author**: 1 수집·2 제안(`mode: propose`) · 4 저작(`mode: author`) · 5의 AI 사전점검(`mode: preflight`)
+- **조율자(메인)**: 스택 사전 점검 · 3 확인(사용자가 원장을 보고 승인) · live 게이트(사용자 확인 후에만 `live: true`) · 5의 사람 검증과 `verified` 기록 · 워커의 needsDecision 질문(원칙 6)
+- 서브에이전트가 없으면 조율자가 같은 절차를 직접 한다(원칙 4).
+
 ## 불변 원칙
 1. 스펙 기반이 하드 요구 — 모든 시나리오는 FR-n/IF-n/interaction 근거를 명시한다.
 2. 사람이 검증한다 — verified 승격은 사람의 headed 검증만. AI는 제안·저작·사전점검까지.

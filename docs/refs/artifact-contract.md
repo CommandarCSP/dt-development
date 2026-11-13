@@ -38,13 +38,14 @@
 |---|---|---|---|---|
 | `src/{services,store/queries,store/stores,business/hooks,components/view,components/domain,pages}/` · `__tests__/` · `src/mocks/handlers.ts` | — | `fe-builder` | `reviewer` · `auditor` | 수리는 조율자가 `repairTargets`로 재dispatch |
 | `.dt-impl/<page>/` | — | `fe-builder` | — | 스크래치 |
+| `e2e/<page>.spec.ts` · `e2e/journeys/` · `test/<resource>.e2e.test.ts` · `test/journeys/` | — | `e2e-author` | 사람(검증) | 승인된(`approved`) 시나리오만 저작 |
 | `src/<module>/{*.repository.ts,dto/,entities/,mappers/,*.service.ts,*.controller.ts,*.module.ts}` | — | `be-builder` | `reviewer` · `auditor` | 수리는 조율자가 `repairTargets`로 재dispatch |
 | `prisma/schema.prisma` · `migrations/` | — | `be-builder` | `dt-bespec-collect-project-context` · `auditor` | 여러 리소스가 공유 — 머지 구간은 순차(dt-fullstack) |
 | `.dt-impl/<resource>/` | — | `be-builder` | — | 스크래치 |
-| `docs/specs/pages/<page>/<page>.e2e-scenarios.md` | — | `dt-e2e` | `auditor` | 원장. `verified`는 사람만 올린다 |
-| `docs/specs/e2e/journeys.md` | — | `dt-e2e` | `auditor` | 크로스페이지 여정 원장 |
-| `docs/specs/resources/<resource>/<resource>.e2e-scenarios.md` | — | `dt-be-e2e` | `auditor` | 원장. `verified`는 사람만 올린다 |
-| `docs/specs/e2e/be-journeys.md` | — | `dt-be-e2e` | `auditor` | 크로스리소스 여정 원장 |
+| `docs/specs/pages/<page>/<page>.e2e-scenarios.md` | — | `e2e-author` | `auditor` | 원장. 조율자(`dt-e2e`·`dt-be-e2e`)는 사람 승인·검증 결과(`approved`·`verified`)만 기록한다 |
+| `docs/specs/e2e/journeys.md` | — | `e2e-author` | `auditor` | 크로스페이지 여정 원장 |
+| `docs/specs/resources/<resource>/<resource>.e2e-scenarios.md` | — | `e2e-author` | `auditor` | 원장. 조율자(`dt-e2e`·`dt-be-e2e`)는 사람 승인·검증 결과(`approved`·`verified`)만 기록한다 |
+| `docs/specs/e2e/be-journeys.md` | — | `e2e-author` | `auditor` | 크로스리소스 여정 원장 |
 
 ## 기록·문서
 

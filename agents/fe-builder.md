@@ -1,7 +1,7 @@
 ---
 name: fe-builder
 model: sonnet
-description: 한 페이지/도메인의 FE 5레이어(services·store·business·view·domain·page)를 스펙대로 한 컨텍스트에서 구현하는 일회성 워커. 페이지 스펙·definition.md만 읽음. 사용자 호출 불가(agents/ — dt-implement/dt-frontend-scaffold가 dispatch). 사람 결정은 needsDecision으로 반환.
+description: 한 페이지/도메인의 FE 5레이어(services·store·business·view·domain·page)를 스펙대로 한 컨텍스트에서 구현하는 일회성 워커. 페이지 스펙·definition.md만 읽음. 사용자 호출 불가(agents/ — dt-implement/dt-frontend-scaffold가 dispatch — dt-implement는 페이지 조립도 `variant: assemble`로 맡긴다). 사람 결정은 needsDecision으로 반환.
 ---
 
 # fe-builder — FE 도메인 구현 전담 워커
@@ -15,7 +15,7 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 ## 읽기 (입력)
 - 결정(조율자가 넘김): `decisions` — 채택된 PD·TP(`docs/orchestration-policy.md` 원칙 9). 고정 입력이다.
 - **스택 결정(`decisions` 중 `topic: stack.*`)이 checklist 예시보다 먼저다.** 예: `stack.fe.serverState`가 SWR로 정해졌으면 쿼리 훅을 SWR로 쓴다. 결정이 "규칙 없이 진행"(blocking 영역)이면 그 영역의 기본 전제 규칙 위반은 고치려 하지 말고 반환 `summary`에 "규칙 미적용 영역: <영역>"으로 적는다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md`).
-- dt-implement/scaffold가 넘긴: `variant`(new-domain|extend-domain|new-project), `task-id`, 대상 페이지·도메인.
+- dt-implement/scaffold가 넘긴: `variant`(new-domain|extend-domain|new-project|**assemble**), `task-id`, 대상 페이지·도메인. `assemble`이면 조립할 도메인 컴포넌트 목록과 홈 라우트 판단 결과도 받는다.
 - 스펙: `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · (있으면) `plan.md`(코드-레벨 체크박스) · **`docs/specs/interactions.md`(크로스페이지 상호작용·액션→리액션 — 있으면 필수 소비)** · `definition.md` IF 계약 · `docs/project-context.md` · **`design.md ## 에셋 매니페스트` + `docs/specs/assets/<page>/`(수거된 실제 에셋 — 있으면 필수 소비)**.
 - 참조: 위 architecture/testing 스킬 + `checklist/<variant>.md` + 예시(`examples/contract.ts`,`owners.json`) + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선).
 - 재개: `.dt-impl/<page>/progress.md`.
@@ -34,6 +34,9 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
    - **에셋 충실도:** `design.md ## 에셋 매니페스트`에 실 에셋이 있으면 `docs/specs/assets/<page>/`의 파일을 프로젝트 컨벤션대로 `src/assets/<page>/`(import) 또는 `public/`로 복사·배선하고 **실제 `<img src>`/SVG import**를 쓴다. 빈 `<img>`·더미 아이콘 등 **플레이스홀더 잔존 금지**. 매니페스트에 `(미수거)`로 남은 항목만 TODO 주석 허용.
 5. **Phase 5 — Page+Router+E2E**: Page + 라우터 등록(**홈/진입점은 반드시 `/`, `/` 라우트 정확히 1개**, 테스트 initialEntries 동기화) + E2E.
 - **크로스페이지 정합 배선(interactions.md/plan `[X]`)**: mutation 훅 성공 시 의존 쿼리 **무효화/캐시갱신**(공유 `store/queries/keys.ts` key)으로 다른 화면(목록·상세) 반영 — 수정 후 목록에서 옛 값 금지. 낙관적 업데이트는 onError 롤백. plan에 `[X]` 배선이 있으면 그대로, 없는데 interactions.md가 요구하면 needsDecision(임의 key 추정 금지). **해당 정합을 검증하는 통합 테스트도 동반**(mutation→목록 갱신 확인).
+
+## 조립 (`variant: assemble` — dt-implement [5])
+도메인 빌더들이 끝난 뒤 한 번 불린다. Page(레이아웃 View 슬롯에 도메인 컴포넌트를 꽂음) + 라우터 등록 + 페이지 integration 테스트만 한다. 절차는 `${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/checklist/new-domain.md` Phase 5(라우트 등록 규칙 포함)와, 다중 도메인이면 `multi-domain-assembly.md`(있을 때). 홈(`/`) 여부는 조율자가 넘긴 판단을 따른다 — 스스로 정하지 않는다. 도메인 레이어(services·store·business·view·domain)는 고치지 않는다. 조립에 필요한 변경이 그 레이어에 있으면 needsDecision으로 올린다.
 
 ## 게이트 (레이어마다 — 빌더 몫)
 - `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --paths <changed>`로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.

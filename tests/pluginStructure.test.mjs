@@ -112,7 +112,7 @@ test('README 의 스킬·에이전트·명령 개수가 실제와 같다', () =>
 });
 
 // 에이전트 반환 봉투 — docs/orchestration-policy.md 원칙 5·6. 에이전트를 새로 넣으면 아래 두 목록 중 하나에 넣는다.
-const WORKER_AGENTS = ['definition-author', 'spec-author', 'bespec-author', 'plan-author', 'fe-builder', 'be-builder', 'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author'];
+const WORKER_AGENTS = ['definition-author', 'spec-author', 'bespec-author', 'plan-author', 'fe-builder', 'be-builder', 'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author'];
 const JUDGE_AGENTS = ['reviewer', 'ko-writing-reviewer', 'auditor'];
 
 /** "## 핸드오프" 또는 "## 반환" 으로 시작하는 절 본문. */
@@ -351,4 +351,32 @@ test('산출물 계약: 에이전트의 "소유 경로" 절에 적힌 경로는 
     }
   }
   assert.deepEqual(problems, []);
+});
+
+// GEN-39 — 판정 에이전트는 쓰기 도구가 없고, 페이지 조립은 조율자가 아니라 fe-builder(assemble)가 한다.
+test('판정 에이전트: tools 허용 목록에 Write·Edit 가 없다 (auditor 는 브라우저 MCP 때문에 예외 — 사유를 머리말에 적는다)', () => {
+  const problems = [];
+  for (const a of JUDGE_AGENTS) {
+    const text = readFileSync(rel(`agents/${a}.md`), 'utf8');
+    const tools = readFrontmatter(text)?.tools;
+    if (a === 'auditor') { if (tools || !/# tools 허용 목록을 두지 않는다/.test(text)) problems.push('auditor: 예외 사유 주석이 없거나 tools 가 있다'); continue; }
+    if (!tools) problems.push(`${a}: tools 허용 목록이 없다`);
+    else if (/\b(Write|Edit|NotebookEdit)\b/.test(tools)) problems.push(`${a}: tools 에 쓰기 도구가 있다(${tools})`);
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('dt-implement: 페이지 조립을 fe-builder variant: assemble 로 맡기고, fe-builder 가 그 절차를 갖는다', () => {
+  const impl = readFileSync(rel('skills/dt-implement/SKILL.md'), 'utf8');
+  const sec5 = impl.match(/### \[5\][^\n]*\n([\s\S]*?)(?=\n### )/)?.[0] ?? '';
+  assert.match(sec5, /variant: assemble/);
+  assert.match(readFileSync(rel('agents/fe-builder.md'), 'utf8'), /## 조립 \(`variant: assemble`/);
+});
+
+test('e2e 스킬: e2e-author 에 무거운 일을 맡기고 사람 검증은 조율자에 남긴다', () => {
+  for (const s of ['dt-e2e', 'dt-be-e2e']) {
+    const t = readFileSync(rel(`skills/${s}/SKILL.md`), 'utf8');
+    assert.match(t, /agents\/e2e-author\.md/, `${s}: e2e-author 를 가리키지 않는다`);
+    assert.match(t, /사람 검증/, `${s}: 사람 검증 주체가 없다`);
+  }
 });

@@ -1,6 +1,7 @@
 ---
 name: auditor
 model: opus
+# tools 허용 목록을 두지 않는다 — ux 트랙이 브라우저 MCP 도구(이름이 환경마다 다르다)로 스크린샷을 남겨야 해서다. 쓰기는 `<runDir>/evidence/` 스크린샷뿐이고, 코드·스펙은 수정하지 않는다.
 description: >-
   구현↔스펙 정합 감사 워커(track: fe|be|ux|spec). 스펙에서 인텐트 인벤토리를 만들고 코드/실행 앱에서 as-built를 역추출해 대조, findings만 반환한다. 코드·스펙을 수정하지 않는다(진단만). 사용자 호출 불가(agents/ — dt-audit이 dispatch).
 ---
