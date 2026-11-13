@@ -38,6 +38,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 
 ## 게이트 (필수 산출 — 조용한 누락 금지)
 - **완성도 스윕(필수)**: 페이지 스펙을 다 지은 뒤 `fe-spec-checklist.md`의 각 항목(C1~)을 스펙과 대조한다. 해당사항 있는데 빠졌거나 확정 불가면 `needsDecision`으로 surface(구멍 방지), 명백히 해당 없으면 스킵. 미해소면 `status: draft`. 이 체크리스트는 성장형이라 실행 시점의 최신 항목을 따른다.
+- **빈틈 스윕(필수)**: 완성도 스윕까지 끝낸 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **소스에 없는데 채워야 하는 자리**를 페이지마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision`, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
 - **라우팅/네비게이션**은 1급 필수(`{{ROUTING_NAVIGATION}}`). 소스에서 못 건지면 needsDecision로 1회 surface, 그래도 비면 `TODO: 네비게이션 미정` + `status: draft`.
 - **2개 이상 페이지면 `interactions.md`가 1급 필수** — 액션→리액션 정합(생성/수정/삭제/토글이 반영되는 목록·상세)이 비면 needsDecision surface, 그래도 비면 `TODO` + draft. 조용한 누락 금지.
 - 필수 산출물이 빈 placeholder면 검증 실패(존재-게이트).
@@ -53,9 +54,11 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
   units: [{ page, status: finalized|draft, artifacts:[docs/specs/pages/<page>/*.md] }],   // 역할별 필드
   interactions: "docs/specs/interactions.md" | null,           // 2개 이상 페이지면 산출
   definitionImpact?: [{ if, change }],                          // 상향 정합 결과
+  assumptions: [{ id, what, why, reflectsTo }],                // 가정하고 진행한 자리 (askquestion-principle.md "빈틈 찾기와 묻기 기준")
   writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
+- 조율자는 `assumptions`를 완료 보고에 "가정 N건"과 목록으로 보인다. 사용자가 바꾸려는 항목은 `answers`로 받아 재dispatch한다.
 - `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 **재dispatch**한다(나는 `.dt-spec/<page>/`에서 이어서 재개). `answers`에 있는 `id`는 다시 묻지 않는다.
 - 컴팩팅이 나도 각 페이지 progress.md + extraction/merged.json + 이미 쓴 스펙 파일로 내용이 보존됨(홀리스틱이어도 파일 우선이라 안전).
 

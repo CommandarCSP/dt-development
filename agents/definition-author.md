@@ -30,6 +30,7 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 
 ## 게이트 (필수 — 조용한 누락/지어내기 금지)
 - 식별된 IF/SP는 정보 없어도 협의 큐에 **반드시 1회** surface(미해소면 `미해소`로 명시, G3 지어내기 금지).
+- **빈틈 스윕(필수)**: §2.5 충실도·협의완전성 검증을 끝낸 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **소스에 없는데 채워야 하는 자리**를 SP·IF마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision` §3 협의 큐, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
 - `확정` IF는 lock — 무확인 변경 금지. 전역 규약은 명시 요청 없으면 재추론 안 함(불변원칙 4).
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
@@ -41,9 +42,11 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
   needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],   // §3 협의 큐 (자립적)
   summary: "SP N·IF M(확정/협의중/미해소 분포)·역합치 K건",
   unit: "definition[.<scope>]",                                 // 역할별 필드
+  assumptions: [{ id, what, why, reflectsTo }],                // 가정하고 진행한 자리 (askquestion-principle.md "빈틈 찾기와 묻기 기준")
   writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
+- 조율자는 `assumptions`를 완료 보고에 "가정 N건"과 목록으로 보인다. 사용자가 바꾸려는 항목은 `answers`로 받아 재dispatch한다.
 - `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch한다(`.dt-devspec/<scope>/`에서 §3.5·§4 재개). `answers`에 있는 `id`는 다시 묻지 않는다.
 
 ## 안 하는 것

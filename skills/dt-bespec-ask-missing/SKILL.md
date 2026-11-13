@@ -26,6 +26,7 @@ description: Use within dt-bespec to resolve source conflicts/duplicates and fil
 4. EARS 형식 질문으로 method/endpoint/request·response schema/status code 채움.
    - Unwanted(error): 검증실패(400)/미존재(404)/충돌(409)/권한(401·403) 분기.
 5. 값 검증: path 형식, method enum, status code 유효성, JSON schema 형식.
+6. **목록 밖 빈틈(필수)**: 1~5는 정해진 점검 항목만 본다. 끝으로 `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 이 리소스에서 소스에 없는데 채워야 하는 자리(삭제 방식·소프트 삭제, 동시 수정, 소유자 외 접근, 목록 기본 정렬, 상태 전이 금지 경로 등)를 뽑아 세 갈래로 나눈다 — 근거 있음(반영) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(AskUserQuestion, 워커면 `needsDecision`).
 
 ## 출력
 ```
@@ -33,6 +34,7 @@ resolvedRequirements: [{ id, raw: {trigger, condition, response}, sourceLabel }]
 resolvedEndpoints: [{ method, path, auth, requestSchema, responseSchema, statusCodes, source }]
 resolvedDataModel: { entities: [...] }     // Prisma 스케치용
 status: 'finalized' | 'draft'              // 미해소 슬롯 있으면 draft
+assumptions: [{ id, what, why, reflectsTo }] // 6에서 가정하고 진행한 자리
 ```
 
 ## 원칙

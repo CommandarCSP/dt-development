@@ -46,7 +46,7 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
   - **강결합 주의**: 한 도메인 컴포넌트/훅이 다른 도메인의 store/hook을 import해야 하면(예: 추천에서 팔로우 토글), 사용자에게 알리고 공유 상태/콜백 배선을 확인.
 
 ### [3.7] 코드-레벨 플랜 생성 (plan-author, opus) — 구현 직전
-스펙이 finalized면 `docs/specs/pages/<page>/plan.md`(코드-레벨 체크박스 플랜)를 확보한다. 반환 봉투에 `needsDecision`이 있으면 원칙 6대로 묻고 `answers`와 함께 재dispatch(`docs/orchestration-policy.md` 원칙 5·6, 왕복 상한 2회). **사용자 플랜 승인 게이트** 후 [4]로. plan-author는 durable 3겹의 셋째 — `definition → spec → plan`.
+스펙이 finalized면 `docs/specs/pages/<page>/plan.md`(코드-레벨 체크박스 플랜)를 확보한다. 반환 봉투에 `needsDecision`이 있으면 원칙 6대로 묻고 `answers`와 함께 재dispatch(`docs/orchestration-policy.md` 원칙 5·6, 왕복 상한 2회). 플랜 승인을 물을 때 봉투의 `assumptions`(가정 N건과 목록)를 함께 보여, 사용자가 가정을 바꿀 기회를 준다. **사용자 플랜 승인 게이트** 후 [4]로. plan-author는 durable 3겹의 셋째 — `definition → spec → plan`.
 - **홀리스틱(권장 — 여러 페이지):** `plan-author`(opus)를 **전 페이지를 한 번에** dispatch(`units`=페이지 목록, `stack:frontend`)해 `interactions.md`를 함께 읽고 **크로스페이지 배선(`[X]`)** 까지 유닛별 plan.md에 박게 한다. dt-fullstack에서 오면 이 홀리스틱 plan이 이미 생성돼 있으니 **재생성 생략**하고 plan.md를 그대로 쓴다.
 - **단일 페이지 standalone 호출:** 그 페이지만 plan-author dispatch(interactions.md 있으면 함께 전달). plan.md가 이미 있고 최신이면 재생성 생략.
 

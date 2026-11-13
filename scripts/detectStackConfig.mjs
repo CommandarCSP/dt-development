@@ -9,10 +9,19 @@
  * `docs/refs/stack-config-bootstrap.md` 가 단일 출처다.
  */
 
-/** 이 의존성이 보이면 그 스택으로 본다. 이름만 보고 버전은 보지 않는다. */
+/**
+ * 이 의존성이 보이면 그 스택으로 본다. 이름만 보고 버전은 보지 않는다.
+ * `vite` 는 넣지 않는다 — 번들러일 뿐이라 Vue·Svelte 프로젝트에도 있다. React+Vite 는 `react` 로 잡힌다.
+ */
 const STACK_MARKERS = {
-  frontend: ['react', 'react-dom', 'next', 'vite'],
+  frontend: ['react', 'react-dom', 'next'],
   backend: ['@nestjs/core', '@nestjs/common'],
+};
+
+/** 플러그인 규칙이 맞지 않는 다른 프레임워크. 보이면 "모른다" 대신 "다른 스택" 으로 알려 묻는 근거로 쓴다. */
+const OTHER_FRAMEWORKS = {
+  frontend: ['vue', 'nuxt', 'svelte', '@sveltejs/kit', '@angular/core', 'solid-js', 'preact'],
+  backend: ['express', 'fastify', 'koa', '@hapi/hapi', 'hono'],
 };
 
 /** 스택별로 켜는 스킬. 스캐폴드가 새 프로젝트에 넣던 것과 같은 집합이다. */
@@ -45,11 +54,35 @@ const STACK_SKILLS = {
  * @returns {('frontend'|'backend')[]}
  */
 export function detectStacks(pkg) {
-  if (!pkg || typeof pkg !== 'object') return [];
-  const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
+  const deps = depsOf(pkg);
   return ['frontend', 'backend'].filter((stack) =>
     STACK_MARKERS[stack].some((name) => name in deps),
   );
+}
+
+/**
+ * 플러그인이 지원하지 않는 프레임워크를 찾는다. `detectStacks` 가 그 스택을 못 잡았을 때
+ * 사용자에게 물을 질문의 근거(`evidence`)로 쓴다 — 예: "vue·vite 가 보여 React 규칙을 켜지 않았습니다".
+ *
+ * 지원 스택이 함께 잡힌 쪽은 돌려주지 않는다(React 프로젝트에 preact 호환 패키지가 있는 등).
+ *
+ * @param {object|null|undefined} pkg `package.json` 을 파싱한 객체
+ * @returns {{ frontend: string[], backend: string[] }}
+ */
+export function detectOtherFrameworks(pkg) {
+  const deps = depsOf(pkg);
+  const found = detectStacks(pkg);
+  const out = { frontend: [], backend: [] };
+  for (const stack of ['frontend', 'backend']) {
+    if (found.includes(stack)) continue;
+    out[stack] = OTHER_FRAMEWORKS[stack].filter((name) => name in deps);
+  }
+  return out;
+}
+
+function depsOf(pkg) {
+  if (!pkg || typeof pkg !== 'object') return {};
+  return { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
 }
 
 /**

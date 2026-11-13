@@ -142,6 +142,20 @@ test('작업형 에이전트: 반환 절이 프로토콜을 가리키고 공통 
   assert.deepEqual(problems, []);
 });
 
+// 스펙·정의서·플랜 작성 에이전트는 빈틈 스윕을 하고, 가정한 자리를 assumptions 로 돌려준다(docs/refs/askquestion-principle.md).
+const SPEC_AUTHORS = ['definition-author', 'spec-author', 'bespec-author', 'plan-author'];
+
+test('스펙 작성 에이전트: 빈틈 스윕 게이트가 있고 반환에 assumptions 를 담는다', () => {
+  const problems = [];
+  for (const a of SPEC_AUTHORS) {
+    const text = readFileSync(rel(`agents/${a}.md`), 'utf8');
+    if (!/빈틈 스윕/.test(text) || !/askquestion-principle\.md/.test(text)) problems.push(`${a}: 빈틈 스윕 게이트(askquestion-principle.md)가 없음`);
+    const sec = returnSection(text) ?? '';
+    if (!/assumptions: \[\{ id, what, why, reflectsTo \}\]/.test(sec)) problems.push(`${a}: 반환 절에 assumptions: [{ id, what, why, reflectsTo }] 없음`);
+  }
+  assert.deepEqual(problems, []);
+});
+
 test('판정형 에이전트: 반환이 프로토콜을 가리키고 verdict·findings·summary 를 담는다', () => {
   const problems = [];
   for (const a of JUDGE_AGENTS) {

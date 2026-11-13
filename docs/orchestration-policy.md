@@ -45,6 +45,7 @@ AskUserQuestion 템플릿:
   summary: "<한 줄>",
   ...역할별 필드 }                           // units · writingLint · coverage · gate · layersDone · surface 등 — 각 에이전트 파일에 정의
 ```
+스펙·정의서·플랜 작성 에이전트(definition-author · spec-author · bespec-author · plan-author)는 역할별 필드로 `assumptions: [{ id, what, why, reflectsTo }]`도 돌려준다 — 묻지 않고 가정하고 진행한 자리다. 무엇을 묻고 무엇을 가정하는지는 `docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"이 정한다. 조율자는 완료 보고에 가정 목록을 보인다(원칙 7).
 
 **판정형** — 코드·글·구현을 판정만 하고 고치지 않는 에이전트
 (reviewer · ko-writing-reviewer · auditor)
@@ -84,6 +85,7 @@ AskUserQuestion 템플릿:
 - dispatch → 봉투 수신 → needsDecision 처리(원칙 6) → 필요하면 재dispatch → 다음 단계. 이 순서를 지킨다.
 - 사용자에게 묻는 것은 조율자(메인 세션)만 한다. 에이전트 쪽 문서에 "사용자에게 묻는다"가 있으면 needsDecision으로 바꿔 읽는다.
 - 봉투의 `summary`와 역할별 필드(`writingLint` 등)를 사용자 보고에 한 줄씩 옮긴다.
+- `assumptions`가 있으면 "가정 N건"과 목록을 보이고, 사용자가 바꾸는 항목은 `answers`로 받아 같은 에이전트를 재dispatch한다. 가정을 숨기지 않는다.
 - `status: blocked`면 다음 단계로 넘기지 않고 이유와 선택지를 사용자에게 보인다.
 
 ## 적용 스킬

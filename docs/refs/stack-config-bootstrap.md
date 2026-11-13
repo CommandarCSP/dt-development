@@ -20,11 +20,27 @@
 
 `<projectRoot>/package.json` 을 읽어 `${CLAUDE_PLUGIN_ROOT}/scripts/detectStackConfig.mjs` 의 `detectStacks(pkg)` 에 넘긴다. 실행 파일이 아니라 모듈이라 import 해서 쓴다.
 
-- `react` · `react-dom` · `next` · `vite` → `frontend`
+- `react` · `react-dom` · `next` → `frontend`
 - `@nestjs/core` · `@nestjs/common` → `backend`
 - 둘 다 잡히면 둘 다 만든다(모노레포 루트 등)
+- `vite` 만으로는 정하지 않는다. 번들러라 Vue·Svelte 프로젝트에도 있다
 
-**빈 배열이면 만들지 않는다.** 감지 실패는 오류가 아니라 "모른다" 다. 억지로 하나를 고르면 엉뚱한 규칙이 켜진 채 리뷰가 돈다. 이때는 사용자에게 "스택을 알 수 없어 설정을 만들지 않았다" 고 알리고 스킬을 그만둔다.
+**지금 스킬의 스택이 잡히지 않으면 짐작하지 않고 묻는다.** 감지 실패는 오류가 아니라 "모른다" 다. 억지로 하나를 고르면 엉뚱한 규칙이 켜진 채 리뷰가 돈다. 그렇다고 그만두면 사용자는 왜 안 되는지 모른 채 멈춘다. 같은 모듈의 `detectOtherFrameworks(pkg)` 로 보이는 다른 프레임워크를 찾아 질문의 근거로 쓴다.
+
+```
+header: "스택 확인"
+question: "package.json 에서 <스택> 을 찾지 못했습니다(보이는 것: vue, vite). 이 프로젝트를 어떻게 다룰까요?
+           고른 답으로 .dt-frontend.json 을 만들고 하던 일을 계속합니다."
+options:
+  - "React 프로젝트로 진행"  — 의존성이 아직 없거나 다른 package.json 에 있다. React 규칙으로 설정을 만든다
+  - "소스 위치를 알려 주겠다" — 모노레포라 다른 폴더의 package.json 을 봐야 한다(Other 로 경로 입력)
+  - "지원하지 않는 스택 — 중단" — Vue·Svelte·Express 등. 설정을 만들지 않고 스킬을 멈춘다(이 플러그인의 규칙이 맞지 않는다)
+recommended: 다른 프레임워크가 보이면 "지원하지 않는 스택 — 중단", 아무것도 안 보이면 "React 프로젝트로 진행"
+```
+
+- `<스택>` 은 부른 스킬 쪽이다. BE 스킬이면 "NestJS 프로젝트로 진행" 으로 바꿔 묻는다.
+- 스킬이 서브에이전트 안에서 돌면 직접 묻지 않고 같은 내용을 `needsDecision` 으로 올린다(`docs/orchestration-policy.md` 원칙 6).
+- 답은 만든 설정 파일이 곧 기록이다. 다음 실행부터는 파일이 있으니 다시 묻지 않는다.
 
 ### 2. 소스 경로를 찾는다
 
@@ -34,7 +50,7 @@
 
 `buildStackConfig(stack, { srcPath })` 결과를 `CONFIG_FILE_NAME[stack]` 로 쓴다. 템플릿(`templates/dt-frontend.json.tmpl` · `dt-backend.json.tmpl`)과 같은 모양이며, 둘이 갈리지 않는 것은 테스트가 지킨다.
 
-**묻지 않는다. 대신 반드시 한 줄로 보고한다.**
+**스택이 잡혔으면 묻지 않는다. 대신 반드시 한 줄로 보고한다.**
 
 ```
 .dt-frontend.json 을 만들었습니다 — React 프로젝트로 보았고 소스는 src/ 로 잡았습니다.
@@ -49,7 +65,7 @@
 
 ## 만들지 않는 경우
 
-- **1번에서 스택을 못 가렸을 때** — 위 참조
+- **1번 질문에서 "지원하지 않는 스택 — 중단" 을 골랐을 때** — 위 참조
 - **파일이 이미 있을 때** — 손대지 않는다. `enabledSkills` 에 자기가 없어도 추가하지 않는다. 그건 사용자가 일부러 끈 것일 수 있다
 
 ## 이 절차가 건드리지 않는 것

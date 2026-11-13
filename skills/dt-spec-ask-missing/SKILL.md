@@ -58,6 +58,7 @@ description: Use when dt-spec needs to fill missing requirements via user askQue
   //   - 해소된 충돌의 선택 값은 resolvedApiCandidates / resolvedRequirements에 source: 'user-resolved'로 반영
   //   - 병합된 중복 후보는 단일 항목으로 통합되며, 실소스 근거가 있는 쪽 provenance가 우선 적용
   //   - 해소 후 _conflicts / _possibleDuplicates 필드는 출력 객체에서 제거됨 (모두 해소되면 기록 불필요)
+  assumptions: [{ id, what, why, reflectsTo }],   // Step 7.5에서 가정하고 진행한 자리
   status: 'finalized' | 'draft'
 }
 ```
@@ -270,6 +271,13 @@ API 문서가 있으면 (5-4) 매칭되는 후보를 미리 제안:
 - `validation`, `errorHandling`, `successBehavior` (Step 5에서 채움 — `states`는 옵셔널)
 
 누락 발견 시 → Step 5로 복귀해서 보강 askQuestion 재실행. 사용자가 보강 거부 시 해당 후보는 draft.
+
+### Step 7.5: 목록 밖 빈틈 — 필수
+
+Step 0~7은 정해진 점검 항목만 본다. 끝으로 `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **이 페이지에서 소스에 없는데 채워야 하는 자리**(빈·로딩·실패·권한 없음 상태, 경계값, 삭제·취소 방식, 성공·실패 뒤 이동 등)를 목록으로 뽑아 세 갈래로 나눈다.
+- 근거 있음 → 근거를 달아 반영.
+- 가정하고 알림 → 반영하고 `[inferred]` 라벨, 반환의 `assumptions`에 추가.
+- 묻기 → 위 작성 원칙대로 AskUserQuestion(워커로 돌 때는 `needsDecision`). 같은 원인의 빈틈은 한 질문으로 묶는다.
 
 ### Step 8: 상태 결정
 

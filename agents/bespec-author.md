@@ -42,6 +42,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 
 ## 게이트 (필수 산출 — 조용한 누락 금지)
 - 필수 엔드포인트 필드(method/endpoint/request·responseSchema/statusCodes)가 비면 needsDecision로 surface, 그래도 비면 `[inferred]`/`draft`.
+- **빈틈 스윕(필수)**: 필수 엔드포인트 필드 점검을 끝낸 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **소스에 없는데 채워야 하는 자리**를 리소스마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision`, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
 - **2개 이상 리소스면 크로스리소스 트랜잭션 경계·cascade가 1급 필수** — 여러 리소스를 걸치는 쓰기가 있는데 경계가 비면 needsDecision surface.
 - 빈 placeholder 산출물은 검증 실패(존재-게이트).
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
@@ -56,9 +57,11 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
   units: [{ resource, status: finalized|draft, artifacts:[docs/specs/resources/<resource>/*.md] }],   // 역할별 필드
   interactions: "docs/specs/interactions.md#be-크로스리소스" | null,  // 2개 이상 리소스면 산출
   definitionImpact?: [{ if, change }],                          // 상향 정합/드리프트 결과
+  assumptions: [{ id, what, why, reflectsTo }],                // 가정하고 진행한 자리 (askquestion-principle.md "빈틈 찾기와 묻기 기준")
   writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
+- 조율자는 `assumptions`를 완료 보고에 "가정 N건"과 목록으로 보인다. 사용자가 바꾸려는 항목은 `answers`로 받아 재dispatch한다.
 - `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch한다(`.dt-spec/<resource>/`에서 재개). `answers`에 있는 `id`는 다시 묻지 않는다.
 
 ## 안 하는 것

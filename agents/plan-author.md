@@ -15,7 +15,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 ## 읽기 (입력)
 - 조율자가 넘긴: **`units` 목록**(page|resource 슬러그들), `stack`(frontend|backend), spec 위치들.
 - 스펙: FE `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · BE `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · **`docs/specs/interactions.md`(크로스유닛 상호작용·액션→리액션)** · `definition.md` IF 계약 · `docs/project-context.md`(기술스택·라이브러리).
-- 참조: 위 architecture/testing 스킬 + 해당 checklist + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선 힌트) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — Phase 설명·위험구간 서술·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
+- 참조: 위 architecture/testing 스킬 + 해당 checklist + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선 힌트) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`(빈틈 찾기와 묻기 기준) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — Phase 설명·위험구간 서술·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
 
 ## 소유 경로 (출력)
 - `docs/specs/<pages|resources>/<unit>/plan.md` (유닛별 코드-레벨 체크박스 플랜) — **각 유닛마다 1개**.
@@ -52,6 +52,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 > `[X]` = 크로스유닛 정합 배선 체크박스(interactions.md 유래). builder가 반드시 실행하고 reviewer가 검증(rule: interaction-integrity).
 
 ## 게이트 (필수)
+- **빈틈 스윕(필수)**: 플랜을 다 짠 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **스펙에 없는데 코드로 정해야 하는 자리**(에러 처리 방식, 캐시 갱신 범위, 트랜잭션 경계, 공유 컴포넌트 재사용 등)를 유닛마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision`, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
@@ -62,9 +63,11 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
   needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],   // 스펙 미확정분
   summary: "유닛 N개·Phase 합계·크로스유닛 배선 M건·위험구간 K",
   units: [{ unit, status: ready|draft, artifacts:[docs/specs/<pages|resources>/<unit>/plan.md] }],   // 역할별 필드
+  assumptions: [{ id, what, why, reflectsTo }],                // 가정하고 진행한 자리 (askquestion-principle.md "빈틈 찾기와 묻기 기준")
   writingLint: { fixed: <n>, kept: <n> } }                      // 한글 lint 자기 수정 결과
 ```
 - 조율자는 `writingLint`를 summary에 한 줄로 보인다: "한글 lint: 고침 N·유지 M".
+- 조율자는 `assumptions`를 완료 보고에 "가정 N건"과 목록으로 보인다. 사용자가 바꾸려는 항목은 `answers`로 받아 재dispatch한다.
 - `needsDecision`이 있으면 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch한다. 비어 있으면 **사용자 플랜 승인 게이트** 후 builder가 실행한다.
 
 ## 안 하는 것

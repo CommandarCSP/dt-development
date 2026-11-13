@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detectStacks, buildStackConfig } from '../scripts/detectStackConfig.mjs';
+import { detectStacks, detectOtherFrameworks, buildStackConfig } from '../scripts/detectStackConfig.mjs';
 
 // detectStacks: package.json 의 의존성만 보고 어느 스택인지 정한다.
 // 디스크를 보지 않는 순수 함수라 픽스처는 객체 하나면 된다.
@@ -9,8 +9,24 @@ test('detectStacks: react 의존성이면 frontend', () => {
   assert.deepEqual(detectStacks({ dependencies: { react: '^19.0.0' } }), ['frontend']);
 });
 
-test('detectStacks: vite 는 devDependencies 에 있어도 frontend', () => {
-  assert.deepEqual(detectStacks({ devDependencies: { vite: '^7.0.0' } }), ['frontend']);
+test('detectStacks: vite 만으로는 frontend 로 보지 않는다 — Vue·Svelte 에도 있다', () => {
+  assert.deepEqual(detectStacks({ devDependencies: { vite: '^7.0.0' } }), []);
+  assert.deepEqual(detectStacks({ dependencies: { vue: '^3.5.0' }, devDependencies: { vite: '^7.0.0' } }), []);
+});
+
+test('detectStacks: react + vite 는 frontend', () => {
+  assert.deepEqual(detectStacks({ dependencies: { react: '^19.0.0' }, devDependencies: { vite: '^7.0.0' } }), ['frontend']);
+});
+
+test('detectOtherFrameworks: 지원하지 않는 프레임워크를 스택별로 알려 준다', () => {
+  const pkg = { dependencies: { vue: '^3.5.0', express: '^5.0.0' }, devDependencies: { vite: '^7.0.0' } };
+  assert.deepEqual(detectOtherFrameworks(pkg), { frontend: ['vue'], backend: ['express'] });
+});
+
+test('detectOtherFrameworks: 지원 스택이 잡힌 쪽은 비운다', () => {
+  const pkg = { dependencies: { react: '^19.0.0', preact: '^10.0.0', '@nestjs/core': '^11.0.0', express: '^5.0.0' } };
+  assert.deepEqual(detectOtherFrameworks(pkg), { frontend: [], backend: [] });
+  assert.deepEqual(detectOtherFrameworks(null), { frontend: [], backend: [] });
 });
 
 test('detectStacks: @nestjs/core 면 backend', () => {
