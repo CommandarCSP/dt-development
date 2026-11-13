@@ -15,7 +15,7 @@ description: Use when the user wants to write a Confluence document from their d
 ## 불변 안전장치
 1. **항상 미리보기 → 승인 후 작성.** 작성할 [스페이스 | 부모 | 제목 | 라벨 | 섹션 개요]를 표로 보여주고 명시 승인받는다.
 2. **불명확하면 질문.** 스페이스/부모페이지/타입/기간을 임의 추정하지 않는다.
-3. **새 페이지 생성 위주.** 공식 MCP는 기존 페이지 매크로 round-trip 유실 이슈가 있어, 기존 페이지는 전체 덮어쓰기 금지(필요 시 append 섹션만 보수적으로).
+3. **새 페이지 생성 위주.** 공식 MCP는 기존 페이지 매크로 round-trip 유실 이슈가 있어, 기존 페이지는 전체 덮어쓰기 금지(기존 페이지에 더할 내용이 있을 때만, 새 append 섹션으로 보수적으로).
 4. **본문은 `contentFormat: "html"`.** 시각 요소는 visual-guideline의 HTML data-type 문법 사용.
 
 ## 설정 로드 (계층)
@@ -33,7 +33,7 @@ description: Use when the user wants to write a Confluence document from their d
 `--type <meeting|worklog|techdoc|retro>` 또는 질문. 해당 `references/templates/<type>.md` 로드.
 
 ### 2. 수집 (Collect)
-- meeting: 사용자 수동/회의 입력(필요 시 `--note`).
+- meeting: 사용자 수동/회의 입력(회의 내용이 세션·git에 없을 때 `--note`로 받는다).
 - worklog: `git log/diff`(기간) + 현재 세션 + Jira(관련 프로젝트, 예: SAP) `searchJiraIssuesUsingJql`.
 - techdoc: git/세션 + 수동.
 - retro: `git log`(기간/태그) + Jira.

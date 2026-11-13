@@ -464,7 +464,7 @@ UI 구조를 추출/추론할 수 없습니다. Figma 디자인 노드나 화면
 - [ ] Complex 항목이 자동 결합되지 않았는가 (사용자 명시 source 확인)
 - [ ] tasks.md의 각 Task가 requirements.md의 FR과 1:N 매핑되는가 (FR ID 참조 무결성)
 
-위반 → 사용자 보고 + 수정 옵션. 각 위반 항목을 개별 AskUserQuestion으로 묻되 **어떤 검증이 왜 실패했는지 + fix/skip의 결과**를 명시한다. 예 — `header` "검증 위반 2/3", `question` "FR-7이 EARS 6패턴 중 어디에도 매핑되지 않았습니다 (WHEN/WHILE/IF 등 키워드 없음). 지금 고칠까요? skip하면 이 문서는 `status: draft`로 저장되어 다른 도구가 경고합니다." / options: label `"수정 (fix)"`(description `"[7-4]로 돌아가 FR-7의 EARS 패턴을 보정"`) / label `"건너뛰기 (skip)"`(description `"draft 상태로 남김 — 추후 보강"`). 모든 위반이 fix 완료 시 [7-6]로. 하나라도 skip 시 [7-6]에서 `status: draft`로 기록.
+위반 → 사용자 보고 + 수정 옵션. 위반 항목은 주제별로 묶어(한 번에 최대 4개 — 원칙 6) 묻되 **어떤 검증이 왜 실패했는지 + fix/skip의 결과**를 명시한다. 예 — `header` "검증 위반 2/3", `question` "FR-7이 EARS 6패턴 중 어디에도 매핑되지 않았습니다 (WHEN/WHILE/IF 등 키워드 없음). 지금 고칠까요? skip하면 이 문서는 `status: draft`로 저장되어 다른 도구가 경고합니다." / options: label `"수정 (fix)"`(description `"[7-4]로 돌아가 FR-7의 EARS 패턴을 보정"`) / label `"건너뛰기 (skip)"`(description `"draft 상태로 남김 — 추후 보강"`). 모든 위반이 fix 완료 시 [7-6]로. 하나라도 skip 시 [7-6]에서 `status: draft`로 기록.
 
 #### [7-5.5] 완성도 스윕 (구멍 방지 — fe-spec-checklist)
 

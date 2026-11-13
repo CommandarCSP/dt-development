@@ -54,7 +54,7 @@ Page → Domain Component → Business Hook → Store (Query | UI) → Utils
 - **컴포넌트**: shadcn/ui(코드 소유) on Radix Primitives → `src/components/ui/`.
 - **테마**: semantic CSS변수 토큰(`globals.css`) + Tailwind 매핑. 다크/브랜드는 변수 세트 스왑. [토큰 브리지 규약](references/token-css-var-bridge.md)
 - **클래스 병합**: `cn()`(clsx + tailwind-merge), 변형은 `cva`.
-- **기본 라이브러리 세트**: Tailwind + shadcn/ui + Radix + react-hook-form+zod(폼) + @tanstack/react-table(테이블). 온디맨드: cmdk·react-day-picker·recharts·sonner·vaul·embla(필요 시만, YAGNI).
+- **기본 라이브러리 세트**: Tailwind + shadcn/ui + Radix + react-hook-form+zod(폼) + @tanstack/react-table(테이블). 온디맨드: cmdk·react-day-picker·recharts·sonner·vaul·embla(스펙이 그 UI — 명령 팔레트·날짜 선택·차트·토스트·시트·캐러셀 — 를 요구할 때만, YAGNI).
 - **모달**: 관리=nice-modal-react(중앙 레지스트리), UI=shadcn Dialog(Radix). 둘은 직교 — 함께 사용.
 - **패키지 매니저는 pnpm 고정** — `package.json`의 `packageManager: "pnpm@10.x"` + `pnpm-lock.yaml` 만.
 

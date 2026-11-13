@@ -28,7 +28,7 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 
 `existingModules`(이미 있는 `src/<module>/`)를 스캔해 new-module vs extend-module을 결정.
 
-### [2] draft 확인
+### [2] draft 확인 (`docs/orchestration-policy.md` 원칙 6.5)
 헤더 `status: draft`이거나 api-contract에 `[inferred]` 마커가 있으면 AskUserQuestion 1회:
 - "이 스펙은 draft이고 추론된 엔드포인트/모델 N개가 있습니다. 그대로 진행할까요? 추론 항목은 `// TODO: 확정 필요 (spec [inferred])` 주석과 함께 코드로 들어갑니다."
 - options: `"진행"` / `"중단"`.
@@ -50,8 +50,9 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 
 ### [3.7] 코드-레벨 플랜 생성 (plan-author, opus) — 구현 직전
 스펙이 finalized면 `docs/specs/resources/<resource>/plan.md`(코드-레벨 체크박스)를 확보한다. 반환 봉투에 `needsDecision`이 있으면 원칙 6대로 묻고 `answers`와 함께 재dispatch(`docs/orchestration-policy.md` 원칙 5·6, 왕복 상한 2회). 플랜 승인을 물을 때 봉투의 `assumptions`(가정 N건과 목록)를 함께 보여, 사용자가 가정을 바꿀 기회를 준다. **사용자 플랜 승인 게이트** 후 [4]로. durable 3겹의 셋째.
-- **홀리스틱(권장 — 여러 리소스):** `plan-author`(opus)를 **전 리소스를 한 번에** dispatch(`units`=리소스 목록, `stack:backend`)해 `interactions.md`의 크로스리소스(트랜잭션 경계·cascade·스키마 머지 순서)를 함께 읽고 유닛별 plan.md에 배선(`[X]`)까지 박게 한다. dt-fullstack에서 와도 플랜은 여기서 만든다(fullstack은 플랜을 따로 만들지 않는다). plan.md가 이미 있고 스펙보다 최신이면 재생성 생략.
-- **단일 리소스 standalone 호출:** 그 리소스만 dispatch(interactions.md 있으면 전달). plan.md 최신이면 재생성 생략.
+- **홀리스틱(권장 — 여러 리소스):** `plan-author`(opus)를 **전 리소스를 한 번에** dispatch(`units`=리소스 목록, `stack:backend`)해 `interactions.md`의 크로스리소스(트랜잭션 경계·cascade·스키마 머지 순서)를 함께 읽고 유닛별 plan.md에 배선(`[X]`)까지 박게 한다. dt-fullstack에서 와도 플랜은 여기서 만든다(fullstack은 플랜을 따로 만들지 않는다). plan.md가 `fresh`면 재생성 생략(아래 기준).
+- **단일 리소스 standalone 호출:** 그 리소스만 dispatch(interactions.md 있으면 전달). plan.md가 `fresh`면 재생성 생략.
+- **"최신"의 기준(GEN-24):** 유닛마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/planFreshness.mjs" docs/specs/resources/<unit>`을 돌린다. `fresh`(스펙 내용 해시가 plan 머리의 `specHash`와 같음)인 유닛은 plan-author에 넘기지 않고, `stale`·`missing`인 유닛만 넘긴다. 주석·줄바꿈만 바뀐 스펙은 해시가 같아 플랜을 다시 만들지 않는다.
 
 ### [4] 위임 (Phase 1~5)
 선택한 checklist를 따른다. **dispatched면 `be-builder`에 리소스 스펙 위치를 넘겨 dispatch**(워커가 api-contract/design/requirements·definition.md IF를 직접 읽음. **`interactions.md`의 BE 크로스리소스도 함께 전달** — 트랜잭션 경계·cascade), inline이면 조율자가 직접 — 둘 다 동일 절차. 빌더가 계층별로 참조하는 스펙:

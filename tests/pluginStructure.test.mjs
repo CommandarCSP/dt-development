@@ -421,3 +421,34 @@ test('리뷰 규칙: 검출이 빈 규칙이 없다(기계 검출 또는 manual)
   }
   assert.deepEqual(problems, []);
 });
+
+// GEN-24 — 재실행 결과가 흔들리지 않게: 스캐폴드는 고정 버전으로 설치하고, 지시문에 조건 없는 표현을 두지 않는다.
+test('스캐폴드 체크리스트: 설치 명령에 @latest 가 없다(templates/stack-versions.json 으로 고정)', () => {
+  const problems = [];
+  for (const d of ['dt-frontend-scaffold', 'dt-backend-scaffold']) {
+    for (const f of readdirSync(rel(`skills/${d}/checklist`)).filter((x) => x.endsWith('.md'))) {
+      readFileSync(rel(`skills/${d}/checklist/${f}`), 'utf8').split('\n').forEach((l, i) => {
+        if (/(npm|pnpm|npx|yarn)\b.*@latest/.test(l)) problems.push(`${d}/${f}:${i + 1}: ${l.trim().slice(0, 80)}`);
+      });
+    }
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('지시문: 조건 없는 표현(필요시·적절히·적당히)을 쓰지 않는다 — "언제"를 조건으로 적는다', () => {
+  const problems = [];
+  const files = [...skillDirs.map((d) => `skills/${d}/SKILL.md`), ...agentFiles.map((f) => `agents/${f}`), ...commandFiles.map((f) => `commands/${f}`),
+    ...['dt-frontend-scaffold', 'dt-backend-scaffold'].flatMap((d) => readdirSync(rel(`skills/${d}/checklist`)).map((f) => `skills/${d}/checklist/${f}`))];
+  for (const f of files) {
+    readFileSync(rel(f), 'utf8').split('\n').forEach((l, i) => {
+      if (/필요시|필요 시|적절히|적절한|적당히/.test(l)) problems.push(`${f}:${i + 1}: ${l.trim().slice(0, 80)}`);
+    });
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('정책: draft 구현 규칙(원칙 6.5)이 있고 구현 조율자가 가리킨다', () => {
+  assert.match(readFileSync(rel('docs/orchestration-policy.md'), 'utf8'), /## 원칙 6\.5 — draft 스펙으로 구현할 때/);
+  for (const s of ['dt-implement', 'dt-be-implement']) assert.match(readFileSync(rel(`skills/${s}/SKILL.md`), 'utf8'), /원칙 6\.5/);
+  assert.match(readFileSync(rel('skills/dt-fullstack/SKILL.md'), 'utf8'), /원칙 6\.5/);
+});

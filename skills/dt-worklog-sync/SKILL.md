@@ -62,7 +62,7 @@ description: >-
 - 가이드라인 X 예시(버튼 색 변경·문구 수정 등 사소한 변경)는 **개별 이슈로 만들지 않는다**.
 - 각 단위는 개발자의 **Sub-task가 기본**(개발 결함 작업이면 Bug). 부모(Story/Task) 타입은 [3]에서 결정한다.
 - **본문 슬롯 매핑** — 각 단위를 `references/worklog-templates.md`의 description 슬롯(What/Why/How/DoD, Bug는 변형)에 매핑한다. 맥락에서 못 채우는 슬롯은 임의로 지어내지 말고 `{확인 필요}`로 둔다.
-- **산출물(Output) 필드 매핑** — 각 단위의 산출물을 `references/output-field-rules.md` 규칙대로 모은다. 개발 작업은 보통 **커밋/MR의 GitLab URL**이다: `git remote get-url origin`(또는 설정 `gitWebBaseUrl`)에서 웹 베이스를 도출(ssh→https)하고, 작업 단위의 **머지 커밋 URL을 우선**(`<베이스>/-/commit/<sha>`), 필요 시 주요 파트 커밋 URL을 줄바꿈으로 나열한다. 파일 산출물(설계서·테스트결과)은 첨부 후 파일명을 함께 적는다. 이 값이 [4] dry-run 표·[5] 산출물 필드 기재의 입력이다.
+- **산출물(Output) 필드 매핑** — 각 단위의 산출물을 `references/output-field-rules.md` 규칙대로 모은다. 개발 작업은 보통 **커밋/MR의 GitLab URL**이다: `git remote get-url origin`(또는 설정 `gitWebBaseUrl`)에서 웹 베이스를 도출(ssh→https)하고, 작업 단위의 **머지 커밋 URL을 우선**(`<베이스>/-/commit/<sha>`), 머지 커밋이 없거나 단위가 여러 파트로 나뉘었을 때만 주요 파트 커밋 URL을 줄바꿈으로 나열한다. 파일 산출물(설계서·테스트결과)은 첨부 후 파일명을 함께 적는다. 이 값이 [4] dry-run 표·[5] 산출물 필드 기재의 입력이다.
 - **가독성 적용** — 슬롯을 채울 때 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`를 따른다: 약어는 첫 등장에서 풀어쓰고(A1), 내부 용어·파일명엔 한 줄 설명을 붙이며(A2), Jira 설명은 개조식 문체로 통일한다(B1). 기계에 사람 행위를 붙이지 않고(C1), `~에 의해`·`~을 통해` 같은 번역투와 `수행·존재·해당` 같은 낯선 말을 쓰지 않는다(C2·C3). 새로 보는 사람이 따라 읽을 수 있게 쓴다.
 
 ### 3. 부모 매칭/생성 (Resolve) — 검색 → 없으면 사용자 확인 후 생성
@@ -121,12 +121,12 @@ description: >-
   - **우산/Phase 이슈**(하위가 여러 phase로 나뉜 경우): Done 대신 In Progress 유지 + 충족된 DoD만 체크 + 진행 코멘트.
   - Bug Deployed→해결방법 댓글, Verified→검증방법 댓글 필수(`addCommentToJiraIssue`).
   - 진행 업데이트·전이 댓글은 모두 comment 템플릿(자유서술 + **산출물** 링크)을 따른다. 산출물 링크가 없으면 "링크 없이 진행만 기록할까요?"를 1회 확인한다.
-- 필요 시 `addWorklogToJiraIssue`로 작업 시간 기록.
+- 사용자가 작업 시간을 말했을 때만 `addWorklogToJiraIssue`로 기록한다.
 
 ### 6. 관련 Confluence 문서 역링크 (opt-in)
 이슈 쓰기 완료 후, **이번 작업과 관련된 Confluence 문서가 이미 있으면** 그 링크를 Jira 코멘트로 첨부할지 제안한다. **자동 아님 — dry-run 승인 후 실행(안전장치 1). 문서를 못 찾으면 조용히 스킵(질문하지 않음).**
 1. `searchConfluenceUsingCql`로 이번 작업 관련 문서를 검색한다.
-   - 예: `text ~ "<요약 키워드>" AND type = page ORDER BY lastmodified DESC` (필요 시 `space = "<KEY>"` / `label` 로 좁힘).
+   - 예: `text ~ "<요약 키워드>" AND type = page ORDER BY lastmodified DESC` (결과가 10건을 넘으면 `space = "<KEY>"` / `label` 로 좁힘).
    - 후보 0건이면 이 단계 종료(노이즈 금지).
 2. 후보가 있으면 [문서 → 연결할 이슈] 매칭을 제시하고 dry-run 표 [이슈 | 추가될 코멘트]를 출력 → 승인 대기.
    - 어느 이슈에 달지 불명확하면 임의로 달지 말고 질문한다(안전장치 2). 같은 이슈에 같은 문서 링크가 이미 있으면 중복 첨부하지 않는다.

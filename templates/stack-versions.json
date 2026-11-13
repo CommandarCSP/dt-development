@@ -1,0 +1,87 @@
+{
+  "_comment": "플러그인 규칙·템플릿이 검증된 major 버전. 스캐폴드는 이 범위로 설치하고, 스택 사전 점검은 프로젝트의 major가 다르면 알린다. 새 major로 올리려면 규칙·템플릿을 그 major에서 검증한 뒤 이 파일을 바꾼다(로드맵 GEN-24·GEN-25).",
+  "checkedAt": "2026-11-13",
+  "latestSeen": {
+    "react": "19.3",
+    "@tanstack/react-query": "5.107",
+    "zustand": "5.1",
+    "react-router": "8.5",
+    "tailwindcss": "4.3",
+    "vite": "8.3",
+    "vitest": "5.1",
+    "msw": "3.0",
+    "@playwright/test": "1.65",
+    "@nestjs/core": "12.5",
+    "prisma": "8.0.0-rc",
+    "jest": "30.5",
+    "supertest": "7.3",
+    "@testcontainers/postgresql": "12.2",
+    "@sentry/react": "11.12",
+    "react-error-boundary": "6.1",
+    "jsdom": "31.0"
+  },
+  "frontend": {
+    "create": "create-vite@7",
+    "dependencies": {
+      "react": "^19",
+      "react-dom": "^19",
+      "@tanstack/react-query": "^5",
+      "zustand": "^5",
+      "react-router": "^7",
+      "axios": "^1",
+      "react-error-boundary": "^6"
+    },
+    "devDependencies": {
+      "vite": "^7",
+      "tailwindcss": "^4",
+      "@tailwindcss/vite": "^4",
+      "typescript": "^5",
+      "vitest": "^3",
+      "@vitest/coverage-v8": "^3",
+      "jsdom": "^31",
+      "@testing-library/react": "^16",
+      "@testing-library/user-event": "^14",
+      "msw": "^2",
+      "@playwright/test": "^1",
+      "eslint-plugin-jsx-a11y": "^6"
+    },
+    "sentryDependencies": {
+      "@sentry/react": "^11"
+    },
+    "sentryDevDependencies": {
+      "@sentry/vite-plugin": "^11"
+    }
+  },
+  "backend": {
+    "create": "@nestjs/cli@11",
+    "dependencies": {
+      "@nestjs/core": "^11",
+      "@nestjs/common": "^11",
+      "@nestjs/config": "^4",
+      "@prisma/client": "^6",
+      "class-validator": "^0.14",
+      "class-transformer": "^0.5"
+    },
+    "devDependencies": {
+      "prisma": "^6",
+      "@nestjs/testing": "^11",
+      "jest": "^29",
+      "supertest": "^7",
+      "@types/supertest": "^6",
+      "@testcontainers/postgresql": "^10",
+      "typescript": "^5"
+    },
+    "authDependencies": {
+      "@nestjs/jwt": "^11",
+      "@nestjs/passport": "^11",
+      "passport": "^0.7",
+      "passport-jwt": "^4",
+      "bcrypt": "^5"
+    },
+    "authDevDependencies": {
+      "@types/passport-jwt": "^4",
+      "@types/bcrypt": "^5"
+    }
+  },
+  "_unverified": "규칙이 API에 깊게 기대지 않는 보조 패키지(react-error-boundary·jsdom·Sentry)는 확인 시점의 최신 major로 고정했다. 규칙 검증 대상은 아니다."
+}

@@ -32,6 +32,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/stackPrecheck.mjs" <projectRoot> --stack fro
 | `adaptable` | 다른 기술을 쓴다. 프로젝트 방식을 따를 수 있다 | 묻는다 |
 | `blocking` | 다른 기술을 쓰는데, 플러그인 템플릿·리뷰 규칙이 기본을 전제한다(예: Prisma 대신 TypeORM, React가 아님) | 묻는다. 결과를 보장할 수 없다고 밝힌다 |
 
+`versions`에는 같은 기술이지만 major가 플러그인 검증 범위(`${CLAUDE_PLUGIN_ROOT}/templates/stack-versions.json`)와 다른 패키지가 나온다(예: react-router 8). 묻지 않고 한 줄로 알린다: "react-router ^8 — 플러그인은 ^7에서 검증됨. 규칙이 맞지 않는 곳이 있을 수 있다."
+
 `decidedBy`가 있는 영역은 이미 채택된 결정(PD의 머리말 `topic`이 영역 key와 같음)이 있는 것이다. **묻지 않고** 그 결정을 따른다.
 
 ### 2. 묻는다

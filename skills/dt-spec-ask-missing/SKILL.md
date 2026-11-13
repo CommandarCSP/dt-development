@@ -247,7 +247,7 @@ API 문서가 있으면 (5-4) 매칭되는 후보를 미리 제안:
 - **errorHandling** — 상태별 동작 (선택형 가능). 예: `question` "EmailLogin 실패 시 시스템 동작은? (requirements.md에 Unwanted FR로 추가)" / options: label `"인라인 에러 메시지"`(description `"401 시 폼 하단에 메시지 표시"`) / label `"계정 잠금 안내"`(description `"423 시 잠금 안내 화면"`) / label `"기타"`
 - **에러 상태 문구 출처** — 에러 상태 문구가 애매할 때 묻는다: `question` "이 페이지 에러 상태는 전용 문구가 있나요, 공용 에러 키트 기본을 쓰나요? (문구를 발명하지 않기 위함 — 기본은 키트)" / options: label `"공용 에러 키트 기본 (기본)"`(description `"경계 폴백(RetryErrorFallback 등)의 캐논 문구 사용 → FR은 `role=\"alert\"` 등 시맨틱으로만 기술, 문구는 키트 위임"`) / label `"전용 문구 있음"`(description `"소스에 실제 문구가 있음 → `[전용 문구]` 표시와 함께 기재, 전용 폴백 구현 대상"`). 답이 '전용 문구'가 아니면 문구를 발명하지 않는다.
 - **successBehavior** — 성공 후 동작 (자유 입력). 예: "성공 시 /dashboard로 리다이렉트 + '환영합니다' 토스트"
-- **states** — UI 상태. 기본값(loading/empty/error/disabled) 사용 가능, 추가 필요 시에만 askQuestion (어떤 상태가 design.md 컴포넌트에 반영되는지 설명)
+- **states** — UI 상태. 기본값(loading/empty/error/disabled) 사용 가능, 소스가 기본 4종 밖의 상태(예: 오프라인·권한 없음)를 말할 때만 askQuestion (어떤 상태가 design.md 컴포넌트에 반영되는지 설명)
 
 ### Step 6: 값-수준 검증 — design doc 5-5 [2]
 

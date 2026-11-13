@@ -143,11 +143,11 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 > 너는 사용자가 §3 협의에서 확정한 답변이 일관적인지 점검한다. **충실도(누락/왜곡/환각)는 보지 마라 — 그건 §2.5 소관이다.** 오직 셋만 본다: (1) **전역 규약 위반** — 답변이 아래 *잠긴* 전역 규약(제공된 필드·값 목록)을 깨는가, (2) **답변 간 모순** — 확정 답변들끼리 충돌하는가(예: 권한 role 집합 불일치, 정렬 키가 DM 필드에 없음), (3) **원본 충돌** — 답변이 제공된 원본과 어긋나는가. 각 위반에 근거(인용)와 수정 제안을 붙여라. 위반 없으면 빈 배열. 지정 스키마로 반환하라.
 
 ### 4. 산출/갱신
-- `buildDefinitionHeader.mjs`로 5~6줄 헤더 생성 (신규=definitionVersion 1, 재실행=diff 있으면 +1; **scope 있으면 6번째 줄 `<!-- scope: <slug> -->` emit**, 없으면 5줄).
+- `buildDefinitionHeader.mjs`로 5~6줄 헤더 생성 (신규=definitionVersion 1, 재실행=**계약이 바뀌었을 때만** +1 — `node "${CLAUDE_PLUGIN_ROOT}/scripts/definitionVersion.mjs" <기존> <새 초안>`의 `next`를 쓴다. 전역 규약·SP·IF·DM 행이 같고 서술만 바뀌면 버전을 그대로 둔다; **scope 있으면 6번째 줄 `<!-- scope: <slug> -->` emit**, 없으면 5줄).
 - **스코프 산출 경로(다중 스코프):** `--scope <slug>`(또는 명시 입력)이면 `docs/specs/definition.<slug>.md`에 쓰고 헤더에 `scope` 마킹한다. **다른 스코프 파일은 절대 덮어쓰지 않는다** — 산출 경로는 `definition.<해당scope>.md`로 고정(오늘 Back Office가 Front Service `definition.md`를 덮어쓴 버그 직접 수정). 스코프 미지정이면 종전대로 `definition.md`.
 - **§3.5 forceDraft 처리:** §3.5가 `forceDraft: true`를 반환했으면 `buildDefinitionHeader`를 `status:'draft'`로 호출한다(시그니처 불변 — `status` 값만 `draft`).
 - 본문: 전역 규약(+URL 컨벤션) / 범위 분담(SP-n, `관련 IF` 컬럼) / 인터페이스 합의(IF-n, `합의 상태`·`참조 DM`·`출처` 컬럼) / **데이터 모델(DM-n, 옵셔널 — IF 응답에 실제 등장한 공유 shape만)** / 변경 추적.
-- **재실행**: 기존 `docs/specs/definition.md`와 비교(diff-then-confirm). **전역 규약은 보존(lock)** 하고 바뀐 SP/IF만 갱신하며, 변경이 있으면 definitionVersion +1. 사용자 승인 후 저장. (전역 규약 변경은 사용자가 "전역 규약 수정"을 명시 요청할 때만 — 불변원칙 4)
+- **재실행**: 기존 `docs/specs/definition.md`와 비교(diff-then-confirm). **전역 규약은 보존(lock)** 하고 바뀐 SP/IF만 갱신하며, 계약이 바뀌었을 때만 definitionVersion +1(`definitionVersion.mjs`). 사용자 승인 후 저장. (전역 규약 변경은 사용자가 "전역 규약 수정"을 명시 요청할 때만 — 불변원칙 4)
 - 저장 직후 `validateDefinition.mjs`로 자체 검증.
 - **1.1→1.2 마이그레이션(D7, 재실행):** ① `parseDefinitionHeader`로 구버전/specVersion-미상 감지(헤더 옵셔널 파싱은 완료됨). ② 전역 URL 컨벤션 미합의면 1차 전환에서 경로 도출 불가 → 기존 IF 전부 `협의중` 유지(컨벤션 SOT가 이 §3에서 *처음* 합의됨). ③ §3 컨벤션 확정 → §4 경로 재도출 → 경로 얻은 IF만 `협의중`→`컨벤션` 승격. ④ 기존 `확정` lock 보존(재실행이 되돌리지 않음). ⑤ 신규 섹션/필드(DM·링크·출처)는 "구조 추가"로 한 묶음, 기존 SP/IF 본문 diff와 분리 제시(diff 폭발 방지). ⑥ 승인 후 `definitionVersion`+1·specVersion 1.2 bump. **즉 컨벤션 합의→경로 재도출→승격 순서 의존이라 1차 전환 직후 `컨벤션` 라벨이 0이어도 정상.** ⑦ 입출력 동일 경로 가드: §1에서 in-memory 스냅샷으로 읽고, §4 출력은 temp→원자적 rename(실패 시 원본 유지).
 

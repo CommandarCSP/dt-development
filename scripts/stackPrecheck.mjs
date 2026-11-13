@@ -17,6 +17,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDecisions, isActive } from './decisions.mjs';
+import { majorMismatches } from './stackVersions.mjs';
 
 /** 영역 정의. expected 중 하나라도 있으면 same, alternatives 중 하나가 있으면 그 판정. */
 export const AREAS = {
@@ -60,7 +61,9 @@ export function precheck(pkg, stack, decisions = []) {
     return { key: a.key, label: a.label, expected: a.expected[0], found: foundExpected[0] ?? foundAlt[0] ?? null, status, decidedBy: byTopic.get(a.key) ?? null };
   });
   const questions = areas.filter((a) => (a.status === 'adaptable' || a.status === 'blocking') && !a.decidedBy);
-  return { stack, areas, questions, blocking: questions.some((q) => q.status === 'blocking') };
+  // 같은 기술이어도 major 가 검증 범위(templates/stack-versions.json)와 다르면 알린다 — 묻지 않는다(GEN-24).
+  const versions = majorMismatches(pkg, stack);
+  return { stack, areas, questions, blocking: questions.some((q) => q.status === 'blocking'), versions };
 }
 
 /** 프로젝트 루트에서 package.json 과 채택된 PD·TP 를 읽어 점검한다. package.json 이 없으면 모든 영역이 absent. */

@@ -11,7 +11,7 @@
 2. 변경 대상 식별: 어떤 계약(contract/DTO/schema)·어떤 계층(controller/service/repository)이 바뀌는지 명시.
 
 ## Phase 1: 계약 델타
-- contract 인터페이스에 새 메서드/필드 추가, 필요 시 `prisma/schema.delta.prisma`에 컬럼/모델 추가.
+- contract 인터페이스에 새 메서드/필드 추가, 새 컬럼·모델이 요구될 때 `prisma/schema.delta.prisma`에 컬럼/모델 추가.
 - 게이트: `gate.mjs --prisma true --prisma-args "validate" --test false --review false`. commit.
 
 ## Phase 2~4: 변경 계층만 구현

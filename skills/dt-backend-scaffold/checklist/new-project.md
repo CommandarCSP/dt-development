@@ -12,15 +12,15 @@
 
 ## 2. NestJS + Prisma 스캐폴드
 ```bash
-npx @nestjs/cli new <project> --skip-git --package-manager npm
+npx @nestjs/cli@11 new <project> --skip-git --package-manager npm   # 버전: node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" backend --create
 cd <project>
-npm i @prisma/client@^6 class-validator class-transformer
-npm i -D prisma@^6 @testcontainers/postgresql supertest @types/supertest
+npm i $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" backend --deps)
+npm i -D $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" backend --dev)
 npx prisma init --datasource-provider postgresql
 
 # 인증 JWT 선택 시 (캐논: Passport + JWT)
-npm i @nestjs/config @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt
-npm i -D @types/passport-jwt @types/bcrypt
+npm i $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" backend --auth-deps)
+npm i -D $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" backend --auth-dev)
 ```
 > **Prisma는 `@^6`로 핀한다.** 미고정 시 fresh 설치가 Prisma 7을 끌어오는데, 7은 generator가 `prisma-client`(구 `prisma-client-js` 아님)·클라이언트 출력이 `../generated/prisma`·datasource url이 `prisma.config.ts`로 분리라, 캐논의 `import { PrismaClient } from '@prisma/client'`가 파손되어 `tsc`가 죽는다(`has no exported member 'PrismaClient'`). 의도적으로 Prisma 7을 채택하려면 generator provider·임포트 경로·config를 함께 갱신할 것.
 

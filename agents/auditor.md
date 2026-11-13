@@ -36,7 +36,7 @@ dt-audit 조율자의 무거운 분석을 이 컨텍스트에 가둔다. 원자�
 
 ### 2. as-built 역추출 + diff
 - **fe**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/surfaceInventory.mjs" <projectRoot> --json`으로 라우트→페이지 목록(표면 인벤토리 — undocumented 탐지의 전역 스캔은 이 결과만 쓴다), 페이지별 5레이어에서 API 호출면(services)·상태(store)·화면 요소(view)를
-  역추출해 검사 단위별 대조. 부수 산출 `surface` = FE가 실제 호출하는 API 목록(가능하면 IF-ID 매핑).
+  역추출해 검사 단위별 대조. 부수 산출 `surface` = FE가 실제 호출하는 API 목록(정의서가 있으면 IF-ID 매핑).
 - **be**: 컨트롤러 데코레이터→엔드포인트 표면, DTO→요청/응답 shape, 가드/예외 필터→상태코드를
   역추출해 api-contract 행별 대조. 부수 산출 `surface` = BE가 실제 노출하는 엔드포인트 목록.
 - **ux**: Playwright MCP로 스펙의 페이지 순서대로 순회 — snapshot으로 layout-skeleton 구조 노드

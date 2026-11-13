@@ -199,6 +199,7 @@
 - 문제: draft 스펙 구현 허용 여부와 질문 방식(묶어서 vs 하나씩)이 스킬마다 다르다. dt-fullstack 단계 번호가 어긋난다. 스캐폴드 버전이 고정되지 않았다. "plan이 최신이면 생략"의 기준이 없다. 정의서는 문구만 바뀌어도 버전이 오른다. 모호한 표현이 있다.
 - 할 일: draft·질문 정책을 하나로(정책 문서), 단계 이름화, 버전 고정, 내용 해시 기반 재생성·버전 판단, 모호한 표현의 조건화, GEN-18 결함 수정.
 - 완료 기준: 같은 입력으로 두 번 돌려도 버전·계획이 불필요하게 바뀌지 않는다.
+- **완료(DEV-30, 2026-11-13 — GEN-18 DEV-23 흡수 완료).** ① 정책 원칙 6.5(draft 구현: 미해소는 빼고 TODO·stub, 시작 전 1회 확인, 커밋 노트·완료 보고에 기록)로 implement 2개·dt-fullstack 통일. 원칙 6에 "하나씩"은 순서 의존·협의 카드(dt-audit)만 — dt-spec [7-5] 위반 질문도 주제별 묶음으로. ② `templates/stack-versions.json`(규칙이 검증된 major, 확인 시점 최신 major는 `latestSeen`에 기록 — react-router 8·Vite 8·Vitest 5·MSW 3·NestJS 12·Jest 30·Testcontainers 12가 이미 나와 있음) + `scripts/stackVersions.mjs`(설치 목록·major 비교). 체크리스트는 `@latest` 대신 이 파일로 설치(BE 인증·FE Sentry는 선택 묶음), 스택 사전 점검이 major 차이를 알림. ③ `scripts/planFreshness.mjs`(유닛 스펙+자기 스택 interactions 절의 내용 해시, plan 머리 `specHash`) — implement 2개가 fresh 유닛만 건너뜀. ④ `scripts/definitionVersion.mjs`(전역 규약·SP·IF·DM 행의 계약 해시가 바뀔 때만 +1) — devspec·definition-author. ⑤ 조건 없는 표현 12곳을 조건으로. GEN-18 항목(fullstack 번호 GEN-37, ko-writing-reviewer GEN-39, prompts 참조 GEN-20, be-e2e 설계 문서 GEN-19)은 이미 해결됨을 확인. 테스트 4개 + 구조 테스트 3개.
 
 ### GEN-25 버전·변경 관리
 - 문제: 버전을 4곳에서 손으로 맞춘다. CHANGELOG가 없다. 생성 산출물에 스키마 버전이 없어 마이그레이션이 불가능하다. 호환성 정책이 없다.

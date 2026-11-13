@@ -15,16 +15,20 @@
 보일러플레이트 템플릿은 쓰지 않는다. 공식 도구로 스캐폴드한 뒤 컨벤션을 적용한다.
 
 ```bash
-npm create vite@latest <project-root> -- --template react-ts
+npm create vite@7 <project-root> -- --template react-ts   # 생성 도구 버전: node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" frontend --create
 cd <project-root>
+pnpm add $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" frontend --deps)
+pnpm add -D $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" frontend --dev)
 ```
+
+> **버전은 `${CLAUDE_PLUGIN_ROOT}/templates/stack-versions.json`으로 고정한다**(`@latest` 금지). 플러그인 규칙·템플릿이 검증된 major다. 시점에 따라 다른 major가 깔리면 같은 스킬이 다른 코드를 만든다. 이 파일 밖의 패키지를 더할 때도 major를 적는다(예: `zod@^4`).
 
 그다음 `dt-frontend-architecture` 컨벤션에 맞게 설정한다(상세는 해당 Atlas 참조):
 - **스타일**: Tailwind CSS v4(`@tailwindcss/vite`) + shadcn/ui(Radix) + `src/styles/globals.css`(CSS변수 토큰) + `src/lib/utils.ts`(`cn`). `@` alias를 `vite.config.ts`·`tsconfig`에 추가.
 - **테스트**: Vitest + Testing Library + MSW, Playwright(e2e). `vite.config.ts`/`vitest.config.ts` 분리.
 - **린트(a11y)**: `eslint-plugin-jsx-a11y`를 배선한다. 클릭 핸들러가 달린 비인터랙티브 요소(`<div onClick>` 등 — 키보드로 접근 불가)를 lint가 작성 시점에 자동 차단한다(도그푸딩 발견 — 리뷰 엔진 룰이 아니라 스캐폴드가 켜는 린트가 담당).
   ```bash
-  pnpm add -D eslint-plugin-jsx-a11y
+  # eslint-plugin-jsx-a11y 는 위 --dev 목록에 들어 있다
   ```
   flat config(`eslint.config.js`)에 recommended를 추가:
   ```js
@@ -95,8 +99,8 @@ Phase 2 병렬 dispatch 전, 작업 단위 의존성을 보고 `orchestration-po
 
 **4-1. 의존성**
 ```bash
-pnpm add @sentry/react react-error-boundary
-pnpm add -D @sentry/vite-plugin
+pnpm add $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" frontend --sentry-deps)   # react-error-boundary 는 기본 목록에 있다
+pnpm add -D $(node "${CLAUDE_PLUGIN_ROOT}/scripts/stackVersions.mjs" frontend --sentry-dev)
 ```
 
 **4-2. 에러 키트 복사** — canonical `dt-frontend-architecture/examples/error/`가 유일 원본(SSOT).

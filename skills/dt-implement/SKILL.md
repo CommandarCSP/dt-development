@@ -28,7 +28,7 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
    - design.md `## 에셋 매니페스트`(있으면) → `docs/specs/assets/<page>/`의 실제 파일을 프로젝트 컨벤션대로 `src/assets/<page>/`(import) 또는 `public/`로 물질화하고 실제 `<img src>`/SVG import를 배선(플레이스홀더 금지). 매니페스트 `(미수거)` 항목만 TODO 허용. asset URL 만료로 파일이 없으면 헤더 `sources`의 `figmaFileKey`로 재수거 가능.
    - requirements FR + tasks 완료기준 → 도메인별 테스트 기준.
 
-### [2] draft 확인
+### [2] draft 확인 (`docs/orchestration-policy.md` 원칙 6.5)
 `ScaffoldSeed.status === 'draft'`이거나 `draftFlags.proposedApiCount > 0`이면 AskUserQuestion 1회:
 - `question`: "이 스펙은 draft이고 API 계약 N개가 제안값입니다. 그대로 진행할까요? 제안 계약은 `// TODO: 백엔드 확정 필요 (spec [제안])` 주석과 함께 코드로 들어갑니다."
 - options: `"진행"` / `"중단"`.
@@ -53,8 +53,9 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
 
 ### [3.7] 코드-레벨 플랜 생성 (plan-author, opus) — 구현 직전
 스펙이 finalized면 `docs/specs/pages/<page>/plan.md`(코드-레벨 체크박스 플랜)를 확보한다. 반환 봉투에 `needsDecision`이 있으면 원칙 6대로 묻고 `answers`와 함께 재dispatch(`docs/orchestration-policy.md` 원칙 5·6, 왕복 상한 2회). 플랜 승인을 물을 때 봉투의 `assumptions`(가정 N건과 목록)를 함께 보여, 사용자가 가정을 바꿀 기회를 준다. **사용자 플랜 승인 게이트** 후 [4]로. plan-author는 durable 3겹의 셋째 — `definition → spec → plan`.
-- **홀리스틱(권장 — 여러 페이지):** `plan-author`(opus)를 **전 페이지를 한 번에** dispatch(`units`=페이지 목록, `stack:frontend`)해 `interactions.md`를 함께 읽고 **크로스페이지 배선(`[X]`)** 까지 유닛별 plan.md에 박게 한다. dt-fullstack에서 와도 플랜은 여기서 만든다(fullstack은 플랜을 따로 만들지 않는다). plan.md가 이미 있고 스펙보다 최신이면 재생성 생략.
-- **단일 페이지 standalone 호출:** 그 페이지만 plan-author dispatch(interactions.md 있으면 함께 전달). plan.md가 이미 있고 최신이면 재생성 생략.
+- **홀리스틱(권장 — 여러 페이지):** `plan-author`(opus)를 **전 페이지를 한 번에** dispatch(`units`=페이지 목록, `stack:frontend`)해 `interactions.md`를 함께 읽고 **크로스페이지 배선(`[X]`)** 까지 유닛별 plan.md에 박게 한다. dt-fullstack에서 와도 플랜은 여기서 만든다(fullstack은 플랜을 따로 만들지 않는다). plan.md가 `fresh`면 재생성 생략(아래 기준).
+- **단일 페이지 standalone 호출:** 그 페이지만 plan-author dispatch(interactions.md 있으면 함께 전달). plan.md가 `fresh`면 재생성 생략.
+- **"최신"의 기준(GEN-24):** 유닛마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/planFreshness.mjs" docs/specs/pages/<unit>`을 돌린다. `fresh`(스펙 내용 해시가 plan 머리의 `specHash`와 같음)인 유닛은 plan-author에 넘기지 않고, `stale`·`missing`인 유닛만 넘긴다. 주석·줄바꿈만 바뀐 스펙은 해시가 같아 플랜을 다시 만들지 않는다.
 
 ### [4] 도메인별 위임 (Phase 1~4) — fe-builder가 plan 실행
 각 도메인에 대해 checklist(`dt-frontend-scaffold/checklist/new-domain.md` 또는 `extend-domain.md`)의 **Phase 1~4**를 따라 **`fe-builder`(model: sonnet)를 Task로 dispatch**한다(페이지 작성 Phase 5는 [5]에서 일괄). **dispatch 시 `plan.md`(크로스페이지 `[X]` 배선 포함) + `docs/specs/interactions.md`를 함께 전달**한다. fe-builder는 **plan.md 체크박스가 있으면 그대로 실행**(크로스페이지 무효화 배선 포함), 없으면 스펙 + `dt-frontend-architecture` 룰대로 구현. 레이어별 prompt는 없음(통합됨). dispatched 미지원이면 inline degrade(조율자 직접).

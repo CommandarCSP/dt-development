@@ -59,7 +59,7 @@ code-fix → /dt-implement·/dt-be-implement 또는 수동 수정, spec-update �
 - `docs/audits/index.md`에 run 요약 1줄을 append(추이 원장).
 
 ### §4 협의 루프 (opt-in — 리포트 후 1회 질문 또는 --consult)
-결정 필요 항목(SB 전건 + 🔴 + confirm)을 **하나씩** 협의 카드로 사용자와 재정의한다.
+결정 필요 항목(SB 전건 + 🔴 + confirm)을 **하나씩** 협의 카드로(원칙 6의 "하나씩" 예외 ② — 사람이 한 건씩 검토한다) 사용자와 재정의한다.
 카드 형식·decisions.md 기록·후속 라우팅·역참조 마커는
 `references/consult-loop.md`(SOT)를 따른다. 협의는 조율자가 직접 수행하며(워커는 묻지 않음),
 `보류` 항목은 `docs/audits/pending.md`로 이월한다. **라우팅 실행(정의서 정정·스펙 백필·코드

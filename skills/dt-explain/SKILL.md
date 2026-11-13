@@ -39,5 +39,5 @@ description: Use when the user asks to explain a problem, bug, Jira ticket, or i
 
 ## 비범위 (v1)
 - **외부 쓰기 전부** — 지라 코멘트·Confluence 등에 쓰지 않는다(채팅 답변 전용).
-  기록이 필요하면 dt-worklog-sync 등 기존 흐름으로 별도 진행.
+  사용자가 기록을 원하면 dt-worklog-sync 등 기존 흐름으로 별도 진행.
 - 실제 코드 수정 실행 — 설명·제안까지. 수정은 사용자가 요청하면 별도 흐름으로.

@@ -47,7 +47,7 @@ Page          → Integration (memoryRouter + MSW) + E2E (Playwright)
 6. **AAA 구조 + 명확한 네이밍** — Arrange / Act / Assert. 한 테스트 = 한 동작. `should_X_when_Y` 또는 `<조건>일 때 <결과>`
 7. **테스트 케이스 도출 기법** — 경계값/동등분할/결정테이블/상태전이/페어와이즈
 8. **Test Double 의식적 선택** — Stub/Spy/Mock/Fake 차이 알고 쓰기
-9. **Flaky 방지** — setTimeout/raw sleep 금지, waitFor + 적절한 timeout
+9. **Flaky 방지** — setTimeout/raw sleep 금지, waitFor·findBy는 기본 timeout(1000ms)을 쓰고 늘릴 때는 이유를 주석으로
 
 ## Coverage
 
@@ -62,7 +62,7 @@ Page          → Integration (memoryRouter + MSW) + E2E (Playwright)
 - **integration-no-hook-mocking** _(critical)_ — 통합 테스트에서 hook을 mock하면 통합 의미 소실 — 절대 금지 [상세](patterns/integration-no-hook-mocking.md)
 - **view-test-props-only** _(critical)_ — View 테스트는 props만 — store/router import 금지 (테스트 무의미해짐) [상세](patterns/view-test-props-only.md)
 - **e2e-playwright** _(important)_ — 수용(acceptance) 사용자 시나리오, 외부는 MSW/origin 명시 route로 격리, page.waitForTimeout·와일드카드 route 금지 [상세](patterns/e2e-playwright.md)
-- **flaky-test-prevention** _(important)_ — waitFor + 적절한 timeout, setTimeout/raw sleep 금지, cross-tree subscription 누락은 hook들을 한 트리에서 묶어 호출 [상세](patterns/flaky-test-prevention.md)
+- **flaky-test-prevention** _(important)_ — waitFor·findBy 기본 timeout(늘리면 이유 주석), setTimeout/raw sleep 금지, cross-tree subscription 누락은 hook들을 한 트리에서 묶어 호출 [상세](patterns/flaky-test-prevention.md)
 - **integration-domain** _(important)_ — Domain 컴포넌트 통합 테스트, 실제 hook + MSW, hook mock 금지 [상세](patterns/integration-domain.md)
 - **integration-page** _(important)_ — Page 통합 테스트는 MemoryRouter + MSW, 실 사용자 진입 시나리오 검증 [상세](patterns/integration-page.md)
 - **msw-handler-design** _(important)_ — MSW handler는 src/mocks/handlers.ts 단일 위치, 테스트별 server.use로 override [상세](patterns/msw-handler-design.md)
