@@ -406,3 +406,18 @@ test('형식 검사: 작성 에이전트 4개와 스펙 확정 단계가 validat
   }
   assert.deepEqual(problems, []);
 });
+
+// GEN-23 — 검출이 빈 규칙은 "검사하는 척"한다. 기계 검출이 없으면 type: manual 로 명시한다.
+test('리뷰 규칙: 검출이 빈 규칙이 없다(기계 검출 또는 manual)', async () => {
+  const { loadAllRules } = await import('../skills/dt-frontend-review/scripts/lib/rule-loader.mjs');
+  const { resolveStack } = await import('../skills/dt-frontend-review/scripts/lib/stacks.mjs');
+  const KNOWN = new Set(['forbidden-import', 'forbidden-call', 'forbidden-pattern', 'requires-sibling-test', 'required-pattern', 'requires-acceptance-ledger', 'ast-rule', 'pattern-pair', 'jsx-tag-attrs', 'registered-in-sibling-module', 'manual']);
+  const problems = [];
+  for (const st of ['frontend', 'backend']) {
+    for (const r of await loadAllRules(ROOT, resolveStack(st).ruleLocations)) {
+      if (!r.detection?.length) problems.push(`${st}:${r.ruleId}: detection 이 비었다 — 구현하거나 type: manual`);
+      for (const d of r.detection ?? []) if (!KNOWN.has(d.type)) problems.push(`${st}:${r.ruleId}: 모르는 detection 타입 ${d.type}`);
+    }
+  }
+  assert.deepEqual(problems, []);
+});

@@ -33,7 +33,7 @@
 **대상 계약면:** **BE** `api-contract.md`의 엔드포인트/스키마(`method·path·request·response shape·status`) ↔ 정의서 IF. (**FE**도 대칭: `design.md`의 API 계약/`layout-skeleton`이 참조하는 IF ↔ 정의서 IF.)
 
 **절차:**
-1. `detectDrift(정의서 IF, 최종 산출물 계약)`을 **다시** 실행(입력이 deepRead가 아니라 방금 쓴 산출물).
+1. `detectDrift(정의서 IF, 최종 산출물 계약)`을 **다시** 실행(입력이 deepRead가 아니라 방금 쓴 산출물). 구조로 확인할 수 있는 부분(IF 존재·메서드·경로·IF 없는 새 엔드포인트)은 `node "${CLAUDE_PLUGIN_ROOT}/scripts/checkDefinitionDrift.mjs" <정의서> <산출물…>`이 강제한다 — exit 1이면 finalize 불가.
 2. 드리프트가 있으면 — **조용히 넘길 수 없다(강제):**
    - **잠정 IF와 다름** → **반드시** T2/T3로 정의서 갱신(diff-then-confirm 승격). 스킵 불가.
    - **`확정` IF와 모순(T6)/원본 변경(T7)** → 무확인 덮어쓰기는 여전히 금지(lock)지만 **반드시 surface**: 세션 내 재확인으로 갱신하거나 `<!-- conflict: IF-n -->` + dt-devspec §3 큐. 이 경우 스펙은 아래 3의 강제로 `draft`.

@@ -4,8 +4,11 @@ summary: "onClick을 가진 비버튼/비링크 요소는 role=button·tabIndex=
 severity: important
 appliesTo: ["src/components/view/**/*.{ts,tsx}", "src/components/domain/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "onClick이 붙은 비인터랙티브 요소(div·article·section·li·span 등, button/a/input 아님)는 다음 3종을 모두 가져야 한다: (1) role=\"button\", (2) tabIndex={0}, (3) onKeyDown에서 Enter·Space 처리(e.key === 'Enter' || e.key === ' ') 후 preventDefault. 한 개라도 없으면 위반. 예외: 컨테이너 자신은 onClick으로 내비게이션/액션을 수행하지 않고, 내부의 실제 <button>/<a>가 모든 동작을 담당하는 순수 래퍼일 때만 면제된다(컨테이너가 직접 navigate/액션을 호출하면 면제 아님 — 3종 필요). 수동 검토."
+  - type: jsx-tag-attrs
+    tags: ["div", "span", "li", "article", "section", "tr", "td", "p", "img"]
+    when: "\bonClick="
+    requireAll: ["role=.button.", "\btabIndex=", "\bonKeyDown="]
+    rationale: "onClick 이 붙은 비인터랙티브 요소는 role="button"·tabIndex={0}·onKeyDown(Enter·Space) 3종을 모두 갖춘다. 내부 <button>/<a> 가 동작을 다 맡는 순수 래퍼라면 onClick 을 떼어 낸다"
 relatedRules: [pure-view-component, view-styling]
 ---
 

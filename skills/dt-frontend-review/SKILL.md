@@ -1,6 +1,6 @@
 ---
 name: dt-frontend-review
-description: Use when reviewing dt-frontend project code for architecture/test rule violations, when scaffold workflow needs a phase-level mini-review, or when running /dt-review. Parses dt-frontend-architecture and dt-frontend-testing patterns frontmatter and applies detection logic (forbidden-import, forbidden-call, required-pattern, ast-rule) against changed files plus diff-based coverage gate.
+description: Use when reviewing dt-frontend project code for architecture/test rule violations, when scaffold workflow needs a phase-level mini-review, or when running /dt-review. Parses dt-frontend-architecture and dt-frontend-testing patterns frontmatter and applies detection logic (forbidden-import, forbidden-call, forbidden-pattern, required-pattern, pattern-pair, jsx-tag-attrs, ast-rule, manual) against changed files plus diff-based coverage gate.
 ---
 
 # dt-frontend Review
@@ -65,6 +65,10 @@ Reasoning: Critical 위반 1건 + coverage 1건 — 머지 전 수정 필요.
   - `requires-sibling-test`: 검사 대상 파일에 대응하는 sibling 테스트 파일 존재를 강제. `{ type: 'requires-sibling-test', testPath: '__tests__/{basename}.test.ts' }` 식. `*Business.ts` 같이 단위 테스트 필수 모듈에 적용.
   - `required-pattern`: 휴리스틱 (현재 querykey-param 한정), 미지원 패턴은 manual-review 표시
   - `ast-rule`: v1 stub, manual-review 표시
+  - `pattern-pair`: 파일 단위 짝 — `when`이 맞는 파일에 `require`(또는 `requireAll` 전부)가 없거나 `forbid`가 있으면 위반. AST 없이 잡는 구조 위반용(예: `.map` 목록에 빈 상태 분기 없음)
+  - `jsx-tag-attrs`: JSX 여는 태그 단위 — `tags` 중 `when`이 맞는 태그가 `requireAll` 속성을 다 갖췄는지(`{…}` 안의 `=>`는 건너뜀)
+  - `registered-in-sibling-module`: NestJS `@Injectable`·`@Controller` 클래스가 같은 폴더 `*.module.ts`에 등록됐는지
+  - `manual`: 판단 규칙 — 기계로 판정하지 않는다. reviewer 에이전트가 규칙 문서를 읽고 본다. **검출을 비워 두지 않는다** — 기계 검출이 없으면 `manual`로 명시한다(GEN-23, 구조 테스트가 검사)
 
 ## 주석 Manual Review
 

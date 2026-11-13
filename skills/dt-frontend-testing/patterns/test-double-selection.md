@@ -3,7 +3,9 @@ ruleId: test-double-selection
 summary: "MSW=Stub/Fake, vi.fn=Spy, fake-indexeddb=Fake — 더블 종류 의식하고 선택"
 severity: minor
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}"]
-detection: []
+detection:
+  - type: manual
+    description: "판단 규칙 — 기계로 판정하지 않는다. reviewer 에이전트가 이 문서를 읽고 테스트 설계를 본다(GEN-23)"
 relatedRules: [integration-no-hook-mocking, msw-handler-design, unit-business-hook]
 ---
 

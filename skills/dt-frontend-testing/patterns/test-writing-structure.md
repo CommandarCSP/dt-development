@@ -3,7 +3,9 @@ ruleId: test-writing-structure
 summary: "AAA(Arrange/Act/Assert), 명확한 네이밍, 한 테스트=한 동작, fixture는 Builder로"
 severity: minor
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}", "e2e/**/*.spec.ts"]
-detection: []
+detection:
+  - type: manual
+    description: "판단 규칙 — 기계로 판정하지 않는다. reviewer 에이전트가 이 문서를 읽고 테스트 설계를 본다(GEN-23)"
 relatedRules: [test-case-design-techniques, test-double-selection, test-anti-patterns]
 ---
 

@@ -40,6 +40,7 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 
 ## 게이트 (레이어마다 — 빌더 몫)
 - `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --paths <changed>`로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.
+- **도구를 실행하지 못하면(tsc·테스트 러너·prisma 없음)** 게이트는 실패다(건너뜀으로 통과하지 않는다). 고치려 하지 말고 `status: blocked` + needsDecision으로 올린다 — 선택지 "지금 설치(어느 패키지) / 이번 실행만 건너뛰기 허용 / 중단"(`docs/orchestration-policy.md` 원칙 10). 조율자가 허용을 받아 `allowSkip`을 넘겨 재dispatch하면 그때만 `--allow-skip <이름>`을 붙인다.
 - **reviewer를 dispatch하지 않는다.** 서브에이전트는 다른 서브에이전트를 부를 수 없다. 격리 리뷰(`mode:full`)와 수리 루프는 조율자가 이 봉투를 받은 뒤 한다(`docs/orchestration-policy.md` 원칙 3).
 - **수리 재dispatch로 불렸을 때**(입력에 `repairTargets`가 있음): `.dt-impl/<unit>/progress.md`로 상태를 복원하고, `repairTargets`에 적힌 파일·룰만 고친다. 범위 밖은 건드리지 않는다. 게이트·커밋 후 같은 봉투로 반환한다.
 

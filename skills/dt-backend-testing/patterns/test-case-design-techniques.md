@@ -3,7 +3,9 @@ ruleId: test-case-design-techniques
 summary: "경계값/동등분할/결정표/상태전이로 케이스 도출 — happy/error/edge를 명시적으로 분리"
 severity: minor
 appliesTo: ["src/**/__tests__/**/*.ts", "test/**/*.e2e.test.ts"]
-detection: []
+detection:
+  - type: manual
+    description: "판단 규칙 — 기계로 판정하지 않는다. reviewer 에이전트가 이 문서를 읽고 테스트 설계를 본다(GEN-23)"
 relatedRules: [test-writing-structure, coverage-rules]
 ---
 

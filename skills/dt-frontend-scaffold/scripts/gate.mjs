@@ -4,7 +4,9 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 // Run a phase gate. Each subgate can be enabled/disabled.
-// Returns: { ok, failures: [{ gate, message }], skipped: [...] }
+// Returns: { ok, failures: [{ gate, message }], skipped: [...], allowedSkips: [...] }
+// 실행하지 못한 검사(도구 없음 등)는 실패다(GEN-23). allowSkip 에 그 이름(tsc|prisma|vitest|test|review)이 있을 때만
+// 건너뜀으로 인정한다 — 조율자가 그 실행에 대해 사용자 허용을 받았을 때만 넘긴다.
 export function runGate({
   projectRoot,
   runTsc = true,
@@ -18,6 +20,7 @@ export function runGate({
   vitestArgs = ['run'],
   testCommand = null,               // [cmd, argsArray] — overrides vitest invocation (e.g. BE jest)
   prismaArgs = ['validate'],        // args for the prisma subgate
+  allowSkip = [],                   // 건너뛰어도 되는 검사 이름 — 사용자 허용이 있을 때만
 }) {
   const failures = [];
   const skipped = [];
@@ -91,7 +94,15 @@ export function runGate({
     }
   }
 
-  return { ok: failures.length === 0, failures, skipped };
+  // 건너뜀 = 실패. 검사할 것이 없어 건너뛴 경우('review (no paths)')만 예외.
+  const allowedSkips = [];
+  for (const s of skipped) {
+    if (s === 'review (no paths)') continue;
+    const name = s.split(' ')[0];
+    if (allowSkip.includes(name)) allowedSkips.push(s);
+    else failures.push({ gate: name, message: `${name} 을(를) 실행하지 못했다(도구가 없거나 실행 불가) — 설치하거나, 사용자 허용을 받아 --allow-skip ${name} 로 다시 돌린다` });
+  }
+  return { ok: failures.length === 0, failures, skipped, allowedSkips };
 }
 
 // Prefer the project-local binary (node_modules/.bin/<tool>) over `npx`,
@@ -140,10 +151,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     reviewStack: typeof opts.stack === 'string' ? opts.stack : null,
     testCommand,
     prismaArgs: typeof opts['prisma-args'] === 'string' ? opts['prisma-args'].split(' ') : ['validate'],
+    allowSkip: typeof opts['allow-skip'] === 'string' ? opts['allow-skip'].split(',').filter(Boolean) : [],
   });
 
-  for (const s of result.skipped) {
-    console.log(`[gate] skipped: ${s}`);
+  for (const s of result.allowedSkips) {
+    console.log(`[gate] 건너뜀(허용됨): ${s}`);
   }
   for (const f of result.failures) {
     console.error(`[gate] FAIL ${f.gate}:`);
@@ -158,7 +170,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       opts.review !== 'false' && 'review',
     ].filter(Boolean);
     const ran = enabled.filter((g) => !result.skipped.some((s) => s.includes(g)));
-    console.log(`[gate] OK (${ran.length === 0 ? 'all skipped' : ran.join(', ') + ' passed'})`);
+    const allowed = result.allowedSkips.length ? ` · 건너뜀(허용됨): ${result.allowedSkips.join(', ')}` : '';
+    console.log(`[gate] OK (${ran.length === 0 ? '실행한 검사 없음' : ran.join(', ') + ' passed'}${allowed})`);
   }
   process.exit(result.ok ? 0 : 1);
 }

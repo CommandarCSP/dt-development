@@ -3,7 +3,11 @@ ruleId: e2e-full-app
 summary: "E2E는 전체 AppModule을 실인프라(Testcontainers Postgres/Redis)+인증과 함께 부팅해 검증 — 수용 레이어(dt-be-e2e) 소유"
 severity: important
 appliesTo: ["test/**/*.e2e.test.ts"]
-detection: []
+detection:
+  - type: pattern-pair
+    when: "\bdescribe\s*\("
+    require: "\bAppModule\b"
+    rationale: "E2E 는 전체 AppModule 을 부팅한다 — 모듈 일부만 조립하면 와이어링·가드·파이프 결함을 놓친다"
 relatedRules: [controller-integration-supertest, testcontainers-lifecycle]
 ---
 

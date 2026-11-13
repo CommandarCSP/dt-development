@@ -3,7 +3,12 @@ ruleId: service-unit-mocks-repository
 summary: "Service 단위 테스트는 Repository provider를 mock해 비즈니스 로직만 격리 검증"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.unit.test.ts"]
-detection: []
+detection:
+  - type: pattern-pair
+    when: "\w+Service\b"
+    require: "jest\.fn\(|createMock|mockDeep|useValue\s*:"
+    forbid: "new\s+PrismaClient\s*\("
+    rationale: "Service 단위 테스트는 Repository provider 를 mock 해 비즈니스 로직만 본다 — 실 DB 연결(new PrismaClient)은 통합 테스트 몫"
 relatedRules: [integration-no-db-mocking, controller-integration-supertest]
 ---
 

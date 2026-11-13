@@ -4,8 +4,8 @@ summary: "state는 필요한 최소 컴포넌트 트리 위치에 둠, 무분별
 severity: suggestion
 appliesTo: ["src/**/*.{tsx,ts}"]
 detection:
-  - type: pattern-rule
-    description: "전역 store나 상위 컴포넌트에 올라가 있는 state가 실제로는 하나의 컴포넌트에서만 쓰이는 경우를 감지. (이 검사는 Plan 2에서 구현)"
+  - type: manual
+    description: "전역 store나 상위 컴포넌트에 올라가 있는 state가 실제로는 하나의 컴포넌트에서만 쓰이는 경우를 감지. (판단 규칙 — reviewer 가 본다, GEN-23)"
 source: "vercel-labs/agent-skills/skills/react-best-practices"
 placeholder: true
 ---

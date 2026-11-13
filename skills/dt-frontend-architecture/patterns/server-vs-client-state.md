@@ -4,8 +4,9 @@ summary: "서버 데이터는 TanStack Query, UI 상태는 Zustand — 역할 �
 severity: important
 appliesTo: ["src/store/stores/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "Zustand store가 API 응답 데이터를 저장하면 위반 (서버 데이터는 TanStack Query에). 반대로 Store Query가 UI 토글 상태를 캐싱하면 위반."
+  - type: forbidden-pattern
+    pattern: "from\s+['"][^'"]*(\/services\/|axios|apiClient)[^'"]*['"]|\bfetch\s*\("
+    rationale: "Zustand store 가 fetcher·axios·fetch 를 직접 쓰면 서버 데이터를 store 에 담는 신호다 — 서버 데이터는 TanStack Query(store/queries)에 둔다"
 relatedRules: [where-does-business-logic-go]
 ---
 

@@ -193,6 +193,7 @@
 - 문제: 도구가 없으면 스캐폴드 게이트가 건너뛰고 통과(`gate.mjs:94`). `detectDrift`가 필수가 아니다. 리뷰 규칙 73개 중 24개가 실제 검사를 안 한다(검출 비어 있음 12, 미구현 ast-rule 12).
 - 할 일: 건너뜀=실패(명시 옵션으로만 허용), `detectDrift` 필수 게이트, 심각도 높은 미구현 규칙부터 구현.
 - 완료 기준: 도구 없는 환경에서 게이트가 통과하지 않고, 지정 규칙이 위반을 잡는다.
+- **완료(DEV-29, 2026-11-13).** ① `gate.mjs`: 실행하지 못한 검사는 실패(`review (no paths)`만 예외), `--allow-skip <이름>`(사용자 허용 시에만)으로만 건너뜀 인정 — 빌더는 도구가 없으면 blocked + needsDecision(설치 / 이번만 허용 / 중단). ② `scripts/checkDefinitionDrift.mjs`: api-contract 엔드포인트의 `from: IF-n`·메서드·경로·IF 없는 새 엔드포인트와 스펙의 IF 참조 무결성을 정의서와 대조, `conflict:`·`skipped:` 마커는 제외 — bespec·spec-author가 consume 확정 직전에 돌림(upward-alignment 최종 정합 게이트의 구조 부분). ③ 검출 3종 추가(`pattern-pair`·`jsx-tag-attrs`·`registered-in-sibling-module`)와 `manual`. 구현한 규칙: FE list-empty-state·interactive-a11y·server-vs-client-state·avoid-effect-for-derived-state·flaky-test-prevention, BE flaky-test-prevention·repository-integration-real-db·controller-integration-supertest·service-unit-mocks-repository·testcontainers-lifecycle·e2e-full-app·module-registration. 판단 규칙(테스트 설계 기법 등 5개 + 알 수 없는 타입 `pattern-rule`을 쓰던 vendored 2개)은 `manual`로 명시. 빈 검출 규칙 FE 4·BE 8 → 0. 남은 AST 껍데기는 FE 6·BE 2(coverage-rules는 커버리지 모듈이 담당). 테스트: 게이트 2·드리프트 5·검출 11·구조 1.
 
 ### GEN-24 지침 충돌·재실행 정리 (GEN-18 흡수)
 - 문제: draft 스펙 구현 허용 여부와 질문 방식(묶어서 vs 하나씩)이 스킬마다 다르다. dt-fullstack 단계 번호가 어긋난다. 스캐폴드 버전이 고정되지 않았다. "plan이 최신이면 생략"의 기준이 없다. 정의서는 문구만 바뀌어도 버전이 오른다. 모호한 표현이 있다.

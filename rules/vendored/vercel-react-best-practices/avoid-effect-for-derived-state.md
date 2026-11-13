@@ -4,8 +4,9 @@ summary: "prop/state로 즉시 계산 가능한 값은 useEffect로 동기화 X 
 severity: important
 appliesTo: ["src/**/*.{tsx,ts}"]
 detection:
-  - type: ast-rule
-    description: "useEffect 안에서 prop/state를 그대로 다른 state에 set하는 패턴은 derived state로 대체. (이 검사는 Plan 2에서 구현)"
+  - type: forbidden-pattern
+    pattern: "useEffect\(\s*\(\)\s*=>\s*\{?\s*set[A-Z]\w*\([^;{}]*\)\s*;?\s*\}?\s*,\s*\["
+    rationale: "useEffect 본문이 setState 한 줄뿐이면 다른 값에서 바로 계산되는 파생 상태다 — 렌더 중에 계산하거나 useMemo 로 둔다"
 source: "vercel-labs/agent-skills/skills/react-best-practices"
 placeholder: true
 ---

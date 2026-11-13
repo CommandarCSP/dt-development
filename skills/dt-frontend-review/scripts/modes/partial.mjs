@@ -9,6 +9,9 @@ import { detectRequiresSiblingTest } from '../lib/detection/requires-sibling-tes
 import { detectRequiredPattern } from '../lib/detection/required-pattern.mjs';
 import { detectRequiresAcceptanceLedger } from '../lib/detection/requires-acceptance-ledger.mjs';
 import { detectAstRule } from '../lib/detection/ast-rule.mjs';
+import { detectPatternPair } from '../lib/detection/pattern-pair.mjs';
+import { detectJsxTagAttrs } from '../lib/detection/jsx-tag-attrs.mjs';
+import { detectRegisteredInSiblingModule } from '../lib/detection/registered-in-sibling-module.mjs';
 import { renderReport } from '../lib/reporter.mjs';
 import { loadOverrideKeys } from '../lib/overrides.mjs';
 
@@ -71,6 +74,14 @@ function runDetection(code, det, ctx) {
       return detectRequiresAcceptanceLedger(code, det, ctx);
     case 'ast-rule':
       return detectAstRule(code, det);
+    case 'pattern-pair':
+      return detectPatternPair(code, det);
+    case 'jsx-tag-attrs':
+      return detectJsxTagAttrs(code, det);
+    case 'registered-in-sibling-module':
+      return detectRegisteredInSiblingModule(code, det, ctx);
+    case 'manual':
+      return []; // 판단 규칙 — reviewer 에이전트가 규칙 문서를 읽고 본다(GEN-23)
     default:
       return [];
   }

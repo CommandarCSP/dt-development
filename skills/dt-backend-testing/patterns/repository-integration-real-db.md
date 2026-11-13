@@ -3,7 +3,10 @@ ruleId: repository-integration-real-db
 summary: "Repository 테스트는 실제 Postgres(Testcontainers)에서 쿼리·제약·트랜잭션을 검증"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.repository.integration.test.ts", "src/**/__tests__/**/*.integration.test.ts"]
-detection: []
+detection:
+  - type: forbidden-pattern
+    pattern: "jest\.mock\(\s*['"]@prisma\/client|mockDeep<\s*PrismaClient|createMock<\s*Prisma|PrismaService\s*,\s*useValue"
+    rationale: "통합 테스트에서 Prisma 를 mock 하면 쿼리·제약·트랜잭션을 검증하지 못한다 — Testcontainers 실 DB 를 쓴다"
 relatedRules: [integration-no-db-mocking, testcontainers-lifecycle]
 ---
 

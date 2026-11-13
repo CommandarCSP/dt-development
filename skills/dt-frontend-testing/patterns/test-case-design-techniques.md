@@ -3,7 +3,9 @@ ruleId: test-case-design-techniques
 summary: "동등분할/경계값/결정테이블/상태전이/페어와이즈로 케이스 도출, 직관 의존 X"
 severity: minor
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}", "e2e/**/*.spec.ts"]
-detection: []
+detection:
+  - type: manual
+    description: "판단 규칙 — 기계로 판정하지 않는다. reviewer 에이전트가 이 문서를 읽고 테스트 설계를 본다(GEN-23)"
 relatedRules: [unit-business-hook, unit-store-query, coverage-rules]
 ---
 

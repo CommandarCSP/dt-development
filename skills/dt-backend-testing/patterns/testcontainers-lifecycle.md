@@ -3,7 +3,11 @@ ruleId: testcontainers-lifecycle
 summary: "Testcontainers는 beforeAll/afterAll로 기동·정리, 테스트 간 데이터 격리(truncate/트랜잭션 롤백)"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.integration.test.ts", "test/**/*.e2e.test.ts"]
-detection: []
+detection:
+  - type: pattern-pair
+    when: "GenericContainer|PostgreSqlContainer|RedisContainer|@testcontainers"
+    requireAll: ["\bbeforeAll\s*\(", "\bafterAll\s*\(", "\.stop\s*\("]
+    rationale: "컨테이너는 beforeAll 에서 띄우고 afterAll 에서 stop 한다 — 테스트마다 띄우거나 정리를 빠뜨리지 않는다"
 relatedRules: [repository-integration-real-db, flaky-test-prevention]
 ---
 

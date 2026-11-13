@@ -1,6 +1,6 @@
 ---
 name: dt-backend-review
-description: Use when reviewing dt-backend (NestJS) project code for architecture/test rule violations, when the backend scaffold workflow needs a phase-level mini-review, or when running /dt-be-review. Parses dt-backend-architecture and dt-backend-testing patterns frontmatter and applies detection logic (forbidden-import, forbidden-call, forbidden-pattern, requires-sibling-test, required-pattern, ast-rule) against changed files plus diff-based coverage gate.
+description: Use when reviewing dt-backend (NestJS) project code for architecture/test rule violations, when the backend scaffold workflow needs a phase-level mini-review, or when running /dt-be-review. Parses dt-backend-architecture and dt-backend-testing patterns frontmatter and applies detection logic (forbidden-import, forbidden-call, forbidden-pattern, requires-sibling-test, required-pattern, pattern-pair, registered-in-sibling-module, ast-rule, manual) against changed files plus diff-based coverage gate.
 ---
 
 # dt-backend Review
@@ -41,6 +41,8 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" $ARGUM
 - full 모드: 스택 설정의 `overrides.<키>`마다 근거 결정(`decisionRef: "PD-NNN"`)을 확인한다. 근거 없음·못 찾음·대체됨은 Critical `override-decision-ref`, 만료는 Important. partial 모드(빌더 게이트)는 검사하지 않는다. 고치는 법: `/dt-decision override <키>`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9)
 
 ## 룰 frontmatter 필드 / Detection 타입
+Detection 타입 목록과 뜻은 `${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/SKILL.md` "룰 frontmatter 필드"가 단일 출처다(엔진 공유). BE가 주로 쓰는 것: `pattern-pair`(테스트 구조 — supertest·repository mock·컨테이너 수명), `registered-in-sibling-module`(DI 등록), `manual`(판단 규칙).
+
 FE와 동일한 스키마·detector를 사용한다 (`dt-frontend-review` SKILL.md 참조). backend 전용 룰은 다음 detector를 사용:
 
 - `forbidden-import` — `@prisma/client`/`ioredis`/`express` 등 레이어별 금지 import

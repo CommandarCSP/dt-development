@@ -3,7 +3,11 @@ ruleId: controller-integration-supertest
 summary: "Controller 통합 테스트는 Supertest로 HTTP를 통해 라우팅·검증·상태코드를 검증"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.integration.test.ts"]
-detection: []
+detection:
+  - type: pattern-pair
+    when: "\w+Controller\b"
+    require: "supertest|\brequest\(\s*app|getHttpServer\(\)"
+    rationale: "Controller 통합 테스트는 Supertest 로 HTTP 를 거쳐 라우팅·검증·상태 코드를 본다 — 컨트롤러 메서드를 직접 부르지 않는다"
 relatedRules: [controller-requires-integration-test, integration-no-db-mocking]
 ---
 

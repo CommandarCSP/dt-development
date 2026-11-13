@@ -5,9 +5,8 @@ severity: important
 appliesTo: ["src/**/*.service.ts", "src/**/*.controller.ts", "src/**/*.repository.ts"]
 excludePathPatterns: ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/__tests__/**"]
 detection:
-  - type: ast-rule
-    description: "@Injectable/@Controller 클래스는 형제 모듈(*.module.ts)의 providers/controllers에 등록되어야 함 (v1: 수동 검토)"
-    rationale: "DI 컨테이너에 등록되지 않은 provider/controller는 런타임에 해결 불가"
+  - type: registered-in-sibling-module
+    rationale: "DI 컨테이너에 등록되지 않은 provider/controller 는 런타임에 해결되지 않는다 — 같은 폴더 *.module.ts 의 providers/controllers 에 넣는다"
 relatedRules: []
 ---
 

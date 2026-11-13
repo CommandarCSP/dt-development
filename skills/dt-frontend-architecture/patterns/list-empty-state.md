@@ -4,8 +4,10 @@ summary: "배열 .map 렌더와 로딩 분기를 가진 목록 컴포넌트는 '
 severity: important
 appliesTo: ["src/components/view/**/*.{ts,tsx}", "src/components/domain/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "컴포넌트가 (1) 배열을 `.map(...)`으로 렌더하고 (2) 로딩 분기(isLoading/isPending 등)를 가진 목록형이면, `데이터.length === 0 && !isLoading`(비어 있고 로딩 아님) 조건의 빈 상태 UI(안내 문구를 담은 요소)가 있어야 한다. 로딩 분기와 map만 있고 빈 상태 분기가 없으면 위반. 로딩·에러가 상위(Suspense/ErrorBoundary·throwOnError)에서 처리되어 컴포넌트에 명시적 isLoading이 없더라도, `.map`으로 목록을 렌더하면 빈 배열일 때의 안내 문구가 있어야 한다. 수동 검토."
+  - type: pattern-pair
+    when: "\{[^}]*\.map\("
+    require: "\.length\s*(===|==|<=|<)\s*[01]|!\s*[\w.?]+\.length\b|\.length\s*\?|isEmpty|EmptyState|[Ee]mpty"
+    rationale: "JSX 에서 배열을 .map 으로 렌더하는데 빈 배열 분기(length === 0 · isEmpty · EmptyState)가 파일에 없다 — 빈 상태 안내 문구를 둔다. 로딩·에러가 상위(Suspense·ErrorBoundary)에서 처리돼도 빈 배열 안내는 필요하다"
 relatedRules: [pure-view-component, error-boundary-required]
 ---
 

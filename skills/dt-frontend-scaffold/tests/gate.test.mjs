@@ -93,3 +93,26 @@ test('runGate fails when review needed but script not found (no reviewScript pro
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// GEN-23 — 실행하지 못한 검사는 실패다. --allow-skip(사용자 허용)으로만 건너뛴다.
+test('runGate: 도구를 실행하지 못하면 skipped 가 아니라 실패다', () => {
+  const dir = makeProject('missing-tool', {});
+  try {
+    const result = runGate({ projectRoot: dir, runTsc: false, runReview: false, runVitest: true, testCommand: ['/nonexistent/dt-test-runner', []] });
+    assert.equal(result.ok, false);
+    assert.ok(result.failures.some((f) => f.gate === 'test' && /allow-skip test/.test(f.message)));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('runGate: allowSkip 에 이름이 있으면 그 검사만 건너뜀으로 인정한다', () => {
+  const dir = makeProject('allowed-skip', {});
+  try {
+    const result = runGate({ projectRoot: dir, runTsc: false, runReview: false, runVitest: true, testCommand: ['/nonexistent/dt-test-runner', []], allowSkip: ['test'] });
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.allowedSkips, ['test']);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

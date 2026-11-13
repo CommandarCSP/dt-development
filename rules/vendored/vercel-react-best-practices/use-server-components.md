@@ -5,8 +5,8 @@ severity: suggestion
 appliesTo: ["src/**/*.{tsx,ts}"]
 condition: "framework: nextjs-app-router"
 detection:
-  - type: pattern-rule
-    description: "클라이언트 컴포넌트에서 데이터 페칭이나 서버 전용 로직을 수행하는 경우 Server Component로 이동 고려. (이 검사는 Plan 2에서 구현)"
+  - type: manual
+    description: "클라이언트 컴포넌트에서 데이터 페칭이나 서버 전용 로직을 수행하는 경우 Server Component로 이동 고려. (판단 규칙 — reviewer 가 본다, GEN-23)"
 source: "vercel-labs/agent-skills/skills/react-best-practices"
 placeholder: true
 ---

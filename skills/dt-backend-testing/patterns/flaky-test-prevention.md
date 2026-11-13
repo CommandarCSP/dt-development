@@ -3,7 +3,10 @@ ruleId: flaky-test-prevention
 summary: "고정 sleep(setTimeout) 금지, 컨테이너/앱 readiness를 await, 결정적 시드 데이터 사용"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.ts", "test/**/*.e2e.test.ts"]
-detection: []
+detection:
+  - type: forbidden-pattern
+    pattern: "\bsetTimeout\s*\(|\bsleep\s*\("
+    rationale: "고정 sleep 대신 컨테이너·앱 readiness 를 await 한다"
 relatedRules: [testcontainers-lifecycle, integration-no-db-mocking]
 ---
 
