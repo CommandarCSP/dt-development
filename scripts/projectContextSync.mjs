@@ -1,6 +1,7 @@
 import { readFileSync as _read, writeFileSync as _write, existsSync as _exists, mkdirSync as _mkdir } from 'node:fs';
 import { dirname as _dirname, resolve as _resolve } from 'node:path';
 import { fileURLToPath as _f2p } from 'node:url';
+import { parseSections, mergeOwnedSections } from './lib/sections.mjs';
 const META_REGEX = /<!-- lastSyncedAt: ([^,]+), packageJsonMtime: ([^ ]+) -->/;
 
 export function parseMetaHeader(markdown) {
@@ -30,18 +31,7 @@ export const SECTION_OWNERS = {
 };
 const ORDER = ['개요', ...SECTION_OWNERS.frontend, ...SECTION_OWNERS.backend, '제약사항', '도메인 용어'];
 
-/** "프로젝트 기술/라이브러리 (전역 세트 외 추가)" → "프로젝트 기술/라이브러리" */
-export const sectionKey = (title) => title.replace(/\s*\([^)]*\)\s*$/, '').trim();
-
-/** `{ preamble, sections: [{ key, text }] }` — text 는 `## 제목` 줄부터 다음 `## ` 직전까지(그대로). */
-export function parseSections(md) {
-  const parts = md.split(/^(?=## )/m);
-  const preamble = parts[0].startsWith('## ') ? '' : parts.shift();
-  return { preamble, sections: parts.map((text) => ({ key: sectionKey(text.slice(3, text.indexOf('\n') < 0 ? undefined : text.indexOf('\n'))), text })) };
-}
-
-const ensureNl = (s) => (s.endsWith('\n') ? s : s + '\n');
-const render = ({ preamble, sections }) => preamble + sections.map((s, i) => (i < sections.length - 1 ? ensureNl(s.text).replace(/\n*$/, '\n\n') : s.text)).join('');
+export { sectionKey, parseSections } from './lib/sections.mjs';
 
 /** 옛 형식(스택 접두어 없는 `## 기술 스택`)이면 그 스택, 아니면 null. */
 export function detectLegacy(md) {
@@ -75,25 +65,7 @@ export function mergeStackSections(existing, stack, rendered) {
   if (!existing || !existing.trim()) return { ok: true, md: rendered };
   const legacy = detectLegacy(existing);
   if (legacy) return { ok: false, reason: 'legacy', stack: legacy };
-  const ex = parseSections(existing);
-  const nw = parseSections(rendered);
-  const owned = new Set(SECTION_OWNERS[stack]);
-  const common = new Set(SECTION_OWNERS.common);
-  const sections = [...ex.sections];
-  for (const s of nw.sections) {
-    const at = sections.findIndex((x) => x.key === s.key);
-    if (owned.has(s.key)) {
-      if (at >= 0) sections[at] = s;
-      else insertOrdered(sections, s);
-    } else if (common.has(s.key) && at < 0) insertOrdered(sections, s);
-  }
-  return { ok: true, md: render({ preamble: nw.preamble || ex.preamble, sections }) };
-}
-
-function insertOrdered(sections, s) {
-  const rank = ORDER.indexOf(s.key);
-  const at = sections.findIndex((x) => ORDER.indexOf(x.key) > rank);
-  sections.splice(at < 0 ? sections.length : at, 0, s);
+  return { ok: true, md: mergeOwnedSections(existing, rendered, { owned: SECTION_OWNERS[stack], fillIfAbsent: SECTION_OWNERS.common, order: ORDER }) };
 }
 
 // CLI — 스킬(문서)이 쓴다.

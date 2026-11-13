@@ -17,7 +17,8 @@ description: Use after /dt-implement to author and verify scenario-based accepta
 3. 자동 실행 아님 — /dt-implement 완료 넛지에 사용자가 승낙해야 시작.
 
 ## 입력
-- `docs/specs/pages/<page>/{requirements,tasks}.md` + `docs/specs/interactions.md`(있으면).
+- `docs/specs/pages/<page>/{requirements,tasks}.md` + `docs/specs/interactions.md`의 `## FE 크로스페이지` 절(있으면) + `docs/specs/pages/<page>/plan.md`(있으면 — `[X]` 크로스유닛 배선 체크박스를 여정 시나리오 근거로 쓴다).
+- 쓰는 것: 시나리오 원장과 e2e 테스트만. 스펙·플랜은 읽기만 하고, 빈틈은 원장 상단 메모와 백필 권고로 남긴다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/artifact-contract.md`).
 
 ## 스펙 부재 사다리 (불변원칙 1의 예외 경로 — 레거시 진입)
 스펙 기반이 하드 요구지만, 스펙이 없거나 얇을 때 3단으로 재결속한다(침묵 진행 금지).

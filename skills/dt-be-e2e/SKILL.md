@@ -16,6 +16,10 @@ description: Use after /dt-be-implement to author and verify scenario-based acce
 2. 사람이 검증한다 — verified 승격은 사람의 원장↔테스트 diff 리뷰 승인 + 그린 로그 확인만(A안). AI는 제안·저작·headless 사전점검까지.
 3. 자동 실행 아님 — /dt-be-implement 완료 넛지에 사용자가 승낙해야 시작.
 
+## 입력
+- `docs/specs/resources/<resource>/{api-contract,requirements}.md` + `docs/specs/interactions.md`의 `## BE 크로스리소스` 절(있으면 — 트랜잭션 경계·cascade를 여정 시나리오 근거로) + `docs/specs/resources/<resource>/plan.md`(있으면 — `[X]` 크로스유닛 배선 체크박스).
+- 쓰는 것: 시나리오 원장과 e2e 테스트만. 스펙·플랜은 읽기만 하고, 빈틈은 원장 상단 메모와 백필 권고로 남긴다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/artifact-contract.md`).
+
 ## 스펙 부재 사다리 (불변원칙 1의 예외 경로 — 레거시 진입)
 스펙 기반이 하드 요구지만, 스펙이 없거나 얇을 때 3단으로 재결속한다(침묵 진행 금지).
 1. **부분 부재** — 최소 앵커 `api-contract.md`만 있으면 진행. 부족분(requirements EARS 등 보조 문서)은 **도그푸딩 발견으로 기록 + 백필 권고**(원장 상단 메모).

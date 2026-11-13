@@ -19,7 +19,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 ## 소유 경로 (출력)
 - `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` (페이지별 최종 산출)
 - `docs/specs/assets/<page>/` (figma@design 소스일 때 **수거한 실제 에셋 파일** — analyze-figma Step 1 `download_assets`. 매니페스트는 design.md `## 에셋 매니페스트`)
-- `docs/specs/interactions.md` (**크로스페이지 상호작용 맵** — 2개 이상 페이지일 때 필수; 네비 그래프·공유 상태·액션→리액션. interaction-integrity §A)
+- `docs/specs/interactions.md`의 **`## FE 크로스페이지` 절** (**크로스페이지 상호작용 맵** — 2개 이상 페이지일 때 필수; 네비 그래프·공유 상태·액션→리액션은 그 아래 `###`로. interaction-integrity §A). **자기 절만 쓴다** — BE 스펙(bespec-author)의 `## BE 크로스리소스` 절과 파일을 같이 쓰므로, 절 전문을 `.dt-spec/interactions.fe.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/interactionsSync.mjs" merge --file docs/specs/interactions.md --stack frontend --from .dt-spec/interactions.fe.md`로 합친다. 종료 코드 3(옛 형식)이면 `migrate` 미리보기를 needsDecision으로 올린다(`docs/refs/artifact-contract.md`)
 - `.dt-spec/<page>/` 스크래치 (재개용, **.gitignore**): `progress.md`(단계 장부) · `extraction.json`(원자료) · `merged.json`(머지 결과)
 
 ## 절차 (한 컨텍스트 — 페이지별 [1]~[8] 순차, 그 뒤 크로스페이지 [9])
@@ -33,7 +33,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 7. **상태 결정** — dt-spec [7-6] 트리거대로 finalized/draft. 미해소 needsDecision이 남으면 draft.
 8. **상향 정합** — consume(generated)면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/upward-alignment.md`(T2~T8·D8·H3, `deepRead`=Figma·`unitRef`=`dt-spec/<page>`) 수행. `확정` lock·diff-then-confirm 우회 금지.
 9. **크로스페이지 산출 (2개 이상 페이지 — 홀리스틱의 핵심)** — 전 페이지 스펙을 한 시야로 보고 `interaction-integrity.md`(§A·B)대로:
-   - `docs/specs/interactions.md` 작성 — 네비게이션 그래프 + 공유·크로스페이지 상태(소유/구독) + 크로스피처 결합.
+   - `docs/specs/interactions.md`의 `## FE 크로스페이지` 절 작성(위 소유 경로의 merge 절차) — 네비게이션 그래프 + 공유·크로스페이지 상태(소유/구독) + 크로스피처 결합을 `###` 하위 항목으로.
    - **액션→리액션을 각 페이지 `requirements.md`에 FR로도 emit** — 예: 게시글 수정 페이지의 "저장 성공" FR에 "→ 피드/프로필 목록·상세에 갱신 반영"을 Event-driven으로 명시(수정 후 목록에서 옛 값 금지). 각 mutation이 어느 목록/상세에 반영돼야 하는지 §B 표대로.
    - 크로스페이지 미정(전이 대상·공유 상태 소유·정합 방식)은 `needsDecision`으로.
 

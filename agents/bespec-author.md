@@ -18,7 +18,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 
 ## 소유 경로 (출력)
 - `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` (리소스별 최종 산출)
-- `docs/specs/interactions.md`의 **`## BE 크로스리소스` 섹션** (2개 이상 리소스일 때 필수 — 트랜잭션 경계·cascade·스키마 관계·이벤트 일관성). **자기 섹션만 쓰고 FE 섹션은 건드리지 않는다**(FE spec-author와 파일 공유 — 섹션 분리로 클로버 방지).
+- `docs/specs/interactions.md`의 **`## BE 크로스리소스` 섹션** (2개 이상 리소스일 때 필수 — 트랜잭션 경계·cascade·스키마 관계·이벤트 일관성). **자기 섹션만 쓰고 FE 섹션은 건드리지 않는다**(FE spec-author와 파일 공유 — 섹션 분리로 클로버 방지). 절 전문을 `.dt-spec/interactions.be.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/interactionsSync.mjs" merge --file docs/specs/interactions.md --stack backend --from .dt-spec/interactions.be.md`로 합친다(`docs/refs/artifact-contract.md`).
 - `.dt-spec/<resource>/` 스크래치 (재개용, **.gitignore**): `progress.md` · `extraction.json` · `merged.json`
 
 > **api-contract.md** = BE의 IR(FE layout-skeleton 대응): 엔드포인트 표(method/path/auth/DTO/status) + 요청/응답 스키마 + Prisma 스케치. `/dt-be-implement`가 Controller/DTO/Prisma delta 생성에 소비.

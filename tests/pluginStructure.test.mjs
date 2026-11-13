@@ -295,3 +295,60 @@ test('스택 사전 점검: 구현·스캐폴드·e2e·fullstack 스킬이 절�
   }
   assert.deepEqual(problems, []);
 });
+
+// GEN-38 — 산출물 계약(docs/refs/artifact-contract.md): 쓰는 쪽이 하나이고, 문서가 그 사실과 맞는다.
+function contractRows() {
+  const doc = readFileSync(rel('docs/refs/artifact-contract.md'), 'utf8');
+  const rows = [];
+  for (const line of doc.split('\n')) {
+    if (!/^\| `/.test(line)) continue;
+    const cells = line.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim().replace(/\\\|/g, '|'));
+    const ticks = (c) => [...c.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+    rows.push({ paths: ticks(cells[0]), sections: ticks(cells[1]), owners: ticks(cells[2]) });
+  }
+  return rows;
+}
+const ownerFile = (name) => (name.endsWith('.md') ? name : existsSync(rel(`agents/${name}.md`)) ? `agents/${name}.md` : `skills/${name}/SKILL.md`);
+
+test('산출물 계약: 쓰는 쪽 문서가 그 경로(절이면 절 이름)를 적었고, 같은 경로·절의 쓰는 쪽은 한 줄뿐이다', () => {
+  const rows = contractRows();
+  assert.ok(rows.length >= 20, `계약 표 행이 너무 적다(${rows.length})`);
+  const problems = [];
+  const seen = new Map();
+  for (const r of rows) {
+    for (const o of r.owners) {
+      const f = ownerFile(o);
+      if (!existsSync(rel(f))) { problems.push(`쓰는 쪽 ${o} 의 문서가 없다`); continue; }
+      const text = readFileSync(rel(f), 'utf8');
+      const needles = r.sections.length ? r.sections.map((s) => s.replace(/^## /, '')) : r.paths;
+      for (const n of needles) if (!text.includes(n)) problems.push(`${o}: "${n}" 을 적지 않았다`);
+    }
+    for (const p of r.paths) for (const s of r.sections.length ? r.sections : ['']) {
+      const k = `${p}#${s}`;
+      if (seen.has(k)) problems.push(`${k} 의 쓰는 쪽이 두 줄에 있다`);
+      seen.set(k, r.owners);
+    }
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('산출물 계약: 에이전트의 "소유 경로" 절에 적힌 경로는 표에서 그 에이전트 몫이다', () => {
+  const rows = contractRows();
+  const problems = [];
+  for (const f of agentFiles) {
+    const name = basename(f, '.md');
+    const sec = readFileSync(rel(`agents/${f}`), 'utf8').match(/\n## 소유 경로[^\n]*\n([\s\S]*?)(?=\n## )/)?.[1];
+    if (!sec) continue;
+    // 각 줄 맨 앞(목록 표시 뒤)의 경로들만 소유 경로로 본다 — 설명 문장 속 명령·참조 문서는 제외.
+    const declared = sec.split('\n').flatMap((line) => {
+      const head = line.match(/^(?:- )?((?:`[^`\n]+`(?:\s*(?:\+|·|,)\s*)?)+)/);
+      return head ? [...head[1].matchAll(/`([^`\n]*\/[^`\n]*)`/g)].map((m) => [null, m[1]]) : [];
+    });
+    for (const [, p] of declared) {
+      const row = rows.find((r) => r.paths.includes(p));
+      if (!row) problems.push(`${name}: 소유 경로 ${p} 가 계약 표에 없다`);
+      else if (!row.owners.includes(name) && !rows.some((r) => r.paths.includes(p) && r.owners.includes(name))) problems.push(`${name}: ${p} 는 표에서 ${row.owners.join('·')} 몫이다`);
+    }
+  }
+  assert.deepEqual(problems, []);
+});

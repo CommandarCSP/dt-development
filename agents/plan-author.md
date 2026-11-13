@@ -14,7 +14,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 
 ## 읽기 (입력)
 - 조율자가 넘긴: **`units` 목록**(page|resource 슬러그들), `stack`(frontend|backend), spec 위치들.
-- 스펙: FE `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · BE `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · **`docs/specs/interactions.md`(크로스유닛 상호작용·액션→리액션)** · `definition.md` IF 계약 · `docs/project-context.md`(기술스택·라이브러리).
+- 스펙: FE `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · BE `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · **`docs/specs/interactions.md`(크로스유닛 상호작용·액션→리액션)** — 자기 스택 절(`## FE 크로스페이지` 또는 `## BE 크로스리소스`)을 배선 근거로, 상대 스택 절은 계약 확인용으로 읽기만 한다 · `definition.md` IF 계약 · `docs/project-context.md`(기술스택·라이브러리).
 - 결정(조율자가 넘김): `decisions` — 채택된 PD·TP 목록(`docs/orchestration-policy.md` 원칙 9). **고정 입력**이다. 정해진 자리는 묻지 않고 근거에 `PD-NNN`·`TP-NNN`을 적는다. 소스가 결정과 어긋나면 needsDecision으로 "결정을 바꿀지" 올린다.
 - 참조: 위 architecture/testing 스킬 + 해당 checklist + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선 힌트) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`(빈틈 찾기와 묻기 기준) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — Phase 설명·위험구간 서술·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
 

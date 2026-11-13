@@ -23,6 +23,9 @@ description: Use within dt-bespec to collect/maintain backend project context (f
 - **테스트**: `jest`/`supertest`/`@testcontainers/*`
 - **패키지 매니저/Node**: lockfile + engines
 
+## 이 스킬이 쓰는 절
+`## BE 기술 스택`(자동 동기화) · `## BE 프로젝트 기술/라이브러리` · `## 공유 규약`, 그리고 공통 절(`## 개요`·`## 제약사항`·`## 도메인 용어`)은 없을 때만(`${CLAUDE_PLUGIN_ROOT}/docs/refs/artifact-contract.md`).
+
 ## 사용자 입력 (자동 미덮어씀)
 - 개요, 제약사항, 도메인 용어
 - **공유 규약**(FE 디자인 토큰 자리 대체): 에러 봉투 형태, 페이지네이션 규약, 인증 헤더 규약, API 버전 prefix, ValidationPipe 옵션
