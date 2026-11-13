@@ -8,6 +8,9 @@ description: Use after /dt-implement to author and verify scenario-based accepta
 > 산출: 시나리오 원장(`docs/specs/pages/<page>/<page>.e2e-scenarios.md` — 파일명에 페이지명 포함(IDE 탭·검색 구분), 크로스페이지는 `docs/specs/e2e/journeys.md`) + Playwright spec(`e2e/<page>.spec.ts`, `e2e/journeys/<journey>.spec.ts`).
 > 설계: `docs/specs/2026-07-13-dt-e2e-acceptance-design.md`
 
+## 시작 전 — 스택 사전 점검
+시나리오를 쓰기 전에 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차로 **스택 사전 점검**을 한 번 돈다(`--stack frontend`). 기본 기술과 다른 영역은 묻고 PD로 남기며, 정해진 스택 결정은 빌더에 `decisions`로 넘긴다. e2e 러너 영역(`stack.fe.e2e`·`stack.be.httpTest`·`stack.be.testDb`)이 기본과 다르면 특히 이 답을 따라 러너를 고른다.
+
 ## 불변 원칙
 1. 스펙 기반이 하드 요구 — 모든 시나리오는 FR-n/IF-n/interaction 근거를 명시한다.
 2. 사람이 검증한다 — verified 승격은 사람의 headed 검증만. AI는 제안·저작·사전점검까지.

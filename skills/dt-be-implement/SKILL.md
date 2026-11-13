@@ -15,6 +15,9 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 ### [0] 스펙 폴더 확인
 `<specDir>`가 없거나, 비었거나, 스펙 파일(requirements/design/tasks)이 없으면 스크립트를 돌리기 전에 멈추고 AskUserQuestion(`docs/orchestration-policy.md` 원칙 10): "`/dt-be-spec`로 이 단위의 스펙을 지금 만들고 이어서 구현" / "경로를 다시 입력"(`docs/specs/resources/` 아래 후보 목록을 보인다) / "중단". 경로를 주지 않았으면 같은 후보 목록에서 고르게 한다.
 
+### [0.5] 스택 사전 점검
+`${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차로 **스택 사전 점검**을 한 번 돈다(`--stack backend`). 기본 기술과 다른 영역은 묻고 PD로 남기며, 정해진 스택 결정은 빌더에 `decisions`로 넘긴다.
+
 ### [1] 매핑 (api-contract.md → ScaffoldSeed)
 `api-contract.md`를 읽어 다음을 만든다:
 - **엔드포인트 표** → Controller 라우트 + 요청/응답 DTO 목록 → Phase 1 `contract.ts`의 DTO 인터페이스 + `XxxService`/`XxxController` 계약.

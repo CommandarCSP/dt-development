@@ -15,6 +15,8 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 > **통합테스트 env bootstrap:** Testcontainers 통합테스트는 별도 jest config(`transformIgnorePatterns:[]`로 testcontainers ESM 변환)·`DOCKER_HOST`(Colima 등 비표준 소켓 시) 설정이 없으면 안 돈다 → 없으면 가산적으로 bootstrap 후 실행(checklist는 존재 전제).
 
 ## 읽기 (입력)
+- 결정(조율자가 넘김): `decisions` — 채택된 PD·TP(`docs/orchestration-policy.md` 원칙 9). 고정 입력이다.
+- **스택 결정(`decisions` 중 `topic: stack.*`)이 checklist 예시보다 먼저다.** 예: `stack.be.unitTest`가 Vitest로 정해졌으면 게이트를 `--test-runner vitest`로 돌린다. 결정이 "규칙 없이 진행"(blocking 영역)이면 그 영역의 기본 전제 규칙 위반은 고치려 하지 말고 반환 `summary`에 "규칙 미적용 영역: <영역>"으로 적는다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md`).
 - dt-be-implement/scaffold가 넘긴: `variant`(new-module|extend-module|new-project), `task-id`, 대상 리소스.
 - 스펙: `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · (있으면) `plan.md` · **`docs/specs/interactions.md`의 `## BE 크로스리소스`(있으면 필수 소비 — 트랜잭션 경계·cascade)** · `definition.md` IF 계약 · `docs/project-context.md`.
 - 참조: 위 architecture/testing 스킬 + `checklist/<variant>.md` + 예시(`examples/orders.contract.ts`,`schema.delta.prisma`,`owners.json`) + 레시피(`templates-backend/{auth,toggle}-recipe.md`) + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선).

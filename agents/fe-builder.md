@@ -13,6 +13,8 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 > **프로젝트 설정 우선(checklist 예시보다):** styling(scss vs tailwind)·queryKey 구조(per-domain vs flat)·router 등은 **`.dt-frontend.json`의 `frontend.*`와 기존 코드 패턴을 우선**한다 — checklist의 예시 표기와 다르면 프로젝트를 따른다. 진짜 모호한 충돌만 needsDecision으로. (파일럿 발견: scss/per-domain-key 예시가 tailwind/flat 프로젝트와 충돌.)
 
 ## 읽기 (입력)
+- 결정(조율자가 넘김): `decisions` — 채택된 PD·TP(`docs/orchestration-policy.md` 원칙 9). 고정 입력이다.
+- **스택 결정(`decisions` 중 `topic: stack.*`)이 checklist 예시보다 먼저다.** 예: `stack.fe.serverState`가 SWR로 정해졌으면 쿼리 훅을 SWR로 쓴다. 결정이 "규칙 없이 진행"(blocking 영역)이면 그 영역의 기본 전제 규칙 위반은 고치려 하지 말고 반환 `summary`에 "규칙 미적용 영역: <영역>"으로 적는다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md`).
 - dt-implement/scaffold가 넘긴: `variant`(new-domain|extend-domain|new-project), `task-id`, 대상 페이지·도메인.
 - 스펙: `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · (있으면) `plan.md`(코드-레벨 체크박스) · **`docs/specs/interactions.md`(크로스페이지 상호작용·액션→리액션 — 있으면 필수 소비)** · `definition.md` IF 계약 · `docs/project-context.md` · **`design.md ## 에셋 매니페스트` + `docs/specs/assets/<page>/`(수거된 실제 에셋 — 있으면 필수 소비)**.
 - 참조: 위 architecture/testing 스킬 + `checklist/<variant>.md` + 예시(`examples/contract.ts`,`owners.json`) + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선).

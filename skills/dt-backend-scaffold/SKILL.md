@@ -30,6 +30,9 @@ description: Use when the user requests creating a new NestJS project following 
 
 > 두 모드는 아래 checklist 동일 절차를 따른다(분기 없음). 리뷰는 두 모드 다 `reviewer` 격리. `be-builder`=`${CLAUDE_PLUGIN_ROOT}/agents/be-builder.md`, `reviewer`=`${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`.
 
+## 시작 전 — 스택 사전 점검
+new-project가 아니면(이미 있는 프로젝트에 더할 때) Phase 0 전에 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차로 **스택 사전 점검**을 한 번 돈다(`--stack backend`). 기본 기술과 다른 영역은 묻고 PD로 남기며, 정해진 스택 결정은 빌더에 `decisions`로 넘긴다.
+
 ## 5-Phase Workflow (new-module 기준)
 
 ```

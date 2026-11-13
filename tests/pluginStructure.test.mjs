@@ -282,3 +282,16 @@ test('하드 스톱: 스킬·에이전트·명령의 멈춤 줄은 선택지를 
   }
   assert.deepEqual(problems, []);
 });
+
+// GEN-31 — 코드를 만들거나 테스트를 돌리는 스킬은 시작 전에 스택 사전 점검을 하고, 빌더는 스택 결정을 따른다.
+test('스택 사전 점검: 구현·스캐폴드·e2e·fullstack 스킬이 절차를 가리키고, 빌더가 스택 결정을 우선한다', () => {
+  const problems = [];
+  for (const s of ['dt-implement', 'dt-be-implement', 'dt-frontend-scaffold', 'dt-backend-scaffold', 'dt-e2e', 'dt-be-e2e', 'dt-fullstack']) {
+    if (!readFileSync(rel(`skills/${s}/SKILL.md`), 'utf8').includes('docs/refs/stack-precheck.md')) problems.push(`${s}: stack-precheck.md 를 가리키지 않는다`);
+  }
+  for (const b of ['fe-builder', 'be-builder']) {
+    const text = readFileSync(rel(`agents/${b}.md`), 'utf8');
+    if (!/topic: stack\.\*/.test(text) || !/`decisions`/.test(text)) problems.push(`${b}: 스택 결정(decisions · topic: stack.*)을 읽지 않는다`);
+  }
+  assert.deepEqual(problems, []);
+});

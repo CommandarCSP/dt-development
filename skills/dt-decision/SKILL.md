@@ -17,6 +17,7 @@ description: Record, list, and supersede long-lived decisions — project decisi
 1. **무엇을 정했는지 모은다.** 대화·스킬이 넘긴 needsDecision 답(`id`·고른 선택지·버린 선택지·근거)에서 맥락·결정·이유·버린 대안·출처를 채운다. 비는 칸이 있으면 지어내지 말고 묻는다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`).
 2. **PD로 남길 만한지 확인한다.** 한 단위에만 걸리면 PD를 만들지 않고 "그 산출물에 남기면 충분하다"고 알린다. 기준은 원칙 9.
 3. **이미 있는 결정과 겹치는지 본다.** `decisions.mjs list <projectRoot> --all`로 같은 범위의 결정을 찾는다. 있으면 "그 결정을 대체할지(supersede)" 묻는다.
+   - 스택 사전 점검(`docs/refs/stack-precheck.md`)에서 온 결정이면 머리말 `topic`에 영역 key(예: `stack.fe.serverState`)를 적는다. 다음 점검이 이 결정을 찾아 다시 묻지 않는다.
 4. **초안을 보인다.** `decisions.mjs next <projectRoot>`로 번호를 받아 템플릿을 채운 전문을 보이고 확인받는다.
    - 승인 → `status: accepted`로 쓴다. 보류 → `status: proposed`로 쓰고, 채택 전까지 다른 스킬은 고정 입력으로 쓰지 않는다고 알린다.
 5. `decisions.mjs check <projectRoot>/docs/decisions`로 양식을 확인하고 경로를 보고한다.

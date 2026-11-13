@@ -32,6 +32,8 @@ description: Use when the user wants to build a full web app end-to-end from req
 - **수정 루프(조율자 몫)**: reviewer는 빌더 안이 아니라 **조율자가** builder 반환 뒤 dispatch한다(서브에이전트는 서브에이전트를 못 부른다 — 원칙 3). `NEEDS_REPAIR`면 일회성 builder는 죽었으므로 **`source: code` 항목의 repairTargets + `.dt-impl/<unit>` 상태로 같은 builder를 재dispatch**해 그 부분만 수정(메인 직접수정 X). `source: spec | plan` 항목은 빌더로 못 고치니 [2]·[plan] 단계로 되돌릴지 사용자에게 묻는다. **1회 repair 후 실패면 사용자 보고·중단**(자동 무한루프 금지).
 - **인라인 degrade**(원칙 4): 서브에이전트 미지원이면 각 단계를 조율자가 직접 수행(개별 스킬의 inline 모드) — 같은 절차·같은 산출.
 
+- **스택 사전 점검(구현 단계마다)**: BE 구현·FE 구현에 들어가기 전에 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차를 그 스택으로 한 번씩 돈다. 질문은 그 단계 진입 게이트와 함께 묶어 묻는다.
+
 ## 게이트 (단계 경계 = HITL 체크포인트)
 1. 정의서 확정(`/dt-devspec` 산출 검토) → 진행 승인.
 2. 스펙 확정 — 유닛 스펙 + **`interactions.md`(크로스유닛 상호작용·액션→리액션)** 검토. draft면 needsDecision 해소 후 finalized → 구현 진입 전 승인. (홀리스틱 author가 스택당 한 번에 산출하므로 게이트도 스택당 1회.)
