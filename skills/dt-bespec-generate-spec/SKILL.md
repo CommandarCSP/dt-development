@@ -72,6 +72,7 @@ description: Use when generating backend SDD spec documents (requirements.md/des
 **step 6(산출물 작성) 후, 상태를 finalized로 확정하기 직전에 반드시 실행한다.** 산출 과정(ask-missing·소스 우선순위·3-way)에서 최종 `api-contract.md`가 SOT와 벌어질 수 있으므로, **최종 api-contract 계약을 정의서 IF와 다시 diff**해 강제 정합한다. 절차·강제 규칙은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/upward-alignment.md`의 **"최종 정합 게이트 (산출 후 — SOT 반영 강제)"** 섹션을 그대로 적용한다:
 - diff의 **대조 차원**(응답 shape 필드·정렬/페이지네이션 규약·상태코드 + contract-elements 준용)은 `upward-alignment.md` §대조 차원을 따른다 — IF 행 존재만 보지 말 것.
 - 최종 api-contract ↔ SOT IF 드리프트가 있으면 **반영(정의서 갱신 T2/T3, `확정`은 재확인/§3 큐) 또는 명시적 큐잉** 중 하나를 **강제** — 조용한 드리프트 금지.
+- **형식 검사:** `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/resources/<resource>/*.md`에 오류가 있으면 `finalized`가 될 수 없다(고치거나 draft).
 - **미반영 드리프트가 0일 때만 `status: finalized`**. 하나라도 남으면 `status: draft`. (consume일 때만; standalone은 SOT 없음 → 비적용.)
 - 변경 전파·산출 직전 상향정합과 **버전 이중 bump 금지**(같은 실행이면 그 위에서 재diff).
 

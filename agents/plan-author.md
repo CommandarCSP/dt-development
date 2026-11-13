@@ -54,6 +54,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 
 ## 게이트 (필수)
 - **빈틈 스윕(필수)**: 플랜을 다 짠 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **스펙에 없는데 코드로 정해야 하는 자리**(에러 처리 방식, 캐시 갱신 범위, 트랜잭션 경계, 공유 컴포넌트 재사용 등)를 유닛마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision`, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
+- **형식 검사(필수)**: 산출물을 다 쓴 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/<pages|resources>/<unit>/plan.md --json`을 돌린다. 오류(`errors`)는 스스로 고치고 다시 돌린다. 그래도 남으면 그 유닛은 `units[].status: draft`로 두고 남은 오류를 summary에 적는다 — 형식이 깨진 산출물은 확정하지 않는다. 경고(`warnings`)는 summary에 개수만 적는다.
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)

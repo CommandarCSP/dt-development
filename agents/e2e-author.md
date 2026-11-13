@@ -29,6 +29,7 @@ description: 수용 e2e 워커(stack: frontend|backend) — 스펙·interactions
 - **propose** — 스킬 문서 반복 루프 1~2. 스펙에서 인벤토리·리스크 태깅, stale 판정(content 해시 우선), GWT 초안을 원장에 `proposed`로 쓴다. 근거 스펙이 없는 시나리오는 만들지 않는다(근거 칸 필수). 근거 FR이 사라진 시나리오는 지우지 않고 `needsDecision`(폐기 여부)으로 올린다.
 - **author** — 반복 루프 4. `approved` 시나리오만 테스트로 쓴다 → `automated`. 데이터 훅이 비었으면 채운다. 스킬 문서의 저작 안티패턴을 지킨다.
 - **preflight** — 반복 루프 5의 AI 사전점검만. **headless·MSW(또는 Testcontainers) 모드로만** 돌린다. live 모드는 조율자가 사용자 확인을 받은 뒤 `live: true`로 넘길 때만 돈다. 실패 원인이 테스트면 고쳐서 다시 돌리고(최대 2회), 앱 결함이면 고치지 않고 보고한다.
+- 원장을 쓸 때마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" <원장> --json`으로 형식(basedOnSpec 마커·상태 값)을 확인하고 오류를 고친다. 남으면 `status: draft`.
 - 원장을 쓸 때마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <원장> --docType spec`으로 한글 서술을 스스로 고친다.
 
 ## 반환 (작업형 봉투 — `docs/orchestration-policy.md` 원칙 5·6)

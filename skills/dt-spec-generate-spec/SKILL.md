@@ -472,6 +472,8 @@ UI 구조를 추출/추론할 수 없습니다. Figma 디자인 노드나 화면
 
 #### [7-6] 상태 결정
 
+**형식 검사 먼저:** `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/pages/<page>/*.md`에 오류가 하나라도 있으면 `finalized`가 될 수 없다 — 고치거나 `status: draft`(이유: 형식 오류 N건). 머리 주석이 없거나 옛 `specVersion`인 스펙은 오류가 경고로 낮춰져 막지 않는다.
+
 - 모두 통과 → `status: finalized`
 - `status: draft` 트리거 (다음 중 하나):
   - **[7-5.5] 완성도 스윕에서 미해소로 남은 체크리스트 항목 존재**

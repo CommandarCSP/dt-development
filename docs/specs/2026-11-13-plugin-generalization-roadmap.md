@@ -187,6 +187,7 @@
 - 문제: 구조 검사는 정의서에만 있다. requirements·design·tasks·api-contract·plan·interactions·e2e 원장은 형식 검사가 없다.
 - 할 일: 산출물별 `validateSpec.mjs`(필수 섹션·FR 번호·EARS 문형·정의서 결속 마커·api-contract 표 열·plan 체크박스 문법). `status: finalized` 전 필수 게이트.
 - 완료 기준: 형식이 깨진 스펙은 확정되지 않는다.
+- **완료(DEV-28, 2026-11-13).** `scripts/validateSpec.mjs` — 경로로 종류·스택을 가려 requirements(머리 주석·필수 절·FR 제목 형식·번호 중복·출처/패턴 라벨·EARS 키워드)·design/tasks(필수 절·FR 참조 무결성·체크박스)·layout-skeleton·api-contract(엔드포인트 표 열·Method·Path·Status)·plan(Phase·체크박스·자리표)·interactions(소유 절)·e2e 원장(basedOnSpec 마커·상태 값)을 본다. 공통으로 채우지 않은 `{{…}}`를 잡는다. 결정: 오류가 있으면 finalized 불가(draft), 경고는 보고만. `specVersion` 1.1 이상 스펙만 엄격하고, 머리 주석 없음·옛 버전은 같은 검사를 경고로 낮춘다(plan·interactions·원장은 늘 엄격). 게이트: spec·bespec·plan·e2e-author, dt-spec [7-6]·dt-bespec 확정 단계. 테스트 12개(템플릿 채운 FE·BE 7종 통과 포함), 구조 테스트 1개.
 
 ### GEN-23 게이트 엄격화
 - 문제: 도구가 없으면 스캐폴드 게이트가 건너뛰고 통과(`gate.mjs:94`). `detectDrift`가 필수가 아니다. 리뷰 규칙 73개 중 24개가 실제 검사를 안 한다(검출 비어 있음 12, 미구현 ast-rule 12).

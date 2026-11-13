@@ -394,3 +394,15 @@ test('dt-fullstack: 단계표의 스킬이 실제로 있고, 플랜 경로가 �
   const cmd = readFileSync(rel('commands/dt-fullstack.md'), 'utf8');
   for (const s of stages) assert.ok(cmd.includes(`\`${s}\``), `명령 파일에 단계 ${s} 가 없다`);
 });
+
+// GEN-22 — 산출물을 쓰는 에이전트는 형식 검사기를 게이트로 돌리고, 스펙 확정 단계가 그 결과를 막는 조건으로 쓴다.
+test('형식 검사: 작성 에이전트 4개와 스펙 확정 단계가 validateSpec.mjs 를 부른다', () => {
+  const problems = [];
+  for (const a of ['spec-author', 'bespec-author', 'plan-author', 'e2e-author']) {
+    if (!readFileSync(rel(`agents/${a}.md`), 'utf8').includes('scripts/validateSpec.mjs')) problems.push(`${a}: validateSpec.mjs 게이트가 없다`);
+  }
+  for (const s of ['dt-spec-generate-spec', 'dt-bespec-generate-spec']) {
+    if (!readFileSync(rel(`skills/${s}/SKILL.md`), 'utf8').includes('scripts/validateSpec.mjs')) problems.push(`${s}: 확정 전 형식 검사가 없다`);
+  }
+  assert.deepEqual(problems, []);
+});

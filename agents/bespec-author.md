@@ -46,6 +46,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 - **빈틈 스윕(필수)**: 필수 엔드포인트 필드 점검을 끝낸 뒤, `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md` "빈틈 찾기와 묻기 기준"대로 **소스에 없는데 채워야 하는 자리**를 리소스마다 목록으로 뽑아 세 갈래로 나눈다 — 근거 있음(근거를 대고 씀) / 가정하고 알림(`[inferred]` + `assumptions`) / 묻기(`needsDecision`, 권장안·이유 포함). 점검 목록에 없는 빈틈도 대상이다. 값·문구·엔드포인트는 가정하지 않는다.
 - **2개 이상 리소스면 크로스리소스 트랜잭션 경계·cascade가 1급 필수** — 여러 리소스를 걸치는 쓰기가 있는데 경계가 비면 needsDecision surface.
 - 빈 placeholder 산출물은 검증 실패(존재-게이트).
+- **형식 검사(필수)**: 산출물을 다 쓴 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/resources/<resource>/*.md docs/specs/interactions.md --json`을 돌린다. 오류(`errors`)는 스스로 고치고 다시 돌린다. 그래도 남으면 그 유닛은 `status: draft`로 두고 남은 오류를 summary에 적는다 — 형식이 깨진 산출물은 확정하지 않는다. 경고(`warnings`)는 summary에 개수만 적는다.
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
