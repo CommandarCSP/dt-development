@@ -1,68 +1,73 @@
 ---
 name: dt-fullstack
-description: Use when the user wants to build a full web app end-to-end from requirements/UX sources — "웹앱 만들어줘", "풀스택 구축", or /dt-fullstack. 최상위 얇은 조율자로 정의서(dt-devspec) → BE 스펙·구현(dt-bespec/dt-be-implement) → FE 스펙·구현(dt-spec/dt-implement) → 리뷰(dt-review/dt-be-review) 파이프라인을 한 번에 합성한다. 개별 스킬을 대체하지 않고 합성만 하며, 각 단위는 파일로 소통해 단독 실행도 그대로 가능.
+description: Use when the user wants to build a full web app end-to-end from requirements/UX sources — "웹앱 만들어줘", "풀스택 구축", or /dt-fullstack. 최상위 얇은 조율자로 이름 있는 단계(definition → be-spec → be-build → fe-spec → fe-build, 선택 e2e·audit·guide·handbook·wrap)를 한 흐름으로 합성한다. 개별 스킬을 대체하지 않고 합성만 하며, 각 단위는 파일로 소통해 단독 실행도 그대로 가능. --from·--only로 부분 실행, 진행 기록으로 재개.
 ---
 
 # dt-fullstack — 전체 파이프라인 통합 (최상위 조율자)
 
-요구사항/UX 소스에서 풀스택 웹앱을 end-to-end로 만든다. **얇은 조율자**다 — 자기 컨텍스트엔 단계 포인터·진행 레지스터만 두고, 무거운 작업은 author/builder 워커가 **격리 컨텍스트**에서 끝낸다(컨텍스트 경제). 개별 스킬(`/dt-devspec`·`/dt-spec`·`/dt-implement` 등)은 **그대로 단독 실행 가능** — 본 스킬은 그것들을 *합성*만 한다(대체 X).
+요구사항/UX 소스에서 풀스택 웹앱을 처음부터 끝까지 만든다. **얇은 조율자**다 — 자기 컨텍스트엔 단계 포인터와 진행 기록만 두고, 무거운 일은 각 단계 스킬과 그 워커가 격리 컨텍스트에서 끝낸다. 개별 스킬(`/dt-devspec`·`/dt-spec`·`/dt-implement` …)은 **그대로 단독 실행 가능**하다. 이 스킬은 그것들을 *합성*만 한다.
 
-> 실행 모드·병렬/순차·리뷰 격리·인라인 degrade는 공용 정책 `../../docs/orchestration-policy.md`(원칙 1~4)를 따른다. 각 하위 스킬의 dispatched/inline 실행 모드와 파일 기반 이중 동작 계약을 그대로 이용한다.
+> 공용 정책 `${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md`를 따른다: 실행 방식(원칙 1·`team.execution`), 리뷰 격리·수리 루프(원칙 3), 봉투·질문(원칙 5~7), 팀 설정(원칙 8), 결정 기록(원칙 9), 막혔을 때 선택지(원칙 10). 산출물을 누가 쓰고 읽는지는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/artifact-contract.md`.
 
-## 파이프라인 (순서)
+## 단계 (이름으로 부른다)
 
+| 단계 | 기본 | 부르는 스킬 | 하는 일 · 산출 | 진입 게이트 |
+|---|---|---|---|---|
+| `definition` | 켬 | `dt-devspec` | 정의서 `docs/specs/definition.md`(FE·BE 분담, IF 계약) | — |
+| `be-spec` | 켬 | `dt-bespec-generate-spec` | 전 리소스 스펙 + `interactions.md` `## BE 크로스리소스` | 정의서 확정 |
+| `be-build` | 켬 | `dt-be-implement` | 스택 사전 점검 → 플랜(plan-author) → **plan 승인** → 구현(be-builder) → 격리 리뷰·수리 | BE 스펙 확정 |
+| `fe-spec` | 켬 | `dt-spec-generate-spec` | 전 페이지 스펙 + `interactions.md` `## FE 크로스페이지` | BE 계약(정의서 IF) 확정 |
+| `fe-build` | 켬 | `dt-implement` | 스택 사전 점검 → 플랜 → **plan 승인** → 구현(fe-builder) → 조립(assemble) → 격리 리뷰·수리 | FE 스펙 확정 |
+| `e2e` | 선택(권장 켬) | `dt-be-e2e` → `dt-e2e` | 수용 시나리오 원장·테스트(e2e-author). 승인·`verified`는 사람 | 구현 완료 |
+| `audit` | 선택 | `dt-audit` | 스펙 대비 구현 감사 리포트 `docs/audits/` | 구현 완료 |
+| `guide` | 선택 | `dt-guide` | 사용자 가이드 PDF | 구현 완료 |
+| `handbook` | 선택 | `dt-handbook` | 개발자 핸드북 PDF | 구현 완료 |
+| `wrap` | 선택(권장 켬) | `dt-wrap` | 커밋 → 문서화 판단 → Jira 동기화(각 단계 확인) | 마지막 |
+
+- **BE 먼저**: 엔드포인트·응답 형태는 BE 계약이 권위다. FE는 그 계약을 `definition.md`의 IF/DM으로 소비한다(BE 상향 정합 T2/T3로 `확정` 승격된 것). spec-author·fe-builder는 BE의 `api-contract.md`를 직접 읽지 않는다.
+- **기획=홀리스틱 / 구현=격리**: 스펙·플랜은 스택당 한 워커가 전 유닛을 한 시야로 짓는다(유닛 간 상호작용 포착). 무거운 구현(builder)만 유닛별 격리·병렬이다. 단 BE는 `prisma/schema.prisma`를 공유하므로 스키마 머지 구간은 순차로, FK로 다른 리소스를 참조하는 리소스는 뒤로 둔다(근거는 plan·interactions의 크로스리소스 노트).
+- **플랜·리뷰는 build 단계 안에 있다.** 플랜 작성(plan-author, 산출 `docs/specs/<pages|resources>/<unit>/plan.md`)·plan 승인 게이트·격리 리뷰와 수리 루프는 각 implement 스킬이 맡는다. fullstack은 플랜을 따로 만들지 않고, 리뷰를 따로 다시 돌리지 않는다. 리뷰 결과는 implement 봉투에서 모아 보고한다.
+
+## 시작할 때
+
+1. **팀 설정·결정을 읽는다** — `scripts/lib/config.mjs`(경고 보고, `team.execution`·`team.models`), `scripts/decisions.mjs list`(채택된 PD·TP → 각 단계에 `decisions`로 전달).
+2. **진행 기록을 본다** — `.dt-fullstack/progress.json`이 있으면 "이어서 할까요(마지막 완료: `<단계>`) / 처음부터 / 중단"을 묻는다.
+3. **할 단계를 한 번에 정한다** — 인자(`--from`·`--only`)가 없으면 AskUserQuestion `multiSelect`로 선택 단계를 고르게 한다. 선택지: `e2e`(권장) · `wrap`(권장) · `audit` · `guide` · `handbook`. 기본 단계(definition~fe-build)에 이미 산출물이 있으면 "다시 만들기 / 있는 것 쓰기"를 단계별로 묻는다.
+4. 정한 단계 목록과 순서를 한 줄로 보이고 시작한다.
+
+## 진행 기록 (`.dt-fullstack/progress.json`, 스크래치 — git 무시)
+
+```json
+{ "startedAt": "…", "stages": [
+  { "name": "be-build", "status": "pending|running|done|skipped|blocked", "artifacts": ["…"], "summary": "…", "updatedAt": "…" } ] }
 ```
-[1] 정의서   dt-devspec            → docs/specs/definition.md (SOT)              [게이트: 사용자 확정]
-[2] BE 스펙  dt-bespec (홀리스틱)   → 전 리소스 스펙 + interactions.md(BE 크로스리소스)  ※BE 먼저 — 계약·런타임 권위
-[3] BE 플랜  plan-author (홀리스틱) → 리소스별 plan.md(+크로스리소스 배선)  →[plan 승인]→ dt-be-implement (be-builder, 유닛 격리)
-[4] FE 스펙  dt-spec (홀리스틱)     → 전 페이지 스펙 + interactions.md(크로스페이지)  ※BE 계약 소비
-[5] FE 플랜  plan-author (홀리스틱) → 페이지별 plan.md(+크로스페이지 배선)  →[plan 승인]→ dt-implement (fe-builder, 유닛 격리)
-[6] 리뷰     dt-be-review / dt-review (reviewer 격리, interactions 정합 검증)
-```
 
-- **기획=홀리스틱 / 구현=격리 (핵심)**: 스펙·플랜은 유닛별로 쪼개 병렬로 돌리면 **유닛 간 상호작용(페이지 A 수정→B 목록 반영, 크로스리소스 트랜잭션)이 침묵 누락**된다. 그래서 **스펙/플랜은 스택당 한 컨텍스트**(FE 전 페이지를 한 spec-author·한 plan-author, BE 전 리소스를 한 bespec-author·한 plan-author)로 홀리스틱하게 지어 `interactions.md`를 산출·소비하고, **무거운 구현(builder)만 유닛 격리 병렬**로 컨텍스트 경제를 지킨다. 스펙/플랜은 가벼워(opus·판단) 홀리스틱 비용이 낮고, 각 유닛 산출은 파일로 영속화돼 컴팩팅 헷지된다.
-- **BE 먼저**: 엔드포인트·응답 형태는 BE 계약면이 권위(D8). FE는 그 계약을 소비하므로 BE 스펙·구현을 앞에 둔다. **FE가 실제로 읽는 BE 계약 채널은 `definition.md`의 IF/DM**(BE 상향정합 T2/T3로 `확정` 승격된 환류분) — spec-author/fe-builder는 BE의 `api-contract.md`를 직접 읽지 않는다. 즉 정의서 IF가 FE↔BE를 묶는 단일 계약면.
-- **[plan]**(durable 3겹의 셋째 — `definition → spec → plan`): 구현 직전 **`plan-author`(model: opus)**가 **한 스택의 전 유닛 스펙 + interactions.md를 한 시야로** 읽어 유닛별 코드-레벨 체크박스(`docs/specs/<unit>/plan.md`)에 **크로스유닛 배선(`[X]`)** 까지 박고(강한 모델이 판단 소진), builder(model: sonnet)가 그 체크박스를 유닛 격리로 실행(컴팩팅 헷지). 조율자가 plan-author dispatch(스택당 1회) → 사용자 **plan 승인 게이트** → builder. plan.md 최신이면 재생성 생략.
+- 단계를 시작할 때 `running`, 봉투를 받으면 봉투의 `status`에 맞춰 `done`·`blocked`로 바꾼다. 사용자가 건너뛰면 `skipped`.
+- 끊겨도 이 파일과 각 단계 산출물(파일)로 이어간다. 단계 안의 재개는 그 스킬의 스크래치(`.dt-spec/`·`.dt-impl/`…)가 맡는다.
 
 ## 얇은 조율자 규칙
-- **포인터만 보유**: 각 단계는 산출물을 파일로 쓰고 조율자엔 봉투(`{ status, artifacts, needsDecision, summary }` — `docs/orchestration-policy.md` 원칙 5·6)만 반환(이중 동작 계약). 조율자 컨텍스트는 단계 레지스터로만 부푼다.
-- **HITL은 조율자에만**: 단계 진입 게이트(스펙 확정·**plan 승인**)와 워커의 `needsDecision`은 조율자가 `AskUserQuestion`으로 묻고(원칙 6: 묶음·`recommended`·왕복 상한 2회), `answers`와 함께 워커를 **재dispatch**한다(워커는 `.dt-spec/`·`.dt-impl/`에서 재개). 사용자 채널은 조율자(메인 세션)에만 있음.
-- **스펙·플랜은 홀리스틱(병렬 아님)**: 유닛별로 spec-author/plan-author를 병렬 dispatch하지 **않는다** — 스택당 **한 번** dispatch해 전 유닛을 한 컨텍스트에서 짓게 한다(크로스유닛 상호작용 포착). 이게 이전 "페이지별 병렬 스펙"에서 바뀐 핵심.
-- **구현(builder)만 유닛 간 병렬**: 서로 다른 리소스/페이지의 builder는 **병렬 dispatch**(다른 경로라 충돌 없음 — 원칙 1). 유닛 내부는 순차. 각 builder는 자기 plan(크로스유닛 `[X]` 배선 포함) + interactions.md를 소비. **단 BE 예외**: 모든 리소스가 `prisma/schema.prisma`를 공유하므로 **스키마 머지(Phase 1~2) 구간은 순차화**하고, FK/조인으로 다른 리소스를 참조하는 리소스(예: feed→posts·users)는 **의존 리소스 뒤로** 둔다(순서 근거는 plan/interactions.md의 크로스리소스 노트). FE는 경로 분리라 페이지 간 완전 병렬.
-- **수정 루프(조율자 몫)**: reviewer는 빌더 안이 아니라 **조율자가** builder 반환 뒤 dispatch한다(서브에이전트는 서브에이전트를 못 부른다 — 원칙 3). `NEEDS_REPAIR`면 일회성 builder는 죽었으므로 **`source: code` 항목의 repairTargets + `.dt-impl/<unit>` 상태로 같은 builder를 재dispatch**해 그 부분만 수정(메인 직접수정 X). `source: spec | plan` 항목은 빌더로 못 고치니 [2]·[plan] 단계로 되돌릴지 사용자에게 묻는다. **1회 repair 후 실패면 사용자 보고·중단**(자동 무한루프 금지).
-- **인라인 degrade**(원칙 4): 서브에이전트 미지원이면 각 단계를 조율자가 직접 수행(개별 스킬의 inline 모드) — 같은 절차·같은 산출.
+- **포인터만 보유**: 단계는 산출물을 파일로 쓰고, 조율자는 봉투(`{ status, artifacts, needsDecision, summary, … }` — 원칙 5)만 받는다.
+- **사람 확인은 조율자에만**: 단계 진입 게이트·plan 승인·워커의 needsDecision·가정 목록은 조율자가 묻는다(원칙 6·7). 단계 사이에서 **확인 없이 다음 단계로 넘어가지 않는다.**
+- **`status: blocked`면** 다음 단계로 넘기지 않고 원칙 10의 선택지를 보인다(예: 정의서가 깨짐 → "`dt-devspec` 재생성 이어서 실행 / 중단").
+- **미해소 부분은 구현에 추측으로 내리지 않는다.** 하위 스펙 스킬의 §0은 소프트 게이트다 — draft면 미해소 IF만 `<!-- skipped -->`로 빼고 나머지로 계속한다. 조율자는 그 미해소 부분만 막는다.
+- **스택 사전 점검**: `be-build`·`fe-build`의 implement 스킬이 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md`를 돈다. 그 질문은 단계 진입 게이트와 함께 묶어 묻는다.
+- **모델**: 기본은 각 에이전트 머리말의 `model`(판단·기획·판정 = opus, 구현 = sonnet). 팀 설정 `team.models`가 있으면 그 값으로 덮어 dispatch한다(원칙 8).
+- **인라인 degrade**(원칙 4): 서브에이전트가 없으면 각 단계 스킬의 inline 모드로 — 같은 절차·같은 산출.
 
-- **스택 사전 점검(구현 단계마다)**: BE 구현·FE 구현에 들어가기 전에 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-precheck.md` 절차를 그 스택으로 한 번씩 돈다. 질문은 그 단계 진입 게이트와 함께 묶어 묻는다.
+## 부분 실행
+- `--from <단계>`: 그 단계부터 끝까지(선택 단계는 3번 질문대로).
+- `--only <단계,…>`: 적은 단계만. 앞 단계 산출물이 없으면 원칙 10대로 "앞 단계를 이어서 실행 / 중단"을 묻는다.
+- 말로 요청하면 단계 이름으로 바꿔 읽는다:
+  - "API만·백엔드만" → `definition`(있으면 소비) · `be-spec` · `be-build`
+  - "FE만·화면만" → `fe-spec` · `fe-build`(BE 계약은 정의서 IF; 정의서가 없으면 standalone 경고)
+  - "이 기능만 추가" → 그 리소스·페이지 단위로 `be-spec`/`fe-spec` + `be-build`/`fe-build`
+  - "테스트·문서까지" → 선택 단계 `e2e`·`guide`·`handbook`
 
-## 게이트 (단계 경계 = HITL 체크포인트)
-1. 정의서 확정(`/dt-devspec` 산출 검토) → 진행 승인.
-2. 스펙 확정 — 유닛 스펙 + **`interactions.md`(크로스유닛 상호작용·액션→리액션)** 검토. draft면 needsDecision 해소 후 finalized → 구현 진입 전 승인. (홀리스틱 author가 스택당 한 번에 산출하므로 게이트도 스택당 1회.)
-3. plan 승인(`plan-author`가 생성한 유닛별 `plan.md` + 크로스유닛 `[X]` 배선 검토) → builder 실행.
-4. 리뷰 verdict(코드 규칙 + `interaction-integrity` 정합) → repair 또는 완료.
-- **미해소 부분은 구현에 추측으로 내리지 않는다**(싼 모델이 빈칸을 추측 — 모델 티어링 §7). 단 하위 `dt-spec`/`dt-bespec` §0은 **소프트 게이트**다: `status:draft`면 전면 차단이 아니라 **미해소 IF만 `<!-- skipped -->` 마커로 빼고 나머지는 진행**한다. 따라서 조율자는 *그 미해소 부분만* needsDecision으로 막고, 해소된 부분은 구현을 진행시킨다.
-
-## 부분 실행 모드 (전체 강제 아님)
-사용자 의도에 따라 투입 단계만 선택한다:
-- **"API만/백엔드만"** → [1]?·[2]·[4] (정의서는 있으면 소비).
-- **"FE만/화면만"** → [3]·[4] (BE 계약은 `definition.md` IF/DM 소비; 정의서 없으면 standalone 경고).
-- **"이 기능만 추가"** → 해당 리소스/페이지 단위만 [2]/[3] + [4].
-- 전체 신규 → [1]~[4] 순차.
-
-## 호출하는 단위 (이름만 — 로직은 각 스킬/에이전트가 소유)
-| 단계 | 스킬(조율 진입) | 워커(격리 실행) | dispatch 단위 |
-|---|---|---|---|
-| 정의서 | `dt-devspec` | `definition-author` | 1회 |
-| BE 스펙 | `dt-bespec` (dt-bespec-generate-spec) | `bespec-author` | **스택당 1회(전 리소스 홀리스틱)** |
-| [plan] (구현 직전) | (dt-implement/dt-be-implement phase) | `plan-author` (opus) | **스택당 1회(전 유닛 홀리스틱)** |
-| BE 구현 | `dt-be-implement`/`dt-backend-scaffold` | `be-builder` + `reviewer` | 리소스별(병렬) |
-| FE 스펙 | `dt-spec` (dt-spec-generate-spec) | `spec-author` | **스택당 1회(전 페이지 홀리스틱)** |
-| FE 구현 | `dt-implement`/`dt-frontend-scaffold` | `fe-builder` + `reviewer` | 페이지별(병렬) |
-| 리뷰 | `dt-review`/`dt-be-review` | `reviewer` | 유닛별 |
-
-> **모델 티어링(§7)**: 기획·판단·리뷰 = **opus**(definition/spec/bespec/plan-author·reviewer), 코드 구현 = **sonnet**(fe/be-builder). 각 에이전트 frontmatter `model:`에 고정 — 메인 세션 모델과 무관하게 단계별 모델 보장.
+## 끝낼 때
+단계마다 봉투 `summary`를 한 줄씩 모아 보인다: 리뷰 판정(implement 봉투의 reviewer verdict), 가정 N건, 한글 lint, 남은 미해소·`skipped` IF, 건너뛴 단계. `wrap`을 골랐으면 마지막에 그 스킬로 넘긴다.
 
 ## 활성화 조건
-"웹앱/풀스택 만들어줘" 류 전체 구축 요청, 또는 `/dt-fullstack [부분모드]` 명시 호출. 단위 작업만 원하면 개별 스킬을 직접 쓰면 된다(본 스킬은 합성 전용).
+"웹앱/풀스택 만들어줘" 류 전체 구축 요청, 또는 `/dt-fullstack`. 단위 작업만 원하면 개별 스킬을 직접 쓰면 된다(이 스킬은 합성 전용).
 
 ## 안 하는 것
-- 개별 스킬 대체(합성만) · 메인이 직접 분석/구현(워커가 격리 수행) · draft 스펙을 구현에 투입 · Epic/스토리 관리(작업 추적은 dt-worklog-sync).
+- 개별 스킬 대체(합성만) · 메인이 직접 분석·구현(워커가 격리해서 한다) · draft 스펙을 구현에 투입 · 플랜을 따로 만들거나 리뷰를 따로 다시 돌리기(build 단계 몫) · 단계 확인 없이 연쇄 실행 · Epic/스토리 관리(작업 추적은 dt-worklog-sync).

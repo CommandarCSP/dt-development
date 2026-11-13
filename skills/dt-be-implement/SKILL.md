@@ -50,7 +50,7 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 
 ### [3.7] 코드-레벨 플랜 생성 (plan-author, opus) — 구현 직전
 스펙이 finalized면 `docs/specs/resources/<resource>/plan.md`(코드-레벨 체크박스)를 확보한다. 반환 봉투에 `needsDecision`이 있으면 원칙 6대로 묻고 `answers`와 함께 재dispatch(`docs/orchestration-policy.md` 원칙 5·6, 왕복 상한 2회). 플랜 승인을 물을 때 봉투의 `assumptions`(가정 N건과 목록)를 함께 보여, 사용자가 가정을 바꿀 기회를 준다. **사용자 플랜 승인 게이트** 후 [4]로. durable 3겹의 셋째.
-- **홀리스틱(권장 — 여러 리소스):** `plan-author`(opus)를 **전 리소스를 한 번에** dispatch(`units`=리소스 목록, `stack:backend`)해 `interactions.md`의 크로스리소스(트랜잭션 경계·cascade·스키마 머지 순서)를 함께 읽고 유닛별 plan.md에 배선(`[X]`)까지 박게 한다. dt-fullstack에서 오면 이 홀리스틱 plan이 이미 있으니 **재생성 생략**.
+- **홀리스틱(권장 — 여러 리소스):** `plan-author`(opus)를 **전 리소스를 한 번에** dispatch(`units`=리소스 목록, `stack:backend`)해 `interactions.md`의 크로스리소스(트랜잭션 경계·cascade·스키마 머지 순서)를 함께 읽고 유닛별 plan.md에 배선(`[X]`)까지 박게 한다. dt-fullstack에서 와도 플랜은 여기서 만든다(fullstack은 플랜을 따로 만들지 않는다). plan.md가 이미 있고 스펙보다 최신이면 재생성 생략.
 - **단일 리소스 standalone 호출:** 그 리소스만 dispatch(interactions.md 있으면 전달). plan.md 최신이면 재생성 생략.
 
 ### [4] 위임 (Phase 1~5)

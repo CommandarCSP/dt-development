@@ -380,3 +380,17 @@ test('e2e 스킬: e2e-author 에 무거운 일을 맡기고 사람 검증은 조
     assert.match(t, /사람 검증/, `${s}: 사람 검증 주체가 없다`);
   }
 });
+
+// GEN-37 — dt-fullstack 단계표: 이름 있는 단계, 실제 스킬, 플랜 경로는 계약 표와 같고, 별도 리뷰 단계가 없다.
+test('dt-fullstack: 단계표의 스킬이 실제로 있고, 플랜 경로가 계약과 같고, 별도 리뷰 단계가 없다', () => {
+  const text = readFileSync(rel('skills/dt-fullstack/SKILL.md'), 'utf8');
+  const rows = [...text.matchAll(/^\| `([a-z0-9-]+)` \| [^|]+ \| ([^|]+) \|/gm)].map((m) => ({ stage: m[1], skills: [...m[2].matchAll(/`(dt-[a-z0-9-]+)`/g)].map((x) => x[1]) }));
+  const stages = rows.map((r) => r.stage);
+  assert.deepEqual(stages, ['definition', 'be-spec', 'be-build', 'fe-spec', 'fe-build', 'e2e', 'audit', 'guide', 'handbook', 'wrap']);
+  const missing = rows.flatMap((r) => r.skills).filter((s) => !skillDirs.includes(s));
+  assert.deepEqual(missing, [], '단계표의 스킬이 없다');
+  assert.ok(!stages.includes('review'), '리뷰는 build 단계 안에 있다 — 별도 단계를 두지 않는다');
+  assert.ok(text.includes('docs/specs/<pages|resources>/<unit>/plan.md'), '플랜 경로가 계약 표(artifact-contract.md)와 다르다');
+  const cmd = readFileSync(rel('commands/dt-fullstack.md'), 'utf8');
+  for (const s of stages) assert.ok(cmd.includes(`\`${s}\``), `명령 파일에 단계 ${s} 가 없다`);
+});

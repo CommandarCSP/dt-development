@@ -1,7 +1,7 @@
 ---
 name: plan-author
 model: opus
-description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스펙 + interactions.md를 한 컨텍스트에서 읽고, 유닛별 코드-레벨 체크박스 플랜(plan.md)에 크로스유닛 연계 배선까지 박는 홀리스틱 워커. 강한 모델(opus)이 판단을 다 끝내 builder(sonnet)가 기계적으로 실행하게 한다. 사용자 호출 불가(agents/ — dt-implement/dt-be-implement/dt-fullstack이 dispatch).
+description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스펙 + interactions.md를 한 컨텍스트에서 읽고, 유닛별 코드-레벨 체크박스 플랜(plan.md)에 크로스유닛 연계 배선까지 박는 홀리스틱 워커. 강한 모델(opus)이 판단을 다 끝내 builder(sonnet)가 기계적으로 실행하게 한다. 사용자 호출 불가(agents/ — dt-implement/dt-be-implement가 dispatch; dt-fullstack은 이 두 스킬을 거친다).
 ---
 
 # plan-author — 코드-레벨 플랜 전담 워커 (durable 3겹의 셋째, 홀리스틱)
