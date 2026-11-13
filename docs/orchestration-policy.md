@@ -23,6 +23,9 @@ AskUserQuestion 템플릿:
 모든 리뷰 작업을 **전용 review 서브에이전트**에서 수행한다 — `review.mjs` 실행 + diff 읽기 + 위반 해석 + repair 필요 판단.
 - 메인(오케스트레이터)은 **verdict만** 반환받는다: `{ critical: N, violations: [file:rule...], repairTargets: [...], coverage, verdict: PASS|NEEDS_REPAIR }`.
 - repair는 **담당 코드 서브에이전트 재dispatch**로 수행한다. 메인이 직접 코드를 수정하지 않는다.
+- **리뷰어 dispatch와 수리 루프는 조율자(메인 세션)만 한다.** 서브에이전트는 다른 서브에이전트를 부를 수 없다. 작업형 에이전트 안에서는 스크립트 게이트(`gate.mjs` — tsc·테스트·규칙 검사)만 돌고, 걸린 것은 스스로 고친다. 해석이 필요한 판정(화면·리소스 간 정합, 디자인 충실도, 커버리지, 수리 필요 여부)은 빌더가 반환한 뒤 조율자가 부른 reviewer가 한다.
+- 순서: 빌더 dispatch → 봉투(`gateResult`·`baseRef`) 수신 → reviewer(`mode:full`) dispatch → `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 빌더 재dispatch(**최대 1회**) → reviewer 재판정 → 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다.
+- 수리 1회는 원칙 6의 질문 왕복 상한(2회)과 따로 센다.
 - 병렬/순차 사용자 선택과 **무관하게 항상** 적용(사용자가 끌 수 없음).
 - `/dt-review`·`/dt-be-review` 단독 실행 시에도, 오케스트레이션 내부 호출 시에도 동일.
 

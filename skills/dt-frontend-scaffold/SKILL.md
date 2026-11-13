@@ -31,7 +31,7 @@ description: Use when the user requests creating a new React project following d
 
 이 스킬은 **얇은 조율자**다. 한 페이지/도메인의 5레이어 구현은 일회성 워커 `fe-builder`(agents/)가 자기 컨텍스트에서 끝내고 포인터+요약만 돌려주게 한다. 모드는 `../../docs/orchestration-policy.md` 원칙 1·3·4를 따른다.
 
-- **dispatched (기본 — 서브에이전트 가용 시):** 조율자가 `task-id`·variant·대상을 정해 `Task`로 `fe-builder`를 dispatch → 빌더가 아래 5-phase를 자기 컨텍스트에서 수행(레이어 게이트마다 `reviewer` dispatch로 verdict 수신, repair는 빌더 재dispatch 1회). 조율자는 `{ status, layersDone, reviewVerdict, needsDecision }`만 받는다. 사람 결정은 needsDecision→AskUserQuestion→재dispatch. **페이지 간 병렬**: 서로 다른 페이지의 fe-builder는 병렬 dispatch(다른 경로라 충돌 없음); 한 페이지 안은 순차.
+- **dispatched (기본 — 서브에이전트 가용 시):** 조율자가 `task-id`·variant·대상을 정해 `Task`로 `fe-builder`를 dispatch → 빌더가 아래 5-phase를 자기 컨텍스트에서 수행(레이어마다 `gate.mjs` — tsc·vitest·규칙 검사 — 로 스스로 고침). 조율자는 봉투 `{ status, layersDone, gateResult, baseRef, needsDecision }`를 받은 뒤 **직접 `reviewer`(`mode:full`)를 dispatch**한다. `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 fe-builder를 재dispatch(1회)하고 reviewer를 다시 부른다. 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다. 빌더는 서브에이전트라 reviewer를 부를 수 없다(원칙 3). 사람 결정은 needsDecision→AskUserQuestion→재dispatch. **페이지 간 병렬**: 서로 다른 페이지의 fe-builder는 병렬 dispatch(다른 경로라 충돌 없음); 한 페이지 안은 순차.
 - **inline degrade (원칙 4 — 서브에이전트 미지원 시):** 조율자가 아래 checklist 5-phase를 **직접** 수행(현행 동작 — Phase 2 병렬은 단일 컨텍스트 순차로). 워커를 안 거칠 뿐 **같은 절차·같은 산출**.
 
 > 두 모드는 **아래 checklist 동일 절차**를 따른다(분기 없음). 차이는 격리 여부뿐. 리뷰는 두 모드 다 `reviewer` 격리(원칙 3). `fe-builder`=`${CLAUDE_PLUGIN_ROOT}/agents/fe-builder.md`, `reviewer`=`${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`.
@@ -41,21 +41,22 @@ description: Use when the user requests creating a new React project following d
 ```
 Phase 0: task-id 생성 + Phase 0 commit (rollback 기준점)
 Phase 1: types + queryKey + contract.ts + owners → tsc 게이트
-Phase 2: 병렬 dispatch (store-query, view, ui-store agents) → tsc + vitest + partial review 게이트
+Phase 2: services + store-query + view (+ui-store) — 빌더 한 컨텍스트에서 순차 → gate.mjs(tsc + vitest + 규칙 검사)
 Phase 3: business hook + unit test → 게이트
 Phase 4: domain component + integration test → 게이트
-Phase 5: page + router → full review + diff coverage
-Final: Critical 잔존 시 1회 repair, 그래도 실패면 사용자 보고
+Phase 5: page + router → 게이트 → 빌더 반환
+[조율자] full review(reviewer 격리) + diff coverage
+[조율자] Final: NEEDS_REPAIR면 source:code만 빌더 재dispatch 1회 → 재리뷰, 그래도 실패면 사용자 보고
 ```
 
 각 phase 끝마다 commit. 실패 시 사용자가 직접 수정 결정.
 
 ## 사용 도구
 
-- `scripts/gate.mjs`: tsc + vitest + dt-frontend-review partial 게이트
+- `scripts/gate.mjs`: tsc + vitest + dt-frontend-review partial 게이트(빌더가 Phase마다 돌린다)
 - `${CLAUDE_PLUGIN_ROOT}/agents/fe-builder.md`: 5레이어 구현 워커(Task dispatch). 레이어 룰은 `dt-frontend-architecture`/`-testing`(레이어별 prompt 없음 — 통합됨).
-- `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`: 격리 리뷰 워커(`stack:frontend`, verdict만 반환)
-- `dt-frontend-review`: partial mode (phase mini-review), full mode (final review)
+- `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`: 격리 리뷰 워커(`stack:frontend`, verdict만 반환 — 조율자만 dispatch)
+- `dt-frontend-review`: partial mode (gate.mjs가 부르는 Phase 규칙 검사), full mode (reviewer가 부르는 최종 리뷰)
 
 ## 활성화 조건
 

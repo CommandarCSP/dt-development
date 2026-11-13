@@ -25,7 +25,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 2. checklist phase 구조를 따라 유닛별로 **레이어/계층별 체크박스**로 펼친다. 각 체크박스는:
    - **구체 파일 경로** + **실제 코드/시그니처**(placeholder·`...`·"TODO" 금지 — superpowers 원칙: 플랜이 곧 종이 위 구현).
    - 테스트 작성→실패확인→구현→통과→커밋의 기계 단계.
-   - gate.mjs 호출·reviewer dispatch 지점 표시.
+   - Phase마다 gate.mjs 호출 지점 표시(reviewer는 빌더가 아니라 조율자가 구현 끝에 부른다 — 플랜에 넣지 않는다).
 3. **크로스유닛 배선을 각 유닛 plan에 코드-레벨로 박는다**(홀리스틱의 핵심 — interaction-integrity §C): interactions.md의 액션→리액션마다
    - FE: mutation 성공 훅에 의존 쿼리 무효화/캐시갱신을 명시 — 예: `[ ] usePostEdit onSuccess: queryClient.invalidateQueries(['feed']) + (['post', id])` (공유 queryKey는 `store/queries/keys.ts` 참조). 낙관적 업데이트는 onError 롤백 체크박스. 재진입 신선도(staleTime) 체크박스.
    - BE: 여러 리소스를 걸치는 쓰기는 한 트랜잭션(`prisma.$transaction`) 체크박스 + 스키마 머지 순서. 생성/수정 응답에 갱신 표현 포함.
@@ -46,7 +46,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 - [ ] src/services/<d>/<d>Fetcher.ts: `export const fetch<D>List = async (...) => { ... }` (GET /api/v1/...)
 - [ ] __tests__: happy/error/cache MSW 테스트 (실패 확인 → 구현 → 통과)
 - [X] 크로스유닛: `useEditPost` onSuccess → `invalidateQueries(['feed'])` (interactions.md 액션→리액션: 수정→피드 반영)
-- [ ] reviewer(stack, partial) → 커밋
+- [ ] gate: gate.mjs(tsc·vitest·규칙 검사) → 커밋 "Phase 2: <d> services+store"
 ... (Phase 3~5 동일하게 코드-레벨)
 ```
 > `[X]` = 크로스유닛 정합 배선 체크박스(interactions.md 유래). builder가 반드시 실행하고 reviewer가 검증(rule: interaction-integrity).

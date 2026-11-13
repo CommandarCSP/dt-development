@@ -61,7 +61,7 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
 - **홈 라우트 규칙(필수):** 라우터 등록은 checklist Phase 5의 "라우트 등록 규칙"을 따른다 — spec이 이 페이지를 앱 진입점/메인(메인 피드·홈·대시보드 등)으로 식별하면 `/feed` 같은 하위 경로가 아니라 **`/`(index)로 등록**한다. 어느 페이지가 홈인지는 requirements/design의 "메인/진입 화면" 표기로 판단하고, 모호하면 사용자에게 1회 확인한다. 라우터엔 항상 `/`가 1개 존재해야 한다(빈 루트로 404 금지).
 
 ### [6] 게이트/완료
-dt-scaffold의 게이트(tsc/vitest/리뷰)와 완료 처리를 그대로 따른다. + [2.5]에서 감지한 미구현 마커(skipped/partial)·provisional 항목을 완료 보고에 "N건 미구현(IF 목록) — /dt-devspec 해소 권장"으로 명시.
+dt-scaffold의 게이트와 완료 처리를 따른다. 순서: fe-builder가 Phase마다 `gate.mjs`(tsc·vitest·규칙 검사)로 스스로 고침 → [5] 페이지 조립 뒤 **조율자가** `reviewer`(`stack:frontend, mode:full, baseRef`=빌더 봉투의 `baseRef`, `interactions`)를 dispatch → `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 fe-builder를 재dispatch(1회)하고 reviewer를 다시 부른다. 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다(checklist new-domain "Final: Review & repair loop (조율자)"). + [2.5]에서 감지한 미구현 마커(skipped/partial)·provisional 항목을 완료 보고에 "N건 미구현(IF 목록) — /dt-devspec 해소 권장"으로 명시.
 - 수용 e2e 넛지: "이어서 `/dt-e2e`로 수용 e2e 시나리오를 작성·검증할까요?" — 자동 실행하지 않고 사용자 승낙 시 dt-e2e로 진행. (구현 완료 페이지의 스펙을 근거로 함)
 
 ## 경계

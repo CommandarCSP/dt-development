@@ -59,7 +59,7 @@ standalone과 달리 consume이면 definition.md IF 계약을 함께 소비.
 > 실행 모드(병렬/순차)·리뷰 격리는 scaffold가 따르는 `../../docs/orchestration-policy.md`를 그대로 상속한다. 다중 도메인 "범위" 질문과 별개로 실행모드 선택이 노출된다.
 
 ### [5] 게이트/완료
-dt-backend-scaffold의 게이트(tsc/prisma/jest/리뷰)와 완료 처리를 그대로 따른다. Phase 5 full review는 `--stack backend`로 diff coverage 검증. + [2.5]에서 감지한 미구현 마커(skipped/partial)·provisional을 완료 보고에 "N건 미구현(IF 목록) — /dt-devspec 해소 권장"으로 명시.
+dt-backend-scaffold의 게이트와 완료 처리를 따른다. 순서: be-builder가 계층마다 `gate.mjs`(tsc·prisma·jest·규칙 검사)로 스스로 고침 → 빌더 반환 뒤 **조율자가** `reviewer`(`stack:backend, mode:full, baseRef`=빌더 봉투의 `baseRef`, `interactions`)를 dispatch해 diff coverage까지 검증 → `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 be-builder를 재dispatch(1회)하고 reviewer를 다시 부른다. 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다(checklist new-module "Final: Review & repair loop (조율자)"). + [2.5]에서 감지한 미구현 마커(skipped/partial)·provisional을 완료 보고에 "N건 미구현(IF 목록) — /dt-devspec 해소 권장"으로 명시.
 - 수용 e2e 넛지: "이어서 `/dt-be-e2e`로 BE 수용 e2e 시나리오를 작성·검증할까요?" — 자동 실행하지 않고 사용자 승낙 시 dt-be-e2e로 진행. (구현 완료 리소스의 api-contract를 근거로 함)
 
 ## 활성화 조건

@@ -25,7 +25,7 @@ description: Use when the user requests creating a new NestJS project following 
 
 이 스킬은 **얇은 조율자**다. 한 리소스/모듈의 계층 구현은 일회성 워커 `be-builder`(agents/)가 자기 컨텍스트에서 끝내고 포인터+요약만 돌려주게 한다. 모드는 `../../docs/orchestration-policy.md` 원칙 1·3·4를 따른다(FE `dt-frontend-scaffold`와 대칭).
 
-- **dispatched (기본):** 조율자가 `task-id`·variant·대상을 정해 `Task`로 `be-builder` dispatch → 빌더가 아래 5-phase 수행(게이트마다 `reviewer` dispatch `stack:backend`, repair는 빌더 재dispatch 1회) → 조율자는 `{ status, layersDone, reviewVerdict, needsDecision }`만 수신. 리소스 간 병렬, 리소스 내 순차.
+- **dispatched (기본):** 조율자가 `task-id`·variant·대상을 정해 `Task`로 `be-builder` dispatch → 빌더가 아래 5-phase 수행(계층마다 `gate.mjs` — tsc·prisma·jest·규칙 검사 — 로 스스로 고침) → 조율자는 봉투 `{ status, layersDone, gateResult, baseRef, needsDecision }`를 받은 뒤 **직접 `reviewer`(`stack:backend, mode:full`)를 dispatch**한다. `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 be-builder를 재dispatch(1회)하고 reviewer를 다시 부른다. 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다. 빌더는 서브에이전트라 reviewer를 부를 수 없다(원칙 3). 리소스 간 병렬, 리소스 내 순차.
 - **inline degrade (원칙 4):** 조율자가 아래 checklist 5-phase를 직접 수행(현행). 워커를 안 거칠 뿐 같은 절차·같은 산출.
 
 > 두 모드는 아래 checklist 동일 절차를 따른다(분기 없음). 리뷰는 두 모드 다 `reviewer` 격리. `be-builder`=`${CLAUDE_PLUGIN_ROOT}/agents/be-builder.md`, `reviewer`=`${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`.
@@ -35,11 +35,12 @@ description: Use when the user requests creating a new NestJS project following 
 ```
 Phase 0: task-id 생성 + Phase 0 commit (rollback 기준점)
 Phase 1: contract.ts + schema.delta.prisma + cache-keys + owners → tsc + prisma validate 게이트
-Phase 2: repository + dto 계층 (be-builder) → tsc + prisma + jest + partial review 게이트
-Phase 3: service + unit test → tsc + jest + partial review 게이트
+Phase 2: repository + dto 계층 (be-builder) → gate.mjs(tsc + prisma + jest + 규칙 검사)
+Phase 3: service + unit test → gate.mjs(tsc + jest + 규칙 검사)
 Phase 4: controller + integration test(Supertest+Testcontainers) → 게이트
-Phase 5: module 와이어링 + AppModule 등록 → full review + diff coverage(jest 80%)  # E2E 자동생성 없음 — 수용 e2e는 /dt-be-e2e 소유
-Final: Critical 잔존 시 1회 repair, 그래도 실패면 사용자 보고
+Phase 5: module 와이어링 + AppModule 등록 → 게이트 → 빌더 반환  # E2E 자동생성 없음 — 수용 e2e는 /dt-be-e2e 소유
+[조율자] full review(reviewer 격리) + diff coverage(jest 80%)
+[조율자] Final: NEEDS_REPAIR면 source:code만 빌더 재dispatch 1회 → 재리뷰, 그래도 실패면 사용자 보고
 ```
 
 각 phase 끝마다 commit. 실패 시 사용자가 직접 수정 결정.

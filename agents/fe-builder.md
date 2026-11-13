@@ -17,6 +17,7 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 - 스펙: `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · (있으면) `plan.md`(코드-레벨 체크박스) · **`docs/specs/interactions.md`(크로스페이지 상호작용·액션→리액션 — 있으면 필수 소비)** · `definition.md` IF 계약 · `docs/project-context.md` · **`design.md ## 에셋 매니페스트` + `docs/specs/assets/<page>/`(수거된 실제 에셋 — 있으면 필수 소비)**.
 - 참조: 위 architecture/testing 스킬 + `checklist/<variant>.md` + 예시(`examples/contract.ts`,`owners.json`) + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선).
 - 재개: `.dt-impl/<page>/progress.md`.
+- (수리 재dispatch) `repairTargets: [{ file, rule, violation, hint }]` — 조율자가 reviewer verdict에서 넘긴 것. 있으면 아래 게이트 절의 수리 규칙을 따른다.
 
 ## 소유 경로 (출력)
 `src/{services,store/queries,store/stores,business/hooks,components/view,components/domain,pages}/` + `App.tsx`(라우터) + 각 `__tests__/` + `src/mocks/handlers.ts`. 스크래치 `.dt-impl/<page>/`(재개용, .gitignore).
@@ -32,23 +33,24 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 5. **Phase 5 — Page+Router+E2E**: Page + 라우터 등록(**홈/진입점은 반드시 `/`, `/` 라우트 정확히 1개**, 테스트 initialEntries 동기화) + E2E.
 - **크로스페이지 정합 배선(interactions.md/plan `[X]`)**: mutation 훅 성공 시 의존 쿼리 **무효화/캐시갱신**(공유 `store/queries/keys.ts` key)으로 다른 화면(목록·상세) 반영 — 수정 후 목록에서 옛 값 금지. 낙관적 업데이트는 onError 롤백. plan에 `[X]` 배선이 있으면 그대로, 없는데 interactions.md가 요구하면 needsDecision(임의 key 추정 금지). **해당 정합을 검증하는 통합 테스트도 동반**(mutation→목록 갱신 확인).
 
-## 게이트 (레이어마다)
-- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --review false --paths <changed>`로 tsc/vitest.
-- phase 끝/최종에 **reviewer dispatch**(`stack:frontend`, `mode:partial|full`, `baseRef`=Phase 0 SHA) → verdict 수신. **직접 review.mjs 실행 안 함**(격리).
-- `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl` 상태로 fe-builder를 **재dispatch(1회)** → 그 부분만 수정·재커밋·재리뷰. 1회 후에도 실패면 사용자 보고·중단(자동 진행 금지).
+## 게이트 (레이어마다 — 빌더 몫)
+- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --paths <changed>`로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.
+- **reviewer를 dispatch하지 않는다.** 서브에이전트는 다른 서브에이전트를 부를 수 없다. 격리 리뷰(`mode:full`)와 수리 루프는 조율자가 이 봉투를 받은 뒤 한다(`docs/orchestration-policy.md` 원칙 3).
+- **수리 재dispatch로 불렸을 때**(입력에 `repairTargets`가 있음): `.dt-impl/<unit>/progress.md`로 상태를 복원하고, `repairTargets`에 적힌 파일·룰만 고친다. 범위 밖은 건드리지 않는다. 게이트·커밋 후 같은 봉투로 반환한다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
 파일로 쓰고 **phase별 커밋** + `.dt-impl/<page>/progress.md` 기록. 조율자엔 봉투만:
 ```
-{ status: done | draft | blocked,          // done=전 레이어 완료·리뷰 PASS · draft=미완 레이어 또는 리뷰 NEEDS_REPAIR 남음 · blocked=진행 불가
+{ status: done | draft | blocked,          // done=전 레이어 완료·게이트 통과 · draft=미완 레이어 또는 게이트 실패 남음 · blocked=진행 불가
   artifacts: [src 경로],
   needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],
   summary: "<한 줄>",
   unit: "<page>",                          // 역할별 필드
   layersDone: [contract,services,business,view,page],
-  reviewVerdict: PASS | NEEDS_REPAIR }
+  gateResult: { ok, failures: [{ gate, message }] },   // 마지막 gate.mjs 결과 — 격리 리뷰 판정은 조율자가 reviewer에게서 받는다
+  baseRef: "<Phase 0 SHA>" }                            // 조율자가 reviewer(full)에 넘길 기준점
 ```
 - 사람 결정(스펙 모호·계약 충돌 등)은 직접 묻지 말고 `needsDecision`으로 올린다 → 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch.
 
 ## 안 하는 것
-- 페이지 스펙 생성(spec-author) · BE(be-builder) · 직접 review.mjs(reviewer) · **스펙에 없는 라우트 임의 결정**(미정이면 needsDecision) · 페이지 누적 처리(1개만).
+- 페이지 스펙 생성(spec-author) · BE(be-builder) · 리뷰어 호출(조율자 몫 — 서브에이전트는 서브에이전트를 못 부른다) · **스펙에 없는 라우트 임의 결정**(미정이면 needsDecision) · 페이지 누적 처리(1개만).

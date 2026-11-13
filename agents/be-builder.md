@@ -19,6 +19,7 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 - 스펙: `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · (있으면) `plan.md` · **`docs/specs/interactions.md`의 `## BE 크로스리소스`(있으면 필수 소비 — 트랜잭션 경계·cascade)** · `definition.md` IF 계약 · `docs/project-context.md`.
 - 참조: 위 architecture/testing 스킬 + `checklist/<variant>.md` + 예시(`examples/orders.contract.ts`,`schema.delta.prisma`,`owners.json`) + 레시피(`templates-backend/{auth,toggle}-recipe.md`) + `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(§C 배선).
 - 재개: `.dt-impl/<resource>/progress.md`.
+- (수리 재dispatch) `repairTargets: [{ file, rule, violation, hint }]` — 조율자가 reviewer verdict에서 넘긴 것. 있으면 아래 게이트 절의 수리 규칙을 따른다.
 
 ## 소유 경로 (출력)
 `src/<module>/{*.repository.ts,dto/,entities/,mappers/,*.service.ts,*.controller.ts,*.module.ts}` + `prisma/schema.prisma`·`migrations/` + AppModule 등록 + 각 테스트. 스크래치 `.dt-impl/<resource>/`(재개용, .gitignore).
@@ -33,23 +34,24 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 - auth 발급·toggle 멱등 관계는 소스-퍼스트, 침묵 시 `templates-backend/{auth,toggle}-recipe.md` 캐논 instantiate.
 - **크로스리소스 정합 배선(interactions.md/plan `[X]`)**: 여러 리소스를 걸치는 쓰기는 **한 트랜잭션 경계**(`prisma.$transaction`)로 구현 + cascade/일관성은 스키마 관계·서비스 계층으로. 생성/수정 응답에 **갱신된 표현 포함**(FE 목록 반영 계약). plan에 배선이 없는데 크로스리소스 쓰기가 필요하면 임의로 안 묶고 needsDecision. 트랜잭션 경계 통합 테스트 동반.
 
-## 게이트 (계층마다)
-- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --prisma true --test-runner jest --stack backend --review false --paths <changed>`.
-- phase 끝/최종에 **reviewer dispatch**(`stack:backend`, `mode:partial|full`, `baseRef`=Phase 0 SHA) → verdict 수신. 직접 review.mjs 실행 안 함.
-- `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl` 상태로 be-builder를 **재dispatch(1회)** → 그 부분만 수정·재커밋·재리뷰. 1회 후 실패면 사용자 보고·중단.
+## 게이트 (계층마다 — 빌더 몫)
+- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --prisma true --test-runner jest --stack backend --paths <changed>`로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.
+- **reviewer를 dispatch하지 않는다.** 서브에이전트는 다른 서브에이전트를 부를 수 없다. 격리 리뷰(`mode:full`)와 수리 루프는 조율자가 이 봉투를 받은 뒤 한다(`docs/orchestration-policy.md` 원칙 3).
+- **수리 재dispatch로 불렸을 때**(입력에 `repairTargets`가 있음): `.dt-impl/<unit>/progress.md`로 상태를 복원하고, `repairTargets`에 적힌 파일·룰만 고친다. 범위 밖은 건드리지 않는다. 게이트·커밋 후 같은 봉투로 반환한다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)
 파일로 쓰고 **phase별 커밋** + `.dt-impl/<resource>/progress.md`. 조율자엔 봉투만:
 ```
-{ status: done | draft | blocked,          // done=전 계층 완료·리뷰 PASS · draft=미완 계층 또는 리뷰 NEEDS_REPAIR 남음 · blocked=진행 불가
+{ status: done | draft | blocked,          // done=전 계층 완료·게이트 통과 · draft=미완 계층 또는 게이트 실패 남음 · blocked=진행 불가
   artifacts: [src 경로],
   needsDecision: [{ id, topic, question, options:[{label,description}], recommended, evidence, reflectsTo }],
   summary: "<한 줄>",
   unit: "<resource>",                      // 역할별 필드
   layersDone: [contract,repository,dto,service,controller,module],
-  reviewVerdict: PASS | NEEDS_REPAIR }
+  gateResult: { ok, failures: [{ gate, message }] },   // 마지막 gate.mjs 결과 — 격리 리뷰 판정은 조율자가 reviewer에게서 받는다
+  baseRef: "<Phase 0 SHA>" }                            // 조율자가 reviewer(full)에 넘길 기준점
 ```
 - 사람 결정은 직접 묻지 말고 `needsDecision`으로 올린다 → 조율자가 원칙 6대로 묻고 `answers`와 함께 재dispatch.
 
 ## 안 하는 것
-- 리소스 스펙 생성(bespec-author) · FE(fe-builder) · 직접 review.mjs(reviewer) · 스펙/계약에 없는 엔드포인트 임의 결정(미정이면 needsDecision) · 리소스 누적 처리(1개만).
+- 리소스 스펙 생성(bespec-author) · FE(fe-builder) · 리뷰어 호출(조율자 몫 — 서브에이전트는 서브에이전트를 못 부른다) · 스펙/계약에 없는 엔드포인트 임의 결정(미정이면 needsDecision) · 리소스 누적 처리(1개만).

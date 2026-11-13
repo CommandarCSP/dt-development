@@ -4,7 +4,7 @@
 
 다음을 순서대로 수행하라. 각 phase 끝에서 commit 후 다음 phase 진행.
 
-> **실행 주체**: dispatched 모드면 `fe-builder`가 이 절차를 자기 컨텍스트에서 순차 수행, inline degrade면 조율자가 직접(원칙 4) — 둘 다 동일 절차. **레이어 구현 룰의 단일 출처는 `Skill("dt-frontend-architecture")`·`Skill("dt-frontend-testing")`**(레이어별 prompt 없음). **리뷰는 항상 `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:frontend`로 dispatch**(격리, verdict만 — 원칙 3; inline 시 review.mjs 직접). `NEEDS_REPAIR`면 `repairTargets`+`.dt-impl`로 fe-builder 재dispatch(1회, 메인 직접수정 금지).
+> **실행 주체**: dispatched 모드면 Phase 0~5의 작성·게이트·커밋은 `fe-builder`가 하고, **Phase 5 풀 리뷰와 Final 수리 루프는 조율자가** 한다 — 서브에이전트는 다른 서브에이전트를 부를 수 없다(원칙 3). inline degrade면 조율자가 전부 직접 한다(원칙 4). 절차는 같다. **레이어 구현 룰의 단일 출처는 `Skill("dt-frontend-architecture")`·`Skill("dt-frontend-testing")`**(레이어별 prompt 없음). Phase 1~4 게이트는 `gate.mjs`(tsc·테스트·규칙 검사)이고, 걸린 것은 그 자리에서 고친다. 격리 리뷰는 조율자가 `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:frontend`으로 dispatch해 verdict만 받는다(inline 시 review.mjs 직접). `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl`로 fe-builder를 재dispatch한다(1회, 메인 직접수정 금지).
 
 ## Phase 0: 작업 준비
 
@@ -50,14 +50,14 @@ git commit -m "dt-frontend Phase 1: <domain> contract"
 - **UI Store** (도메인이 client 상태 필요할 때만): `src/store/stores/<domain>UiStore.ts` — 서버데이터 저장 금지. unit 테스트.
 
 ### Phase 2 게이트
-1. **tsc/vitest** (리뷰 제외):
+1. **게이트** — tsc·vitest·규칙 검사(review.mjs partial):
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project . \
-     --review false --paths "src/store/queries/<domain>,src/components/view/<DomainItem>.tsx"
+     --paths "src/store/queries/<domain>,src/components/view/<DomainItem>.tsx"
    ```
-2. **리뷰** — `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:frontend, mode:partial, worktreePath:$(pwd), baseRef:Phase 0 SHA, paths:<변경>`로 dispatch. 메인은 verdict만 수신.
+2. 걸린 항목은 이 Phase 안에서 고치고 게이트를 다시 돌린다. 격리 리뷰는 Phase 5 뒤에 조율자가 한다.
 
-게이트 실패 시: tsc/vitest 실패 → 해당 레이어 수정. review `NEEDS_REPAIR` → `repairTargets`로 fe-builder 재dispatch. **1회 repair에도 실패하면 사용자 보고·중단(자동 진행 금지).**
+게이트 실패 시: 해당 레이어를 고치고 다시 돌린다. 3회 안에 통과하지 못하면 남은 실패를 담아 `status: draft`로 반환한다 — 조율자가 사용자에게 보고한다(자동 진행 금지).
 
 ### Phase 2 commit
 ```bash
@@ -72,12 +72,12 @@ contract의 `UseXxxViewModel` 인터페이스대로 구현. **순수 로직 추�
 - 순수 로직이 전혀 없을 때만 Business.ts 생략.
 
 ### Phase 3 게이트
-1. **tsc/vitest** (리뷰 제외):
+1. **게이트** — tsc·vitest·규칙 검사(review.mjs partial):
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project $WORKTREE \
-     --review false --paths "src/business/hooks/<domain>"
+     --paths "src/business/hooks/<domain>"
    ```
-2. **리뷰** — `agents/reviewer.md`(`stack:frontend, mode:partial`)로 dispatch. verdict만. `NEEDS_REPAIR`면 fe-builder 재dispatch.
+2. 걸린 항목은 이 Phase 안에서 고치고 게이트를 다시 돌린다. 격리 리뷰는 Phase 5 뒤에 조율자가 한다.
 
 ### Phase 3 commit
 ```bash
@@ -88,12 +88,12 @@ git add src/business/hooks && git commit -m "dt-frontend Phase 3: <domain> busin
 contract의 `XxxProps` + hook 사용 조립. integration test 작성(hook을 mock하지 말 것 — review가 검사).
 
 ### Phase 4 게이트
-1. **tsc/vitest** (리뷰 제외):
+1. **게이트** — tsc·vitest·규칙 검사(review.mjs partial):
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project $WORKTREE \
-     --review false --paths "src/components/domain/<DomainName>.tsx,src/components/domain/__tests__/<DomainName>.integration.test.tsx"
+     --paths "src/components/domain/<DomainName>.tsx,src/components/domain/__tests__/<DomainName>.integration.test.tsx"
    ```
-2. **리뷰** — `agents/reviewer.md`(`stack:frontend, mode:partial`)로 dispatch. `NEEDS_REPAIR`면 fe-builder 재dispatch.
+2. 걸린 항목은 이 Phase 안에서 고치고 게이트를 다시 돌린다. 격리 리뷰는 Phase 5 뒤에 조율자가 한다.
 
 ### Phase 4 commit
 ```bash
@@ -110,20 +110,20 @@ Page 컴포넌트 작성. 기존 Page에 컴포넌트 삽입(예: PostDetail에 
 2. **라우터에 `/` 라우트가 정확히 1개.** 멀티 라우트여도 진입점 1개를 `/`로. `/`로 매핑할 진입점이 아직 없으면 redirect/index 라우트를 둠 — 빈 루트 금지.
 3. **테스트의 `initialEntries`/`MemoryRouter` 경로를 실제 등록 경로와 일치**(라우트 변경 시 E2E도 같이 갱신 — 드리프트 금지).
 
-### Phase 5 게이트 (FULL review + coverage)
-풀 리뷰도 격리한다(원칙 3): `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:frontend, mode:full, worktreePath:$(pwd), baseRef:Phase 0 commit SHA(dt-frontend: start <task-id>)`로 dispatch. reviewer가 `review.mjs full --base <SHA>`로 coverage까지 판정하고 verdict만 반환.
+### Phase 5 게이트 (빌더) → FULL review + coverage (조율자)
+빌더는 Phase 5도 `gate.mjs`로 검사·커밋한 뒤 봉투를 반환한다. 이어서 **조율자가** 풀 리뷰를 격리 dispatch한다(원칙 3): `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:frontend, mode:full, worktreePath:$(pwd), baseRef:Phase 0 commit SHA(dt-frontend: start <task-id>), interactions:docs/specs/interactions.md(있으면)`로 dispatch. reviewer가 `review.mjs full --base <SHA>`로 coverage까지 판정하고 verdict만 반환.
 
 ### Phase 5 commit
 ```bash
 git add . && git commit -m "dt-frontend Phase 5: <domain> page + router"
 ```
 
-## Final: Review & repair loop
+## Final: Review & repair loop (조율자)
 Final review verdict가 `PASS`(Critical 0건)이면 완료.
-`NEEDS_REPAIR`이면:
-1. verdict(`violations`/`repairTargets`)를 분석 → 어느 phase/레이어 소관인지 식별.
-2. 해당 부분만 repair — `repairTargets`+`.dt-impl` 상태로 **fe-builder 재dispatch**(메인 직접수정 금지).
-3. Final review 재실행(최대 1회 더).
+`NEEDS_REPAIR`이면 조율자가:
+1. `findings`를 `source`로 나눈다. `source: spec | plan`인 항목은 코드로 못 고친다 — fe-builder를 부르지 않고 사용자에게 보고해 스펙·플랜 단계로 되돌릴지 묻는다.
+2. `source: code` 항목은 `repairTargets`(store-query|view|ui-store|business-hook|page)+`.dt-impl` 상태로 **fe-builder를 재dispatch**한다(메인 직접수정 금지). 빌더는 그 항목만 고치고 게이트·커밋 후 반환한다.
+3. 조율자가 reviewer(`mode:full`)를 다시 dispatch한다(수리는 최대 1회).
 4. 2회차에도 `NEEDS_REPAIR`이면 **사용자 보고·중단** — 사용자가 직접 수정 결정.
 
 ## 완료 처리

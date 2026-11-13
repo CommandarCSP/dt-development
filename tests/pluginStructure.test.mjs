@@ -171,6 +171,33 @@ test('needsDecision 항목 형식: 에이전트 문서에 적힌 항목 모양�
   assert.deepEqual(problems, []);
 });
 
+// 서브에이전트는 다른 서브에이전트를 부를 수 없다(docs/orchestration-policy.md 원칙 3). 작업형 에이전트 문서에
+// "X를 dispatch" 지시가 다시 들어오면 실행되지 않는 절차가 생긴다. 부정문("dispatch하지 않는다")은 허용.
+const AGENT_NAMES = [...WORKER_AGENTS, ...JUDGE_AGENTS].join('|');
+const NESTED_DISPATCH_RE = new RegExp(`\\b(?:${AGENT_NAMES})\\b(?:\\.md)?\`?\\)?\\s*(?:를|을)?\\s*(?:\\([^)]*\\)\\s*)?(?:로\\s*)?(?:재)?dispatch(?!하지 않)`);
+
+test('작업형 에이전트: 다른 에이전트를 dispatch 하라는 지시가 없다(리뷰·수리 루프는 조율자 몫)', () => {
+  const problems = [];
+  for (const a of WORKER_AGENTS) {
+    readFileSync(rel(`agents/${a}.md`), 'utf8').split('\n').forEach((line, i) => {
+      if (/조율자가|조율자는|조율자\)/.test(line)) return;   // 조율자가 하는 일을 설명하는 줄
+      if (NESTED_DISPATCH_RE.test(line)) problems.push(`${a}.md:${i + 1}: ${line.trim().slice(0, 80)}`);
+    });
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('스캐폴드 체크리스트: reviewer dispatch 는 조율자가 하는 것으로 적혀 있다', () => {
+  const problems = [];
+  for (const f of ['dt-frontend-scaffold/checklist/new-domain.md', 'dt-frontend-scaffold/checklist/extend-domain.md',
+                   'dt-backend-scaffold/checklist/new-module.md', 'dt-backend-scaffold/checklist/extend-module.md']) {
+    readFileSync(rel(`skills/${f}`), 'utf8').split('\n').forEach((line, i) => {
+      if (/reviewer(?:\.md)?`?.*dispatch/.test(line) && !/조율자/.test(line)) problems.push(`${f}:${i + 1}: ${line.trim().slice(0, 80)}`);
+    });
+  }
+  assert.deepEqual(problems, []);
+});
+
 test('readFrontmatter: 머리말이 없으면 null, 있으면 한 줄 필드를 읽는다', () => {
   assert.equal(readFrontmatter('# 제목'), null);
   assert.deepEqual(readFrontmatter('---\nname: a\ndescription: b c\n---\n본문'), { name: 'a', description: 'b c' });

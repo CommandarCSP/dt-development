@@ -1,7 +1,7 @@
 ---
 name: reviewer
 model: opus
-description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict만 반환하는 격리 리뷰 워커. 코드를 수정하지 않는다(진단만). 사용자 호출 불가(agents/ — 조율자/빌더가 dispatch). FE·BE 공유(스택 파라미터).
+description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict만 반환하는 격리 리뷰 워커. 코드를 수정하지 않는다(진단만). 사용자 호출 불가(agents/ — 조율자가 dispatch). FE·BE 공유(스택 파라미터).
 ---
 
 # reviewer — 격리 리뷰 워커 (FE·BE 공유)
@@ -10,7 +10,7 @@ description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict
 
 > 이전엔 `dt-frontend-scaffold/prompts/review-agent.md`와 `dt-backend-scaffold/prompts/review-agent.md` 2개로 갈라져 있던 것을 하나로 통합. 스택 차이는 아래 파라미터로 처리.
 
-## 입력 (조율자/빌더가 dispatch 시 전달)
+## 입력 (조율자가 dispatch 시 전달 — 빌더는 서브에이전트라 reviewer를 부를 수 없다)
 - `stack`: `frontend` | `backend`
 - `mode`: `partial`(phase 미니리뷰) | `full`(최종 + diff coverage)
 - `worktreePath`: 검사 대상 프로젝트 루트
@@ -33,18 +33,19 @@ description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict
 ## 반환 (판정형 봉투 — `docs/orchestration-policy.md` 원칙 5, 이것만 조율자에 돌려준다)
 ```
 { verdict: PASS | NEEDS_REPAIR,
-  findings: [ { file, rule, violation, hint } ],      // = repairTargets (같은 배열) — 자립적, 빌더가 "뭘 왜" 알고 고침
+  findings: [ { file, rule, violation, hint, source } ],   // = repairTargets (같은 배열) — 자립적, 빌더가 "뭘 왜" 알고 고침
   summary: "<stack> <mode> — critical N·위반 M·coverage <pass|fail>",
   critical: <N>,                                       // 판정 고유 필드
   coverage: <pass|fail (수치)>,
-  repairTargets: [ { file, rule, violation, hint } ] }
+  repairTargets: [ { file, rule, violation, hint, source } ] }
 ```
 - `repairTargets`는 **자립적**이어야 한다(file:rule:violation:hint) — needsDecision과 같은 원리. 레이어 힌트도 hint에 포함:
   - frontend 레이어 어휘: `store-query | view | ui-store | business-hook | page`
   - backend 레이어 어휘: `repository | dto | service | controller | module`
   - 크로스유닛 정합 위반 rule: `interaction-integrity`(hint에 어느 액션→리액션이 미배선인지)
   - 디자인 충실도 위반 rule: `design-fidelity`(hint: 테마 물질화 누락 / 어느 에셋 미배선)
+- `source`: `code | spec | plan` — 결함이 어디서 왔나. 코드가 스펙·플랜대로인데 스펙·플랜 자체가 틀렸거나 비었으면(예: interactions.md에 있는 리액션이 plan.md에 빠짐, 스펙끼리 모순) `spec`·`plan`으로 적고 hint에 어느 문서의 어느 절인지 쓴다. 조율자는 `code`만 빌더 재dispatch로 고치고, `spec`·`plan`은 사용자에게 보고해 앞 단계로 되돌릴지 묻는다. 애매하면 `code`로 적고 `needsHuman: true`를 단다.
 - diff·추론은 이 컨텍스트에 격리 — 메인엔 verdict만 건너간다.
 
 ## 안 하는 것
-- 코드 수정(빌더 소관) · 결함이 스펙/플랜이면 그 판단만 보고(수정은 상위 에스컬레이션) · 사용자에게 직접 질문.
+- 코드 수정(빌더 소관) · 결함이 스펙/플랜이면 `source: spec|plan`으로 보고만(수정은 조율자가 앞 단계로 되돌림) · 사용자에게 직접 질문.
