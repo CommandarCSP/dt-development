@@ -15,6 +15,8 @@ AskUserQuestion 템플릿:
 
 답이 없거나 자동이면 추천 모드. 기본값은 병렬.
 
+**팀 설정이 있으면 묻지 않는다.** `.dt.json`의 `team.execution`이 `parallel`이나 `sequential`이면 위 질문을 건너뛰고 그 방식으로 실행한다. 사용자에게는 "팀 설정(team.execution)에 따라 <병렬|순차>로 실행합니다" 한 줄로 알린다. `ask`(기본값)면 위대로 묻는다. 단 `parallel`이어도 강결합 단위는 순차로 돌리고 그 이유를 알린다(정확성이 설정보다 앞선다).
+
 ## 원칙 2 — 순차 = 직렬 서브에이전트
 순차를 선택해도 각 단위를 서브에이전트로 격리해 **한 번에 하나씩** dispatch한다(병렬성만 끔).
 사소한 단일 편집을 제외하고 비격리 메인 인라인 처리 금지. (참고: superpowers subagent-driven-development)
@@ -88,6 +90,14 @@ AskUserQuestion 템플릿:
 - `assumptions`가 있으면 "가정 N건"과 목록을 보이고, 사용자가 바꾸는 항목은 `answers`로 받아 같은 에이전트를 재dispatch한다. 가정을 숨기지 않는다.
 - `status: blocked`면 다음 단계로 넘기지 않고 이유와 선택지를 사용자에게 보인다.
 
+## 원칙 8 — 팀 설정 읽기 (`.dt.json`)
+조율자는 시작할 때 공통 설정을 한 번 읽는다: `node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>`. 키의 뜻·기본값은 `docs/refs/config-schema.md`가 정한다. 설정 파일이 없으면 모두 기본값이고 지금 동작과 같다.
+- `warnings`가 있으면 사용자에게 한 줄씩 보이고, 기본값으로 계속한다.
+- **`team.execution`** — 원칙 1의 실행 방식 질문을 대신한다.
+- **`team.models`** — 에이전트를 dispatch할 때, 그 에이전트 티어(`planner`·`builder`·`reviewer` — `scripts/lib/config.mjs`의 `AGENT_TIERS`)의 값이 있으면 Agent 도구의 `model`로 넘긴다. `null`이면 넘기지 않아 에이전트 파일의 `model`을 쓴다. 인라인 degrade(원칙 4)에서는 적용하지 않는다.
+- **`team.locale`** — 산출물 언어. 지금은 `ko`만 지원한다. 로더가 다른 값을 경고하고 `ko`로 바꿔 주므로, 조율자는 그 경고를 보이고 한국어로 진행한다.
+- **`team.requiredMcp`** — 이 스킬이 쓰는 MCP가 목록에 있으면, 실제 작업 전에 그 MCP 도구가 연결돼 있는지 확인한다. 없으면 그만두지 않고 묻는다: "연결하고 다시 시도 / 이 소스 없이 진행 / 중단". 목록에 없는 MCP는 지금처럼 각 스킬의 사전 점검을 따른다.
+
 ## 적용 스킬
-- **오케스트레이터(원칙 1~7):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
+- **오케스트레이터(원칙 1~8):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
 - **판정형 에이전트를 부르는 스킬(원칙 3·5·7):** dt-frontend-review / dt-backend-review(reviewer) · dt-ko / dt-explain / dt-worklog-sync / dt-confluence-doc / dt-guide / dt-handbook(ko-writing-reviewer)

@@ -212,6 +212,27 @@ test('스캐폴드 체크리스트: reviewer dispatch 는 조율자가 하는 �
   assert.deepEqual(problems, []);
 });
 
+// 공통 설정 — docs/refs/config-schema.md 의 키 표와 로더(DEFAULTS·HOOK_DEFAULTS)가 같고, 키마다 실제로 읽는 곳이 있다.
+test('설정 스키마: 문서의 키 표 = 로더의 키, 그리고 키마다 읽는 곳이 그 키를 언급한다', async () => {
+  const { DEFAULTS, HOOK_DEFAULTS } = await import('../scripts/lib/config.mjs');
+  const flat = (obj, prefix = '') => Object.entries(obj).flatMap(([k, v]) =>
+    v && typeof v === 'object' && !Array.isArray(v) ? flat(v, `${prefix}${k}.`) : [`${prefix}${k}`]);
+  const loaderKeys = [...flat(DEFAULTS).filter((k) => k !== 'hooks'), ...Object.keys(HOOK_DEFAULTS).map((k) => `hooks.${k}`)].sort();
+
+  const doc = readFileSync(rel('docs/refs/config-schema.md'), 'utf8');
+  const rows = [...doc.matchAll(/^\| `([a-zA-Z.]+)` \|[^\n]*\| `([^`]+)` \|$/gm)].map((m) => ({ key: m[1], reader: m[2] }));
+  assert.deepEqual(rows.map((r) => r.key).sort(), loaderKeys, '문서 표의 키와 로더 키가 다르다');
+
+  const problems = [];
+  for (const { key, reader } of rows) {
+    if (!existsSync(rel(reader))) { problems.push(`${key}: 읽는 곳 ${reader} 이 없다`); continue; }
+    const text = readFileSync(rel(reader), 'utf8');
+    const needle = reader.endsWith('.mjs') ? key.split('.').pop() : key.replace(/\.(planner|builder|reviewer)$/, '');
+    if (!text.includes(needle)) problems.push(`${key}: ${reader} 가 "${needle}" 을 언급하지 않는다`);
+  }
+  assert.deepEqual(problems, []);
+});
+
 test('readFrontmatter: 머리말이 없으면 null, 있으면 한 줄 필드를 읽는다', () => {
   assert.equal(readFrontmatter('# 제목'), null);
   assert.deepEqual(readFrontmatter('---\nname: a\ndescription: b c\n---\n본문'), { name: 'a', description: 'b c' });

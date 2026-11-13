@@ -65,6 +65,7 @@
   - 공용 로더 `scripts/lib/config.mjs`(기본값 병합·검증·`.local.json` 오버레이).
   - `detectStackConfig.mjs`가 감지 결과로 초기값을 채움. 스키마 문서 `docs/refs/config-schema.md`.
 - 완료 기준: 설정 없이 실행하면 현재 동작과 동일(회귀 테스트), 각 키가 문서화.
+- **완료(DEV-8, 2026-11-13).** 결정: `.dt-pipeline.json`을 넓히지 않고 공통 설정 `.dt.json`(+개인 `.dt.local.json`)을 새로 둔다. 옛 파일은 `hooks` 자리로 계속 읽는다. 키는 **지금 읽는 곳이 있는 것만** 넣었다: `hooks.*`(훅), `team.execution`(정책 원칙 1), `team.models.{planner,builder,reviewer}`(dispatch 때 Agent `model` 덮어쓰기, 티어는 `AGENT_TIERS`), `team.locale`(ko만), `team.requiredMcp`(시작 시 연결 점검) — 정책 원칙 8. `tracker`·`wiki`·`uxSources`·`gitFlow`는 그 기능을 범용화할 때 읽는 곳과 함께 넣는다(GEN-09·10·12, M3). 로더 `scripts/lib/config.mjs`(병합·검증·경고, 던지지 않음, CLI), 스키마 `docs/refs/config-schema.md`, `/dt-wrap --init`이 `.dt.json`을 만들고 옛 파일을 옮긴다. 구조 테스트가 문서 표 ↔ 로더 키, 키마다 읽는 곳의 언급을 검사한다. 원래 할 일의 "`detectStackConfig.mjs`가 감지 결과로 초기값을 채움"은 이번 키 중 스택에 따라 달라지는 값이 없어, `--init`이 스택 설정 부트스트랩을 함께 돌리는 것으로 대신했다.
 
 ## M1. 기술 스택
 

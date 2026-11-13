@@ -47,7 +47,28 @@ test('loadPipelineConfig returns null when absent, object when present', () => {
   try {
     assert.equal(loadPipelineConfig(work), null);
     writeFileSync(join(work, '.dt-pipeline.json'), JSON.stringify({ enabled: true, commitThreshold: 2 }));
-    assert.deepEqual(loadPipelineConfig(work), { enabled: true, commitThreshold: 2 });
+    assert.deepEqual(loadPipelineConfig(work), { enabled: true, commitThreshold: 2, startReminder: true });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('loadPipelineConfig reads hooks from .dt.json, which wins over the legacy file', () => {
+  const { root, work } = makeRepo();
+  try {
+    writeFileSync(join(work, '.dt-pipeline.json'), JSON.stringify({ commitThreshold: 2 }));
+    writeFileSync(join(work, '.dt.json'), JSON.stringify({ hooks: { commitThreshold: 5, startReminder: false } }));
+    assert.deepEqual(loadPipelineConfig(work), { enabled: true, commitThreshold: 5, startReminder: false });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('loadPipelineConfig: .dt.json without hooks keeps hooks off', () => {
+  const { root, work } = makeRepo();
+  try {
+    writeFileSync(join(work, '.dt.json'), JSON.stringify({ team: { execution: 'parallel' } }));
+    assert.equal(loadPipelineConfig(work), null);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

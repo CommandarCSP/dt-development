@@ -1,5 +1,5 @@
 {
-  "description": "dt-development pipeline nudges — wrap routine on Stop, branch reminder on UserPromptSubmit (opt-in via .dt-pipeline.json)",
+  "description": "dt-development pipeline nudges — wrap routine on Stop, branch reminder on UserPromptSubmit (opt-in via .dt.json hooks, legacy .dt-pipeline.json)",
   "hooks": {
     "UserPromptSubmit": [
       {

@@ -10,8 +10,15 @@ description: Use when wrapping up a chunk of work — chains commit (feature bra
 실행은 항상 사용자 확인 하에 이뤄진다.
 
 ## 활성화 (opt-in)
-`.dt-pipeline.json`이 프로젝트 루트에 있어야 hook이 작동한다. 없으면 `/dt-wrap --init`으로
-`references/dt-pipeline.example.json`을 복사해 생성한다(`enabled`/`commitThreshold`/`startReminder`).
+공통 설정 `.dt.json`에 `hooks` 섹션이 있어야 hook이 작동한다(옛 `.dt-pipeline.json`도 계속 읽는다).
+키의 뜻은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/config-schema.md`가 정한다.
+
+`/dt-wrap --init`은 다음을 한다. 파일을 쓰기 전에 무엇을 만들지 보이고 확인받는다.
+1. `.dt.json`이 없으면 `${CLAUDE_PLUGIN_ROOT}/skills/dt-wrap/references/dt.example.json`으로 만든다. 있으면 `hooks` 섹션만 없을 때 더한다(다른 키는 건드리지 않는다).
+2. 옛 `.dt-pipeline.json`이 있으면 그 값을 `hooks`로 옮기고, 옛 파일을 지울지 묻는다.
+3. `.gitignore`에 `.dt.local.json`(개인 덮어쓰기)이 없으면 더한다.
+4. 스택 설정(`.dt-frontend.json`·`.dt-backend.json`)이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 감지한 스택의 설정도 만든다.
+5. `node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" .`로 읽어 `warnings`가 없는지 확인하고, 만든 파일과 값을 한 줄씩 보고한다.
 
 ## 흐름
 

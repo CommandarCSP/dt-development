@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { loadConfig } from '../../../scripts/lib/config.mjs';
 
 // 한글은 부분문자열(공백 토큰화가 약함), 영문은 단어 경계로 매칭한다.
 // 영문을 부분문자열로 보면 add∈address, fix∈prefix, bug∈debug 같은 오탐이 난다.
@@ -14,7 +15,7 @@ export function isImplementationPrompt(text) {
   return IMPL_KEYWORDS_EN.some((k) => new RegExp(`\\b${k}\\b`).test(t));
 }
 
-// config: .dt-pipeline.json 내용(또는 null). 판정은 IO 없이 주어진 값으로만.
+// config: 공통 설정의 hooks(.dt.json 또는 옛 .dt-pipeline.json — loadPipelineConfig) 또는 null. 판정은 IO 없이 주어진 값으로만.
 export function decideWrapReminder({ config, unsynced, head, snooze }) {
   if (!config || config.enabled === false) return { block: false };
   const threshold = config.commitThreshold ?? 1;
@@ -54,8 +55,14 @@ function loadJson(path) {
   }
 }
 
+// 훅 설정 = 공통 설정(.dt.json)의 hooks. 옛 .dt-pipeline.json 도 로더가 hooks 자리로 읽는다(하위 호환).
+// 둘 다 없으면 null — 훅은 opt-in 이라 꺼진다. 로더는 던지지 않으니 hook 도 안전하다.
 export function loadPipelineConfig(repoRoot) {
-  return loadJson(join(repoRoot, '.dt-pipeline.json'));
+  try {
+    return loadConfig(repoRoot).config.hooks;
+  } catch {
+    return null;
+  }
 }
 
 export function loadLastSyncSha(repoRoot) {

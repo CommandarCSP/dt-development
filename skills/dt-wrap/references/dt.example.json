@@ -1,0 +1,9 @@
+{
+  "hooks": { "enabled": true, "commitThreshold": 1, "startReminder": true },
+  "team": {
+    "execution": "ask",
+    "models": { "planner": null, "builder": null, "reviewer": null },
+    "locale": "ko",
+    "requiredMcp": []
+  }
+}

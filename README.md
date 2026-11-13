@@ -49,7 +49,8 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `.dt-confluence.json` / `.dt-confluence.local.json` | Confluence 연동 | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-handbook.json` | 인수인계 핸드북 설정 | 없으면 기본 템플릿으로 자동 생성 |
-| `.dt-pipeline.json` | 세션 알림 훅 사용 여부(opt-in) | `/dt-wrap --init` |
+| `.dt.json` / `.dt.local.json` | 공통 설정 — 알림 훅(opt-in)·팀 실행 방식·역할별 모델·언어·필수 MCP. 키는 [docs/refs/config-schema.md](docs/refs/config-schema.md) | `/dt-wrap --init` |
+| `.dt-pipeline.json` | (옛 훅 설정 — 계속 읽지만 `.dt.json`의 `hooks`로 옮기기를 권한다) | — |
 | `.dt-frontend.json` / `.dt-backend.json` | FE/BE 아키텍처 규칙 | 스킬이 필요할 때 없으면 만든다 |
 
 읽는 순서는 **개인(`.local.json`) > 팀(`.json`) > 대화형 질문**입니다. `.local.json`은 커밋하지 않는 개인 값(예: 마지막으로 동기화를 마친 커밋 위치)이라 각자 `.gitignore`에 등록합니다.
