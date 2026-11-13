@@ -54,7 +54,7 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 - controller(Phase 4) ← api-contract 엔드포인트 표(method/path/status/auth).
 standalone과 달리 consume이면 definition.md IF 계약을 함께 소비.
 
-> project-context의 `## 프로젝트 기술/라이브러리` 항목은 해당 lib를 쓰는 리소스 be-builder dispatch 시 함께 전달해, 전역 기본 세트보다 우선 채택한다.
+> project-context의 `## BE 프로젝트 기술/라이브러리` 항목은 해당 lib를 쓰는 리소스 be-builder dispatch 시 함께 전달해, 전역 기본 세트보다 우선 채택한다.
 
 > 실행 모드(병렬/순차)·리뷰 격리는 scaffold가 따르는 `../../docs/orchestration-policy.md`를 그대로 상속한다. 다중 도메인 "범위" 질문과 별개로 실행모드 선택이 노출된다.
 

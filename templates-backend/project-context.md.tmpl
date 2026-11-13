@@ -1,12 +1,14 @@
 <!-- Synced from package.json / prisma/schema.prisma -->
 <!-- lastSyncedAt: {{LAST_SYNCED_AT}}, packageJsonMtime: {{PACKAGE_JSON_MTIME}} -->
 
-# Project Context (Backend)
+# Project Context
+
+<!-- FE·BE 스킬이 함께 쓰는 파일이다. 각 스택은 자기 절(FE …·디자인 토큰 / BE …·공유 규약)만 갱신하고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채운다 — scripts/projectContextSync.mjs merge. -->
 
 ## 개요
 {{OVERVIEW}}
 
-## 기술 스택
+## BE 기술 스택
 (package.json / prisma/schema.prisma 자동 동기화)
 - Framework: {{FRAMEWORK}}
 - ORM: {{ORM}}
@@ -18,7 +20,7 @@
 - 패키지 매니저: {{PACKAGE_MANAGER}}
 - Node 버전: {{NODE_VERSION}}
 
-## 프로젝트 기술/라이브러리 (전역 세트 외 추가)
+## BE 프로젝트 기술/라이브러리 (전역 세트 외 추가)
 (전역 스킬 기본 세트 외에 이 프로젝트가 의도적으로 채택한 라이브러리/기술 — 권위 있는 지시. "lib — 이유(연관 FR)" 형식. 없으면 비움. 자동 동기화 '기술 스택'과 달리 직접 관리.)
 {{PROJECT_LIBRARIES}}
 

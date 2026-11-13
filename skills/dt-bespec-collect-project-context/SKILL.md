@@ -35,9 +35,12 @@ description: Use within dt-bespec to collect/maintain backend project context (f
 
 ## projectLibraries 처리
 - **자동 동기화(package.json) 대상이 아님 — 사용자 지시 보존.** 재실행 파싱 시 기존 내용을 절대 덮어쓰지 않는다.
-- 재실행 파싱: `## 프로젝트 기술/라이브러리` 다음 블록(괄호 안내문 줄 제외) → `projectLibraries` 복원. `(없음)`/빈 줄이면 `''`.
+- 재실행 파싱: `## BE 프로젝트 기술/라이브러리` 다음 블록(옛 형식 파일이면 `## 프로젝트 기술/라이브러리`)(괄호 안내문 줄 제외) → `projectLibraries` 복원. `(없음)`/빈 줄이면 `''`.
 - 직렬화: 템플릿 `{{PROJECT_LIBRARIES}}`에 원문 그대로 채움(비면 `(없음)`).
 - **최초 실행 시 이 섹션 전용 질문은 만들지 않는다** (선택적, 비어도 됨). 사용자가 적거나 dt-bespec 입력(요구사항/OpenAPI/문서)에 전역 세트 외 채택 lib가 명시되면 채운다.
 
 ## 출력
-`templates-backend/project-context.md.tmpl`을 채운 `docs/project-context.md`. 모든 리소스 스펙이 이 규약을 참조(중복 금지).
+`templates-backend/project-context.md.tmpl`을 채운 내용을 `docs/project-context.md`에 **병합**한다. 모든 리소스 스펙이 이 규약을 참조(중복 금지).
+
+**병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack backend --from .dt-spec/project-context.rendered.md`로 합친다. BE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 옛 형식 파일이다 — `migrate --file docs/project-context.md`로 미리보기를 보이고 확인받은 뒤 `--write`로 옮기고 다시 merge 한다.
+

@@ -13,7 +13,7 @@ description: Use when writing or reviewing NestJS/TypeScript code in a project t
 >
 > 본 skill은 **architecture/testing 룰의 단일 atlas**를 제공한다. 이 SKILL.md만 로드되어도 작성 시점에 필요한 모든 룰을 1줄 요약으로 인지할 수 있다.
 >
-> **레이어 계약:** 본 전역 컨벤션은 **상위 SDD 스펙/project-context 없이도 단독 적용**된다(상위는 선택적, hard-depend 금지). 상위가 있으면 `project-context.md`의 `## 프로젝트 기술/라이브러리`로 라이브러리를 **가산**(전역보다 우선)할 수 있다. 전역 choice 룰을 거스르는 예외는 사용자 합의 후에만(웨이브 B). 상세 `../../docs/skill-sdd-layering.md`.
+> **레이어 계약:** 본 전역 컨벤션은 **상위 SDD 스펙/project-context 없이도 단독 적용**된다(상위는 선택적, hard-depend 금지). 상위가 있으면 `project-context.md`의 `## BE 프로젝트 기술/라이브러리`로 라이브러리를 **가산**(전역보다 우선)할 수 있다. 전역 choice 룰을 거스르는 예외는 사용자 합의 후에만(웨이브 B). 상세 `../../docs/skill-sdd-layering.md`.
 
 ## 레이어 개요
 

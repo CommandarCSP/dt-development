@@ -69,9 +69,9 @@ description: Use when dt-spec needs the project's overview, constraints, domain 
    - `## 개요` 다음 줄 → `overview`
    - `## 제약사항` 다음 줄 → `constraints`
    - `## 도메인 용어` 다음 줄 → `domainGlossary` ('(없음)' 이면 빈 문자열)
-   - `## 기술 스택` 섹션의 9개 bullet 라인 → 각 카테고리값 추출 (`- Framework: react (+ ...)` → `framework: 'react'` — primary value만, parenthesis값은 제거). '(미식별)' 이면 `null`.
+   - `## FE 기술 스택` 섹션의 9개 bullet 라인(옛 형식 파일이면 `## 기술 스택`) → 각 카테고리값 추출 (`- Framework: react (+ ...)` → `framework: 'react'` — primary value만, parenthesis값은 제거). '(미식별)' 이면 `null`.
    - `## 디자인 토큰` 섹션 → `designTokens` 객체 파싱 (colors/typography/spacing/radius 하위 구조 — 형식은 Step 4의 "designTokens 직렬화 형식" 참조). 섹션이 비어있거나 `(없음 ...)` 안내문만 있으면 `{ colors: {}, typography: {}, spacing: [], radius: [] }`.
-   - `## 프로젝트 기술/라이브러리` 다음 블록 → `projectLibraries` (괄호 안내문 줄은 제외하고 본문만; `(없음)`/빈 줄이면 `''`). **이 섹션은 package.json 자동 동기화 대상이 아니다 — 사용자가 직접 적은 권위 지시이므로 항상 원문 보존**.
+   - `## FE 프로젝트 기술/라이브러리` 다음 블록 → `projectLibraries` (괄호 안내문 줄은 제외하고 본문만; `(없음)`/빈 줄이면 `''`). **이 섹션은 package.json 자동 동기화 대상이 아니다 — 사용자가 직접 적은 권위 지시이므로 항상 원문 보존**.
    - 결과를 `{ overview, techStack, designTokens, constraints, domainGlossary, projectLibraries }` 객체로 반환.
 
 ### Step 2-B: 최초 흐름
@@ -133,7 +133,7 @@ description: Use when dt-spec needs the project's overview, constraints, domain 
    - `{{FRAMEWORK}}` ~ `{{NODE_VERSION}}` = Step 3에서 분류한 techStack 객체 (null이면 "(미식별)")
    - `{{DESIGN_TOKENS}}` = `designTokens` 직렬화 (아래 형식). 최초 실행 + 토큰 비어있음 → `(없음 — 페이지 분석 시 누적됨)`로 표기.
    - `{{PROJECT_LIBRARIES}}` = `projectLibraries` 원문 그대로. 비어있으면 `(없음)`. **package.json 자동 동기화 대상이 아니므로 재실행 시에도 기존 사용자 작성 내용을 절대 덮어쓰지 않는다** (Step 2-A.5에서 복원한 값 보존).
-3. `docs/project-context.md`에 저장 (디렉토리 없으면 생성).
+3. **병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack frontend --from .dt-spec/project-context.rendered.md`로 합친다. FE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 옛 형식 파일이다 — `migrate --file docs/project-context.md`로 미리보기를 보이고 확인받은 뒤 `--write`로 옮기고 다시 merge 한다.
 4. 메모리 객체로 반환.
 
 **designTokens 직렬화 형식** (Step 2-A.5 파싱과 호환되도록 정해진 모양 유지):

@@ -53,7 +53,7 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
 ### [4] 도메인별 위임 (Phase 1~4) — fe-builder가 plan 실행
 각 도메인에 대해 checklist(`dt-frontend-scaffold/checklist/new-domain.md` 또는 `extend-domain.md`)의 **Phase 1~4**를 따라 **`fe-builder`(model: sonnet)를 Task로 dispatch**한다(페이지 작성 Phase 5는 [5]에서 일괄). **dispatch 시 `plan.md`(크로스페이지 `[X]` 배선 포함) + `docs/specs/interactions.md`를 함께 전달**한다. fe-builder는 **plan.md 체크박스가 있으면 그대로 실행**(크로스페이지 무효화 배선 포함), 없으면 스펙 + `dt-frontend-architecture` 룰대로 구현. 레이어별 prompt는 없음(통합됨). dispatched 미지원이면 inline degrade(조율자 직접).
 
-> project-context의 `## 프로젝트 기술/라이브러리` 항목은 fe-builder dispatch 시 함께 전달해, 전역 기본 세트보다 우선 채택한다.
+> project-context의 `## FE 프로젝트 기술/라이브러리` 항목은 fe-builder dispatch 시 함께 전달해, 전역 기본 세트보다 우선 채택한다.
 
 ### [5] 페이지 조립 (전체 1회)
 - 단일 도메인: 해당 도메인의 checklist Phase 5(page+router)를 그대로 수행.

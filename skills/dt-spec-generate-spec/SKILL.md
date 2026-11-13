@@ -255,7 +255,7 @@ union된 `ResolvedSource[]`를 각 소스의 타입/역할에 따라 어댑터�
 
 4. **자동 덮어쓰기 금지**. 사용자 확인 없이 기존 값을 바꾸지 않는다.
 
-5. 확정된 결과로 `projectContext.designTokens`(메모리) 갱신 + `docs/project-context.md`의 `## 디자인 토큰` 섹션을 재직렬화해 저장. 직렬화 형식은 `dt-spec-collect-project-context` SKILL.md의 "designTokens 직렬화 형식" 참조 (재실행 시 파싱과 호환).
+5. 확정된 결과로 `projectContext.designTokens`(메모리) 갱신 + `docs/project-context.md`의 `## 디자인 토큰` 섹션**만** 재직렬화해 저장(다른 절, 특히 BE 절은 글자 그대로 둔다 — 파일 전체를 다시 쓰지 않는다). 직렬화 형식은 `dt-spec-collect-project-context` SKILL.md의 "designTokens 직렬화 형식" 참조 (재실행 시 파싱과 호환).
 
 6. **부분 갱신 모드와의 관계** (`--only requirements|design|tasks|layout-skeleton`): 디자인 토큰 merge는 요구사항 갱신과 독립이므로 어떤 `--only` 모드에서도 항상 수행한다 (작은 부가 작업).
 
