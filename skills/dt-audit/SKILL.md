@@ -26,7 +26,7 @@ dt-review/dt-be-review는 "코드가 **아키텍처 룰**을 지키나"(review.m
 
 ### §0 게이트
 - 스펙 인벤토리 수집: `docs/specs/definition.md`(있으면) + `pages/*/requirements.md` + `resources/*/api-contract.md`.
-  **leaf 스펙이 하나도 없으면 중단** — "감사할 기준 스펙이 없습니다. /dt-spec·/dt-be-spec을 먼저 실행하세요."
+  **leaf 스펙이 하나도 없으면** 그만두지 않고 AskUserQuestion(원칙 10): "감사할 기준 스펙이 없습니다" — "`/dt-spec`·`/dt-be-spec`을 지금 이어서 실행 — 끝나면 감사로 돌아온다" / "정의서만 기준으로 감사"(정의서가 있을 때만, `track: spec` 범위로 축소하고 리포트에 명시) / "중단".
 - 프로젝트 루트 판별: `.dt-frontend.json` / `.dt-backend.json` 마커로 자동 탐지(모노레포 대응). 못 찾으면 1회 질문.
 - ux 트랙 대상인데 `--app-url`이 없거나 접근 불가(fetch 1회 실패)면 **ux만 skip** — 리포트에 "UX 감사 미수행(사유)" 명시. 전체 실패로 만들지 않는다.
 - 증분 시드: `docs/audits/`의 최신 run에서 traceability.md를 찾아 `priorTraceability`로 전달.

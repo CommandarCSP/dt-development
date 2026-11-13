@@ -112,6 +112,15 @@ AskUserQuestion 템플릿:
 - **규칙 끄기.** 스택 설정(`.dt-frontend.json`·`.dt-backend.json`)의 `overrides.<키>`는 `{ "value": …, "decisionRef": "PD-NNN" }`(또는 `"PD-NNN"`)으로 근거를 가리킨다. 풀 리뷰는 근거가 없거나 유효하지 않은 override를 Critical(`override-decision-ref`)로, 만료된 근거를 Important로 낸다. 빌더의 Phase 게이트(partial)는 이것으로 막지 않는다 — 사람 결정은 빌더가 만들 수 없다.
 - 인라인 degrade(원칙 4)에서도 같다.
 
+## 원칙 10 — 막혔을 때는 그만두지 않고 선택지를 낸다
+입력이 없거나, 도구가 연결 안 됐거나, 앞 단계 산출물이 없으면 **안내문 한 줄로 끝내지 않는다.** 맞는 선택지를 골라 AskUserQuestion으로 묻는다(서브에이전트 안이면 `status: blocked` + needsDecision).
+- **복구** — 고치고 다시 시도(연결·권한·경로 다시 입력). 자유 값은 Other로 받는다.
+- **우회** — 빠진 채로 진행하고 결과를 `status: draft`로 표시한다(무엇이 빠졌는지 산출물에 적는다).
+- **앞 단계 스킬을 이어서 실행** — 같은 세션에서 그 스킬을 돌리고, 끝나면 원래 스킬의 같은 자리로 돌아온다(P3 한 흐름). 돌아올 때 사용자 입력을 다시 받지 않는다.
+- **중단** — 이유와 다음에 할 일을 함께 보인다.
+
+정말 멈춰야 하는 곳(진행하면 데이터가 망가지거나 잘못된 산출물이 생기는 곳, 할 일이 없는 곳)은 문서의 그 줄에 `<!-- hard-stop: 사유 -->`를 단다. 그래도 이유와 다음 할 일은 보인다. 구조 테스트가 사유 없는 멈춤을 잡는다.
+
 ## 적용 스킬
-- **오케스트레이터(원칙 1~9):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
+- **오케스트레이터(원칙 1~10):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
 - **판정형 에이전트를 부르는 스킬(원칙 3·5·7):** dt-frontend-review / dt-backend-review(reviewer) · dt-ko / dt-explain / dt-worklog-sync / dt-confluence-doc / dt-guide / dt-handbook(ko-writing-reviewer)

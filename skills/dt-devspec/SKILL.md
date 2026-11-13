@@ -26,6 +26,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 
 ## 입력
 - 멀티소스: Figma 페이지 URL(들) / PDF / 웹 링크 / Markdown. Figma 화면은 전부 받는다.
+- **소스가 하나도 없으면** 그만두지 않고 받는다(`docs/orchestration-policy.md` 원칙 10): "정의서를 만들 기획·디자인 소스를 넣어 주세요 — Figma 페이지 URL·PDF·Markdown 경로·웹 링크"(Other 입력, 예시 포함). 기존 leaf 스펙(`docs/specs/{pages,resources}/`)만 있으면 "기존 스펙에서 역합치로 정의서 만들기"도 선택지로 낸다.
 - `parseDefinitionSources.mjs`로 소스 파싱.
 - **`--scope <slug>` (옵셔널 — 다중 스코프):** 전역 규약이 다른 독립 스코프(예: `backoffice`)를 분리하려면 지정한다. 지정 시 산출은 `docs/specs/definition.<slug>.md`, 미지정 시 종전대로 `docs/specs/definition.md`(=이름 없는 1번 스코프). `<slug>`=kebab.
 
@@ -161,7 +162,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 - draft는 헤더 메타에 남아 — dt-spec/dt-bespec 게이트가 인식해 경고할 수 있다(미해소 항목은 정의서 본문에 "미해소"로 명시).
 
 ## 능동 요약 알림 (산출/소비 실행 종료 시 1줄)
-산출물을 내거나 standalone 소비한 실행이 끝날 때 한 줄 요약을 띄운다(재실행은 권유 — 자동 호출 X). 미산출 종료(corrupt/versionTooHigh/공집합 등)는 D11 원인 맞춤 라우팅으로 갈음(이 알림 비적용).
+산출물을 내거나 standalone 소비한 실행이 끝날 때 한 줄 요약을 띄운다(재실행은 권유 — 자동 호출 X). 산출하지 않고 끝난 실행(corrupt/versionTooHigh/공집합 등)은 원칙 10의 선택지와 D11 원인 맞춤 라우팅으로 갈음(이 알림 비적용).
 - **nag(⚠ — 자연 수렴 경로 없음):** SOT 미해소 잔존(=draft) → `⚠ 미해소 N건·draft — IF-7, IF-12 … · /dt-devspec 재실행 권장`. (dt-devspec은 자기 SOT 미해소만, 전체 SOT 기준)
 - **info(ℹ — 자연 수렴 경로 있음, nag 아님):** `협의중`/`컨벤션` 잔존 → `ℹ 협의중/컨벤션 M건 — BE 상향정합(T2/T3) 시 확정됨`. 미해소 0이어도(첫 1.2 전환처럼 전부 잠정) 반쪽 계약 가시화.
 - **결합:** 둘 다면 한 줄에 ` · `로 병기.

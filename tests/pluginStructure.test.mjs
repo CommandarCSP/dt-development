@@ -262,3 +262,23 @@ test('명령: 모두 실제 스킬을 가리키고, 도구를 스크립트 실�
   }
   assert.deepEqual(problems, []);
 });
+
+// 원칙 10 — 막혔을 때 안내 한 줄 + 중단으로 끝내지 않는다. 멈추는 줄은 선택지(AskUserQuestion·needsDecision)를 내거나
+// `<!-- hard-stop: 사유 -->` 로 의도된 멈춤임을 밝힌다.
+const STOP_RE = /\+ 중단|미산출 종료|[으이]?면 중단|안내 후 종료|\+ 종료/;
+const STOP_OK_RE = /AskUserQuestion|needsDecision|hard-stop:|원칙 10/;
+
+test('하드 스톱: 스킬·에이전트·명령의 멈춤 줄은 선택지를 내거나 hard-stop 사유를 단다', () => {
+  const files = [
+    ...skillDirs.flatMap((d) => [`skills/${d}/SKILL.md`, ...(existsSync(rel(`skills/${d}/references`)) ? readdirSync(rel(`skills/${d}/references`)).filter((f) => f.endsWith('.md')).map((f) => `skills/${d}/references/${f}`) : [])]),
+    ...agentFiles.map((f) => `agents/${f}`),
+    ...commandFiles.map((f) => `commands/${f}`),
+  ].filter((f) => existsSync(rel(f)));
+  const problems = [];
+  for (const f of files) {
+    readFileSync(rel(f), 'utf8').split('\n').forEach((line, i) => {
+      if (STOP_RE.test(line) && !STOP_OK_RE.test(line)) problems.push(`${f}:${i + 1}: ${line.trim().slice(0, 90)}`);
+    });
+  }
+  assert.deepEqual(problems, []);
+});

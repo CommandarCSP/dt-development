@@ -23,7 +23,7 @@ description: Use when integrating a feature branch into main following the team'
 
 ## /dt-git start <이름>
 origin 최신 main에서 피처 브랜치를 분기한다.
-1. 상태 읽기 → `dirty`면 중단하고 commit/stash 안내(임의 stash 금지).
+1. 상태 읽기 → `dirty`면 멈추고 commit/stash 안내(임의 stash 금지) <!-- hard-stop: 커밋 안 된 변경을 대신 처리하면 작업이 사라질 수 있다 -->.
 2. `git fetch origin`
 3. `git switch -c <이름> origin/main`
 4. 보고: "<이름>를 origin/main(<short-sha>) 기준으로 생성".
@@ -31,11 +31,11 @@ origin 최신 main에서 피처 브랜치를 분기한다.
 
 ## /dt-git finish
 1. **사전 점검** — 상태 읽기:
-   - `isMain`이면 중단(피처 브랜치에서만).
-   - `dirty`면 중단(커밋 안 된 변경은 사용자가 처리).
+   - `isMain`이면 멈춘다(피처 브랜치에서만) <!-- hard-stop: main을 자기 자신에 머지할 수 없다 -->.
+   - `dirty`면 멈춘다(커밋 안 된 변경은 사용자가 처리) <!-- hard-stop: 리베이스가 커밋 안 된 변경을 망가뜨릴 수 있다 -->.
    - `rebaseInProgress`면 → "재개" 절로 간다.
    - `aheadBehind`가 `null`이면(origin/main ref 없음) 중단하고 `git fetch origin` 먼저 안내.
-   - `aheadBehind.ahead < 1`이면 중단(머지할 커밋 없음).
+   - `aheadBehind.ahead < 1`이면 멈춘다(머지할 커밋 없음) <!-- hard-stop: 할 일이 없다 -->.
    - (advisory) 프로젝트에 수용 e2e가 있으면(`test:accept` 스크립트 존재) 머지 전 실행해 그린 확인 권장 — 회귀가 main에 들어가는 것을 막는 마지막 로컬 게이트(차단 아님·권장).
 2. `git fetch origin`
 3. **계획 프리뷰 → 승인**:

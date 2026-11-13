@@ -25,7 +25,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 
 ## 절차 (한 컨텍스트 — 리소스별 [1]~[8] 순차, 그 뒤 크로스리소스 [9])
 **여러 리소스면 각 리소스에 [1]~[8]을 순차로 돌리고(앞 리소스 스펙을 뒤 리소스 작성에 참고), 전부 끝난 뒤 [9]로 마무리.** 재개 시 `progress.md`를 먼저 읽어 끝난 단계는 파일에서 불러오고 안 한 데부터 잇는다.
-1. **정의서 게이트** — `checkDefinitionGate.mjs`로 판정(consume/standalone). dt-bespec §0 규칙 따름. **§0-b 카디널리티**: 입력 소스 ∩ BE 어댑터(openapi/datamodel/document)가 공집합(예: Figma만)이면 미산출 종료 + `/dt-devspec` 라우팅. 게이트의 사용자 결정은 `needsDecision`으로.
+1. **정의서 게이트** — `checkDefinitionGate.mjs`로 판정(consume/standalone). dt-bespec §0 규칙 따름. **§0-b 카디널리티**: 입력 소스 ∩ BE 어댑터(openapi/datamodel/document)가 공집합(예: Figma만)이면 산출하지 않고 `status: blocked` + needsDecision("`/dt-devspec` 이어서 실행 / BE 소스 추가 / 중단" — 원칙 10)으로 돌려준다. 게이트의 사용자 결정은 `needsDecision`으로.
 2. **프로젝트 컨텍스트** — `bespec-collect-project-context` 절차(framework/ORM/DB/cache/auth + sharedConventions). `projectContextSync.mjs` 사용. 세션 내 1회.
 3. **소스 분석** — OpenAPI→analyze-openapi(계약 우선, Case 1), ERD/SQL→analyze-datamodel(스키마 우선, `_inferred`), 문서→analyze-document. 부분 `ExtractionResult`(endpoints/schemas/dataModel/...) → `extraction.json`.
 4. **머지** — `mergeExtractionResults.mjs`(엔드포인트 method+path 키 union) + 충돌→`_conflicts`. `merged.json`.
