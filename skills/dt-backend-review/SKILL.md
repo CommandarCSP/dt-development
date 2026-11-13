@@ -34,6 +34,9 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" $ARGUM
 - `partial`: scaffold의 phase-level mini-review용. `--paths`로 검사 대상 명시.
 - `--verbose`: Manual Review 휴리스틱 스텁(AST 미구현 룰)을 파일별로 출력.
 
+### 단독 실행 절차 (`/dt-be-review`)
+사용자가 직접 부른 리뷰는 **보고서 전문을 보려는 것**이다. 그래서 메인 세션에서 스크립트를 돌려 출력을 그대로 보인다(`docs/orchestration-policy.md` 원칙 3의 단독 실행 예외). 해석·수리 판단은 하지 않는다. 순서는 `commands/dt-be-review.md`의 1~5단계다 — 스택 설정 확인(없으면 부트스트랩) → 팀 설정 경고 → 실행 → 보고서 그대로 → 후속 안내. 명령 파일이 스크립트만 부르고 이 순서를 건너뛰면 설정 없이 조용히 기본값으로 리뷰하게 된다(GEN-33에서 고친 결함).
+
 ## override 근거 검사
 - full 모드: 스택 설정의 `overrides.<키>`마다 근거 결정(`decisionRef: "PD-NNN"`)을 확인한다. 근거 없음·못 찾음·대체됨은 Critical `override-decision-ref`, 만료는 Important. partial 모드(빌더 게이트)는 검사하지 않는다. 고치는 법: `/dt-decision override <키>`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9)
 

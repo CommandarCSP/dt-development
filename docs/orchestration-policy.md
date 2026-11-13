@@ -29,7 +29,7 @@ AskUserQuestion 템플릿:
 - 순서: 빌더 dispatch → 봉투(`gateResult`·`baseRef`) 수신 → reviewer(`mode:full`) dispatch → `NEEDS_REPAIR`면 `source: code` 항목만 `repairTargets`로 같은 빌더 재dispatch(**최대 1회**) → reviewer 재판정 → 그래도 실패면 사용자 보고·중단. `source: spec | plan` 항목은 빌더로 못 고치니 사용자에게 보고하고 앞 단계로 되돌릴지 묻는다.
 - 수리 1회는 원칙 6의 질문 왕복 상한(2회)과 따로 센다.
 - 병렬/순차 사용자 선택과 **무관하게 항상** 적용(사용자가 끌 수 없음).
-- `/dt-review`·`/dt-be-review` 단독 실행 시에도, 오케스트레이션 내부 호출 시에도 동일.
+- 오케스트레이션 안에서는 언제나 격리한다. **예외: 사용자가 `/dt-review`·`/dt-be-review`를 직접 부른 단독 실행**은 보고서 전문을 보려는 것이라, 메인에서 스크립트를 돌려 출력을 그대로 보이고 해석·수리 판단은 하지 않는다(절차: 각 리뷰 스킬 "단독 실행 절차").
 
 ## 원칙 4 — 에이전트 미지원 시 폴백
 런타임이 서브에이전트(Task/Agent)를 제공하지 않으면 인라인 실행으로 degrade하고, 그 사실을 사용자에게 1줄로 고지한다.

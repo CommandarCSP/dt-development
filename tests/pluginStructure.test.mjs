@@ -248,3 +248,17 @@ test('스펙 작성 에이전트: 입력에 decisions(채택된 PD·TP)가 있�
   }
   assert.deepEqual(problems, []);
 });
+
+// 명령은 스킬 절차의 입구다. 스크립트만 부르고 스킬을 건너뛰면 설정 부트스트랩 같은 절차가 조용히 빠진다(GEN-33).
+test('명령: 모두 실제 스킬을 가리키고, 도구를 스크립트 실행 하나로 묶지 않는다', () => {
+  const problems = [];
+  const skills = new Set(skillDirs);
+  for (const f of commandFiles) {
+    const text = readFileSync(rel(`commands/${f}`), 'utf8');
+    const refs = [...text.matchAll(/skills\/(dt-[a-z0-9-]+)\/SKILL\.md|`?(dt-[a-z0-9-]+)`? 스킬/g)].map((m) => m[1] ?? m[2]);
+    if (!refs.some((r) => skills.has(r))) problems.push(`${f}: 따를 스킬(skills/<이름>/SKILL.md 또는 "<이름> 스킬")을 가리키지 않는다`);
+    const tools = readFrontmatter(text)?.['allowed-tools'] ?? '';
+    if (/^Bash\([^)]*\)$/.test(tools.trim())) problems.push(`${f}: allowed-tools 가 "${tools}" 뿐 — 스킬 절차(파일 읽기·쓰기·질문)를 못 한다`);
+  }
+  assert.deepEqual(problems, []);
+});
