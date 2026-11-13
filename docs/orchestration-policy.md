@@ -81,7 +81,7 @@ AskUserQuestion 템플릿:
   ```
   에이전트는 `answers`에 있는 `id`를 다시 묻지 않는다.
 - **왕복 상한 2회.** 같은 단위에서 needsDecision → 답 → 재dispatch를 두 번 해도 남은 항목이 있으면, 에이전트는 `status: draft`로 마감한다. 조율자는 남은 항목을 사용자에게 목록으로 보고하고 다음 단계로 넘길지 묻는다.
-- 결정을 어디에 오래 남기는가(재실행 때 다시 묻지 않게)는 결정 기록 체계(로드맵 GEN-21·GEN-30)가 정한다. 그 전까지는 각 산출물의 해당 절에 반영된 것이 기록이다.
+- 결정을 어디에 오래 남기는가(재실행 때 다시 묻지 않게)는 원칙 9가 정한다.
 
 ## 원칙 7 — 조율자의 책임
 - dispatch → 봉투 수신 → needsDecision 처리(원칙 6) → 필요하면 재dispatch → 다음 단계. 이 순서를 지킨다.
@@ -98,6 +98,20 @@ AskUserQuestion 템플릿:
 - **`team.locale`** — 산출물 언어. 지금은 `ko`만 지원한다. 로더가 다른 값을 경고하고 `ko`로 바꿔 주므로, 조율자는 그 경고를 보이고 한국어로 진행한다.
 - **`team.requiredMcp`** — 이 스킬이 쓰는 MCP가 목록에 있으면, 실제 작업 전에 그 MCP 도구가 연결돼 있는지 확인한다. 없으면 그만두지 않고 묻는다: "연결하고 다시 시도 / 이 소스 없이 진행 / 중단". 목록에 없는 MCP는 지금처럼 각 스킬의 사전 점검을 따른다.
 
+## 원칙 9 — 결정 기록 (TP · PD)
+사람 결정은 걸리는 범위에 따라 남는 곳이 다르다(`docs/policies/TP-001-decision-records.md`).
+
+| 범위 | 남는 곳 | 예 |
+|---|---|---|
+| 한 화면·한 리소스 | 그 산출물의 절(`reflectsTo`) | "이 목록은 최신순" |
+| 프로젝트 전체·다음 실행에도 | **프로젝트 결정 PD** `docs/decisions/PD-NNN-*.md` | "삭제는 전부 휴지통 방식", "스타일은 SCSS 모듈", 규칙 끄기의 근거 |
+| 팀의 모든 프로젝트 | **팀 정책 TP** 플러그인 `docs/policies/TP-NNN-*.md` | "Jira 서브태스크 이름 규칙" |
+
+- **읽기 — 시작할 때.** 스펙·정의서·플랜·구현 조율자는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/decisions.mjs" list <projectRoot> --json`으로 채택된 PD·TP를 읽어, 작성 에이전트에 `decisions`(id·제목·범위·파일 경로)로 넘긴다. 에이전트는 이것을 **고정 입력**으로 쓴다 — PD가 정한 것은 묻지 않고, 근거에 `PD-NNN`을 적는다. 새 소스가 PD와 어긋나면 조용히 덮지 않고 needsDecision으로 "PD를 바꿀지" 올린다. 만료된 결정(`expired: true`)은 그대로 따르되 사용자에게 다시 검토할지 한 줄로 묻는다.
+- **쓰기 — 답을 받은 뒤.** 조율자는 needsDecision 답 가운데 **여러 단위나 다음 실행에도 걸리는 것**을 골라 PD 초안을 제안한다("이 답을 프로젝트 결정으로 남길까요?"). 승인하면 `dt-decision` 스킬 new 절차로 쓴다. 한 단위에만 걸리는 답은 제안하지 않는다. 판단이 애매하면 묻지 않고 산출물에만 남긴다.
+- **규칙 끄기.** 스택 설정(`.dt-frontend.json`·`.dt-backend.json`)의 `overrides.<키>`는 `{ "value": …, "decisionRef": "PD-NNN" }`(또는 `"PD-NNN"`)으로 근거를 가리킨다. 풀 리뷰는 근거가 없거나 유효하지 않은 override를 Critical(`override-decision-ref`)로, 만료된 근거를 Important로 낸다. 빌더의 Phase 게이트(partial)는 이것으로 막지 않는다 — 사람 결정은 빌더가 만들 수 없다.
+- 인라인 degrade(원칙 4)에서도 같다.
+
 ## 적용 스킬
-- **오케스트레이터(원칙 1~8):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
+- **오케스트레이터(원칙 1~9):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
 - **판정형 에이전트를 부르는 스킬(원칙 3·5·7):** dt-frontend-review / dt-backend-review(reviewer) · dt-ko / dt-explain / dt-worklog-sync / dt-confluence-doc / dt-guide / dt-handbook(ko-writing-reviewer)

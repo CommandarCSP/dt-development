@@ -13,6 +13,7 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 ## 읽기 (입력)
 - dt-devspec이 넘긴: 소스 locator(Figma 페이지/PDF/링크/MD), `--scope <slug>`, (재dispatch면) §3 협의 사용자 답변, (재실행) 기존 `definition[.scope].md`.
 - 파일: 기존 정의서(in-memory 스냅샷), `docs/specs/{pages,resources}/*/`(역합치 leaf), `.dt-devspec/<scope>/progress.md`(재개).
+- 결정(조율자가 넘김): `decisions` — 채택된 PD·TP 목록(`docs/orchestration-policy.md` 원칙 9). **고정 입력**이다. 정해진 자리는 묻지 않고 근거에 `PD-NNN`·`TP-NNN`을 적는다. 소스가 결정과 어긋나면 needsDecision으로 "결정을 바꿀지" 올린다.
 - 참조(Read): `${CLAUDE_PLUGIN_ROOT}/skills/dt-devspec/SKILL.md`(절차) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/askquestion-principle.md`(needsDecision 항목 품질) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — SP·IF 설명·전역 규약 서술·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
 
 ## 소유 경로 (출력)

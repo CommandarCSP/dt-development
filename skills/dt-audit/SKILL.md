@@ -72,6 +72,7 @@ code-fix → /dt-implement·/dt-be-implement 또는 수동 수정, spec-update �
 - 스펙 작성 체크리스트 → `references/contract-elements.md` 항목 추가 제안
 - 기계 검출 가능 → dt-frontend-review·dt-backend-review 룰 제안
 - 정의서 수준 → dt-devspec 검증 게이트(§2.5) 체크 제안
+- 팀 규칙으로 굳힐 것(여러 프로젝트에서 되풀이될 결정) → **팀 정책 TP 초안**(`${CLAUDE_PLUGIN_ROOT}/templates/decision.md.tmpl`, 상태 `proposed`). 이 프로젝트에만 걸리면 PD 초안. 쓰는 절차는 `dt-decision` 스킬(`docs/orchestration-policy.md` 원칙 9)
 
 ### §6 후속 연계 (opt-in, 각 1회 제안)
 - decisions.md의 `e2e후보` 플래그 항목 → "dt-e2e/dt-be-e2e 시나리오로 만들까요?"

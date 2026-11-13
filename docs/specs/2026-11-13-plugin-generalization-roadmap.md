@@ -181,6 +181,7 @@
   - 근거 PD 없는 overrides는 리뷰 오류, 만료 PD는 경고. 리뷰 규칙에 `decisionRef`·`status`.
   - 감사의 규칙 환류는 TP 초안으로.
 - 완료 기준: PD로 남긴 결정을 다음 실행이 다시 묻지 않고, 근거 없는 override를 리뷰가 잡는다.
+- **완료(DEV-27, 2026-11-13).** 결정: ① 여러 단위·다음 실행에도 걸리는 답만 PD 초안을 제안하고 승인받아 저장(한 단위 답은 산출물에만), ② 근거 없는 override는 풀 리뷰 Critical(`override-decision-ref`, 만료는 Important — 빌더 partial 게이트는 막지 않음), ③ 관리 스킬 `dt-decision` + `/dt-decision` 신설(스킬 37·커맨드 21). 반영: `scripts/decisions.mjs`(파싱·양식 검사·번호·만료·`checkDecisionRef`·CLI list|next|check|show), `templates/decision.md.tmpl`, 첫 팀 정책 `docs/policies/TP-001-decision-records.md`, 리뷰 엔진 `overrides.mjs`(`decisionRefOf`·`overrideDecisionFindings`, override 값은 `{ value, decisionRef }` 또는 `"PD-NNN"`), 정책 원칙 9(범위별 기록 위치·읽기·쓰기·규칙 끄기), 작성 에이전트 4개의 `decisions` 고정 입력, askquestion "답을 남기는 곳", 감사 §5 환류의 TP 초안, FE/BE 리뷰·아키텍처 스킬 안내. 기존 프로젝트의 옛 형식 override(`"styling": "mui"`)는 이제 풀 리뷰에서 Critical이 된다 — `/dt-decision override <키>`로 근거를 단다.
 
 ### GEN-22 산출물 검증 — 스펙·계획 문서 형식 검사기
 - 문제: 구조 검사는 정의서에만 있다. requirements·design·tasks·api-contract·plan·interactions·e2e 원장은 형식 검사가 없다.

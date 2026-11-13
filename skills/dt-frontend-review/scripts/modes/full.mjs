@@ -14,7 +14,7 @@ import {
   measureCoverage, measureBaselineCoverage, getChangedFiles, compareCoverage,
 } from '../lib/coverage.mjs';
 import { renderReport } from '../lib/reporter.mjs';
-import { loadOverrideKeys } from '../lib/overrides.mjs';
+import { loadOverrideKeys, overrideDecisionFindings } from '../lib/overrides.mjs';
 
 // Run a full review against the user project at cwd.
 // args: { pluginRoot, projectRoot, baseRef, runCoverage, ruleLocations, configFileName, testCommand, installCommand }
@@ -68,6 +68,9 @@ export async function runFullMode({
       }
     }
   }
+
+  // 3.5 override 근거 결정(PD) 확인 — 근거 없이 규칙을 끄지 않는다(TP-001)
+  findings.push(...await overrideDecisionFindings(projectRoot, configFileName));
 
   // 4. Coverage (optional)
   // Honor .dt-frontend.json's coverage.mode if CLI didn't explicitly disable

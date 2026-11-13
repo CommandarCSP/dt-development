@@ -46,6 +46,7 @@ Reasoning: Critical 위반 1건 + coverage 1건 — 머지 전 수정 필요.
 
 - `patterns/*.md`의 frontmatter (`ruleId`, `severity`, `appliesTo`, `detection`)를 직접 파싱
 - 룰 본문(예시)과 detection 로직이 같은 파일에 있어 드리프트 차단
+- **override 근거 검사(full 모드)**: 스택 설정의 `overrides.<키>`마다 근거 결정(`decisionRef: "PD-NNN"`)을 확인한다. 근거 없음·못 찾음·대체됨은 Critical `override-decision-ref`, 만료는 Important. partial 모드(빌더 게이트)는 검사하지 않는다. 고치는 법: `/dt-decision override <키>`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9)
 
 ## 룰 frontmatter 필드
 

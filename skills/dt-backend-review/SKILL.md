@@ -34,6 +34,9 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" $ARGUM
 - `partial`: scaffold의 phase-level mini-review용. `--paths`로 검사 대상 명시.
 - `--verbose`: Manual Review 휴리스틱 스텁(AST 미구현 룰)을 파일별로 출력.
 
+## override 근거 검사
+- full 모드: 스택 설정의 `overrides.<키>`마다 근거 결정(`decisionRef: "PD-NNN"`)을 확인한다. 근거 없음·못 찾음·대체됨은 Critical `override-decision-ref`, 만료는 Important. partial 모드(빌더 게이트)는 검사하지 않는다. 고치는 법: `/dt-decision override <키>`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9)
+
 ## 룰 frontmatter 필드 / Detection 타입
 FE와 동일한 스키마·detector를 사용한다 (`dt-frontend-review` SKILL.md 참조). backend 전용 룰은 다음 detector를 사용:
 

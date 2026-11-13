@@ -14,7 +14,7 @@ description: Use when writing or reviewing React/TypeScript code in a project th
 > 본 skill은 **architecture/styling/business/vendored 룰의 단일 atlas**를 제공한다. 이 SKILL.md만 로드되어도 작성 시점에 필요한 모든 룰을 1줄 요약으로 인지할 수 있다.
 >
 > **레이어 계약:** 본 전역 컨벤션은 **상위 SDD 스펙/project-context 없이도 단독 적용**된다(상위는 선택적, hard-depend 금지). 상위가 있으면 `project-context.md`의 `## 프로젝트 기술/라이브러리`로 라이브러리를 **가산**(전역보다 우선)할 수 있다. 전역 choice 룰을 거스르는 예외는 사용자 합의 후에만(웨이브 B). 상세 `../../docs/skill-sdd-layering.md`.
-> styling 오버라이드(`.dt-frontend.json` `overrides`)는 view-styling·no-hardcoded-design-values를 review에서 skip한다(구조 룰은 불가). **design-fidelity는 별도 override 키(`design-fidelity`)로 분리** — Tailwind 린트를 꺼도(styling) 디자인 충실도 게이트는 기본 on으로 유지된다. Figma 소스가 없는 프로젝트에서만 명시적으로 끈다.
+> styling 오버라이드(`.dt-frontend.json` `overrides`)는 view-styling·no-hardcoded-design-values를 review에서 skip한다(구조 룰은 불가). **design-fidelity는 별도 override 키(`design-fidelity`)로 분리** — Tailwind 린트를 꺼도(styling) 디자인 충실도 게이트는 기본 on으로 유지된다. Figma 소스가 없는 프로젝트에서만 명시적으로 끈다. **override는 근거 결정이 있어야 한다** — `"overrides": { "styling": { "value": "mui", "decisionRef": "PD-002" } }`. 근거가 없으면 풀 리뷰가 Critical(`override-decision-ref`)로 잡는다(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9, 기록은 `/dt-decision`).
 
 ## 레이어 개요
 

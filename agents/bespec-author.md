@@ -13,6 +13,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 ## 읽기 (입력)
 - 조율자가 넘긴: **`resources` 목록**(1개 이상; 각 슬러그+소스 locator), `--scope`/`--only`/인자, (있으면) 직전 라운드 사용자 답변.
 - 파일: `docs/specs/definition.md`(게이트), `docs/project-context.md`, 대상 리소스 디렉토리(재실행 시), `.dt-spec/<resource>/progress.md`(재개), `prisma/schema.prisma`.
+- 결정(조율자가 넘김): `decisions` — 채택된 PD·TP 목록(`docs/orchestration-policy.md` 원칙 9). **고정 입력**이다. 정해진 자리는 묻지 않고 근거에 `PD-NNN`·`TP-NNN`을 적는다. 소스가 결정과 어긋나면 needsDecision으로 "결정을 바꿀지" 올린다.
 - 참조(Read): `${CLAUDE_PLUGIN_ROOT}/skills/dt-bespec-analyze-openapi/SKILL.md` · `…/dt-bespec-analyze-datamodel/SKILL.md` · `…/dt-bespec-analyze-document/SKILL.md`(소스 분석 절차) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/ears-patterns.md` · `…/docs/refs/askquestion-principle.md` · `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(크로스리소스 통합 §A.4) · `${CLAUDE_PLUGIN_ROOT}/templates-backend/{auth-recipe,toggle-recipe}.md`(트리거 시) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — 페이지 목적·스토리·FR의 한글 부분·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
 
 ## 소유 경로 (출력)

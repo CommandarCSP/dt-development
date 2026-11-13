@@ -237,3 +237,14 @@ test('readFrontmatter: 머리말이 없으면 null, 있으면 한 줄 필드를 
   assert.equal(readFrontmatter('# 제목'), null);
   assert.deepEqual(readFrontmatter('---\nname: a\ndescription: b c\n---\n본문'), { name: 'a', description: 'b c' });
 });
+
+// 결정 기록(원칙 9) — 스펙·플랜 작성 에이전트는 채택된 PD·TP(decisions)를 고정 입력으로 받는다.
+test('스펙 작성 에이전트: 입력에 decisions(채택된 PD·TP)가 있고 원칙 9를 가리킨다', () => {
+  const problems = [];
+  for (const a of ['definition-author', 'spec-author', 'bespec-author', 'plan-author']) {
+    const text = readFileSync(rel(`agents/${a}.md`), 'utf8');
+    const input = text.match(/\n## 읽기[^\n]*\n([\s\S]*?)(?=\n## )/)?.[1] ?? '';
+    if (!/`decisions`/.test(input) || !/원칙 9/.test(input)) problems.push(`${a}: 읽기 절에 decisions(원칙 9)가 없다`);
+  }
+  assert.deepEqual(problems, []);
+});
