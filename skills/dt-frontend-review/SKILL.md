@@ -38,7 +38,7 @@ description: Use when reviewing dt-frontend project code for architecture/test r
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" <명령 인자>
    ```
-   - 모드가 없으면 `full`. `--base`가 없으면 `HEAD`(커밋 안 된 변경). Manual Review 휴리스틱은 룰별 개수로 요약되고, `--verbose`면 파일별로 펼친다.
+   - 모드가 없으면 `full`. `--base`가 없으면 **프로젝트 전체**(git이 아는 파일 + 아직 추가 안 한 새 파일, `.gitignore` 제외 — git을 못 쓰면 폴더를 훑는다). `--base <ref>`를 주면 그 뒤로 바뀐 파일만. 보고서 Assessment에 검사한 소스 파일 수가 나오고, 0개면 `Ready to merge: Unknown`이다(위반 없음이 아니다). Manual Review 휴리스틱은 룰별 개수로 요약되고, `--verbose`면 파일별로 펼친다.
 4. **보고서를 그대로 보인다.** 요약하거나 고치지 않는다. 종료 코드 1이면 Critical이 있다(Ready to merge: No).
 5. **후속 안내** — 보고서 뒤에 해당하는 것만 한 줄씩 덧붙인다. 자동으로 고치지 않는다.
    - `override-decision-ref`가 있으면: "`/dt-decision override <키>`로 규칙 끄기에 근거 결정을 단다(또는 override를 지운다)."

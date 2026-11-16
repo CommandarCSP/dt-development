@@ -55,3 +55,14 @@ test('manualReview findings show full list when verbose=true', () => {
   assert.match(out, /inspect/);
   assert.match(out, /Ready to merge: Yes/);
 });
+
+test('검사한 소스 파일이 0개면 Ready to merge: Unknown — "위반 없음"이라고 하지 않는다', async () => {
+  const { renderReport } = await import('../scripts/lib/reporter.mjs');
+  const empty = { findings: [], coverage: { findings: [] }, overrides: null };
+  const zero = renderReport({ ...empty, scope: { scanned: 0, base: null } });
+  assert.match(zero, /검사한 소스 파일: 0개/);
+  assert.match(zero, /Ready to merge: Unknown/);
+  assert.doesNotMatch(zero, /위반 없음\./);
+  assert.match(renderReport({ ...empty, scope: { scanned: 3, base: null } }), /Ready to merge: Yes/);
+  assert.match(renderReport(empty), /Ready to merge: Yes/, 'scope 를 안 넘기는 partial 모드는 지금과 같다');
+});

@@ -190,3 +190,27 @@ export function Styled() { return <div className="card" />; }
     cleanup(dir);
   }
 });
+
+test('full(--base 없음): git 이 없어도 폴더를 훑어 검사하고, git 저장소면 새 파일(untracked)도 본다', () => {
+  const files = { 'src/components/domain/UserCard.tsx': "import axios from 'axios';\nexport const UserCard = () => null;\n" };
+  // ① git 저장소가 아님 → 폴더를 훑는다
+  const plain = makeTempProject('nogit', files);
+  rmSync(join(plain, '.git'), { recursive: true, force: true }); // 도우미가 git init 을 하므로 지운다
+  try {
+    const r = spawnSync('node', [REVIEW_SCRIPT, 'full', '--no-coverage', '--project', plain], { encoding: 'utf8' });
+    assert.match(r.stdout, /domain-no-direct-api/);
+    assert.match(r.stdout, /검사한 소스 파일: [1-9]/);
+  } finally { rmSync(plain, { recursive: true, force: true }); }
+  // ② git 저장소, 위반 파일은 아직 add 안 함 → 그래도 본다
+  const repo = makeTempProject('untracked', files);
+  try {
+    const r = spawnSync('node', [REVIEW_SCRIPT, 'full', '--no-coverage', '--project', repo], { encoding: 'utf8' });
+    assert.match(r.stdout, /domain-no-direct-api/);
+  } finally { rmSync(repo, { recursive: true, force: true }); }
+  // ③ 검사할 소스가 없음 → Unknown
+  const empty = makeTempProject('empty', {});
+  try {
+    const r = spawnSync('node', [REVIEW_SCRIPT, 'full', '--no-coverage', '--project', empty], { encoding: 'utf8' });
+    assert.match(r.stdout, /Ready to merge: Unknown/);
+  } finally { rmSync(empty, { recursive: true, force: true }); }
+});

@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadAllRules } from '../lib/rule-loader.mjs';
 import { matchAny } from '../lib/matcher.mjs';
@@ -37,6 +38,7 @@ export async function runFullMode({
   const changed = baseRef
     ? getChangedFiles(projectRoot, baseRef)
     : listAllProjectFiles(projectRoot);
+  let scanned = 0; // 실제로 읽어 검사한 소스 파일 수 — 0 이면 보고서가 "통과"라고 말하지 않는다
 
   // 3. Read each changed file and run applicable detections
   const findings = [];
@@ -50,6 +52,7 @@ export async function runFullMode({
     } catch {
       continue; // file deleted
     }
+    scanned++;
     for (const rule of rules) {
       if (!matchAny(relPath, rule.appliesTo)) continue;
       if (rule.excludePathPatterns.length > 0 && matchAny(relPath, rule.excludePathPatterns)) continue;
@@ -92,7 +95,7 @@ export async function runFullMode({
 
   // 5. Render report
   const overrides = { keys: [...overrideKeys], skippedRuleIds: [...skippedRuleIds] };
-  return renderReport({ findings, coverage, overrides }, { verbose });
+  return renderReport({ findings, coverage, overrides, scope: { scanned, base: baseRef ?? null } }, { verbose });
 }
 
 function runDetection(code, det, ctx) {
@@ -142,8 +145,21 @@ async function runCoverageDiff({ projectRoot, baseRef, changed, configFileName =
   return compareCoverage({ head: head.summary, base: base.summary, changed, threshold, baselineProtection });
 }
 
+// --base 가 없으면 프로젝트 전체: git 이 아는 파일 + 아직 추가 안 한 새 파일(.gitignore 제외).
+// git 을 못 쓰면(저장소 아님·권한·dubious ownership) 조용히 0개로 끝내지 않고 폴더를 훑는다.
+const WALK_SKIP = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.next', 'out']);
 function listAllProjectFiles(projectRoot) {
-  const out = spawnSync('git', ['ls-files'], { cwd: projectRoot, encoding: 'utf8' });
-  if (out.status !== 0) return [];
-  return out.stdout.split('\n').filter(Boolean);
+  const out = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: projectRoot, encoding: 'utf8' });
+  if (out.status === 0) return [...new Set(out.stdout.split('\n').filter(Boolean))];
+  const files = [];
+  const walk = (dir) => {
+    let entries = [];
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.isDirectory()) { if (!WALK_SKIP.has(e.name) && !e.name.startsWith('.')) walk(join(dir, e.name)); }
+      else files.push(relative(projectRoot, join(dir, e.name)).split('\\').join('/'));
+    }
+  };
+  walk(projectRoot);
+  return files;
 }

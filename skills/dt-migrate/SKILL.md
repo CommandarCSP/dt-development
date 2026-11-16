@@ -15,7 +15,7 @@ user-invocable: false
 2. **고를 것 묻기.** `고를 것`으로 나온 파일은 한 번에 묻는다(원칙 6).
    - project-context의 겹치는 절 — "옛 절 지우기(`--resolve drop`) / `옛 기록 — `으로 남기기(`--resolve keep`, 권장)". 판단에 쓰도록 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" migrate --file docs/project-context.md --root .` 미리보기(옮김·겹침·코드에 없는 기술)를 함께 보인다.
    - 스택을 짐작하지 못함 — "FE / BE".
-3. **쓰기.** 확인받은 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/migrate.mjs" <projectRoot> --write [--resolve …] [--stack …]`. 이전은 제목·형식 표시만 바꾸고 내용은 그대로 둔다.
+3. **쓰기.** 사용자에게 물을 수 없는 실행(자동 실행·서브에이전트·평가)이면 **쓰지 않는다** — 미리보기 결과와 "확인하면 `--write`로 옮긴다"를 보고하고 끝낸다(확인 없이 쓰기 금지). 확인받은 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/migrate.mjs" <projectRoot> --write [--resolve …] [--stack …]`. 이전은 제목·형식 표시만 바꾸고 내용은 그대로 둔다.
 4. **다시 점검.** 1단계를 한 번 더 돌려 `옮김`이 0인지 보인다(두 번 돌려도 같아야 한다). `손으로`가 남으면 각각 어떤 스킬을 다시 돌리면 되는지 한 줄씩 적는다(스펙 → `/dt-spec`·`/dt-be-spec`, 정의서 → `/dt-devspec`).
 5. **보고.** 옮긴 파일, 남은 것, 커밋 제안(`chore: dt 산출물 형식 이전`). 커밋은 하지 않는다.
 
