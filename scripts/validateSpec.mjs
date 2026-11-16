@@ -24,7 +24,8 @@ export const PATTERN_LABELS = ['Ubiquitous', 'Event-driven', 'State-driven', 'Op
 const PATTERN_KEYWORD = { 'Event-driven': /\bWHEN\b/, 'State-driven': /\bWHILE\b/, Optional: /\bWHERE\b/, Unwanted: /\bIF\b[\s\S]*\bTHEN\b/, Complex: /\bWHEN\b[\s\S]*\bWHILE\b|\bWHILE\b[\s\S]*\bWHEN\b/ };
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 const LEDGER_STATUSES = ['proposed', 'approved', 'automated', 'verified', 'failed', 'stale'];
-const ENDPOINT_COLUMNS = ['Method', 'Path', 'Auth', 'Request DTO', 'Response DTO', 'Status'];
+// 열 이름 — 옛 템플릿(dt-bespec 0.8 무렵)은 'Request'·'Response' 였다. 같은 뜻이라 둘 다 받는다(실제 프로젝트 검증에서 발견, GEN-29).
+const ENDPOINT_COLUMNS = [['Method'], ['Path'], ['Auth'], ['Request DTO', 'Request'], ['Response DTO', 'Response'], ['Status']];
 
 const REQUIRED_SECTIONS = {
   'requirements:frontend': ['사용자 스토리', '기능 요구사항', '라우팅 / 네비게이션', '비기능 요구사항', '접근 권한'],
@@ -32,8 +33,10 @@ const REQUIRED_SECTIONS = {
   'design:frontend': ['아키텍처', '데이터 모델 / API 계약', '컴포넌트 구조', '시퀀스', '요구사항 매핑'],
   'design:backend': ['아키텍처', '데이터 모델 / API 계약', '인덱스 & 페이지네이션 전략', '시퀀스', '요구사항 매핑'],
   'layout-skeleton:frontend': ['코딩 에이전트 변환 지침', '스켈레톤'],
-  'api-contract:backend': ['스캐폴드 변환 지침', '엔드포인트', '요청/응답 스키마'],
+  'api-contract:backend': ['엔드포인트'],
 };
+// 있으면 좋은 절 — 없으면 경고만(뒤 단계 스크립트가 읽지 않는 안내·보조 절. 옛 템플릿엔 없었다).
+const RECOMMENDED_SECTIONS = { 'api-contract:backend': ['스캐폴드 변환 지침', '요청/응답 스키마'] };
 
 /** 파일 경로로 종류·스택을 가린다. 모르면 null. */
 export function detectKind(path) {
@@ -93,6 +96,7 @@ export function validateSpec(text, { kind, stack = null, siblings = {} } = {}) {
   const req = REQUIRED_SECTIONS[`${kind}:${stack}`];
   if (!req && (REQUIRED_SECTIONS[`${kind}:frontend`] || REQUIRED_SECTIONS[`${kind}:backend`])) warn(1, 'stack-unknown', '경로로 FE·BE 를 가리지 못해 필수 절 검사를 건너뛴다(docs/specs/pages|resources/ 아래에 둔다)');
   for (const s of req ?? []) if (!keys.includes(s)) err(1, 'required-section', `필수 절 "## ${s}" 가 없다`);
+  for (const s of RECOMMENDED_SECTIONS[`${kind}:${stack}`] ?? []) if (!keys.includes(s)) warn(1, 'recommended-section', `권장 절 "## ${s}" 가 없다`);
 
   if (kind === 'requirements') {
     const { frs, bad } = parseFRs(text);
@@ -140,7 +144,7 @@ export function validateSpec(text, { kind, stack = null, siblings = {} } = {}) {
     if (sec && !tableLines.length) err(1, 'endpoint-table', '"## 엔드포인트" 에 표가 없다');
     if (tableLines.length) {
       const cols = tableLines[0].split('|').slice(1, -1).map((c) => c.trim());
-      const missing = ENDPOINT_COLUMNS.filter((c) => !cols.includes(c));
+      const missing = ENDPOINT_COLUMNS.filter((names) => !names.some((c) => cols.includes(c))).map((names) => names[0]);
       if (missing.length) err(1, 'endpoint-columns', `엔드포인트 표에 열이 없다: ${missing.join(', ')}`);
       const idx = (c) => cols.indexOf(c);
       for (const row of tableLines.slice(2)) {
@@ -165,7 +169,8 @@ export function validateSpec(text, { kind, stack = null, siblings = {} } = {}) {
 
   if (kind === 'e2e-ledger') {
     const journeys = /journeys/.test(siblings.path ?? '');
-    if (!/<!-- basedOnSpec: .+ -->/.test(text)) (journeys ? warn : err)(1, 'ledger-marker', '원장 상단에 <!-- basedOnSpec: … --> 마커가 없다(stale 판정 기준)');
+    // 마커는 e2e 스킬이 원장을 갱신할 때 채운다. 마커가 생기기 전의 원장도 있어서(실제 프로젝트 검증에서 발견) 경고로 둔다.
+    if (!/<!-- basedOnSpec: .+ -->/.test(text)) warn(1, 'ledger-marker', '원장 상단에 <!-- basedOnSpec: … --> 마커가 없다 — stale 판정을 못 한다. 다음 갱신 때 e2e 스킬이 채운다');
     const statusRe = /\bstatus\b\s*[:：]\s*`?([a-z]+)`?/gi;
     for (const m of text.matchAll(statusRe)) if (!LEDGER_STATUSES.includes(m[1].toLowerCase())) err(lineOf(text, m.index), 'ledger-status', `상태 "${m[1]}" 는 ${LEDGER_STATUSES.join('·')} 가 아니다`);
     for (const t of text.split(/\n(?!\|)/).filter((b) => /^\|/.test(b))) {

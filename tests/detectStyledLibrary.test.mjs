@@ -30,3 +30,7 @@ test('detects shadcn via @radix-ui/* dependency', () => {
 test('shadcn takes priority over styled allowlist', () => {
   assert.equal(detectStyledLibrary({ '@radix-ui/react-dialog': '^1', '@mui/material': '^5' }), 'shadcn');
 });
+
+test('통합 Radix 패키지(radix-ui)만 있어도 shadcn 으로 본다', () => {
+  assert.equal(detectStyledLibrary({ 'radix-ui': '^1.4.0', react: '^19' }), 'shadcn');
+});
