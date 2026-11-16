@@ -15,7 +15,7 @@ description: Use when reviewing dt-frontend project code for architecture/test r
 자동 검사:
 1. `git diff <base>...HEAD`로 변경 파일 식별
 2. 각 변경 파일에 대해 patterns/*.md frontmatter의 detection 메타데이터 적용
-3. 테스트 도구(기본 vitest)의 커버리지로 HEAD/BASE 측정 + per-file 비교 (`.dt-frontend.json`의 `coverage.mode`에 따라). 명령은 엔진이 lockfile·package.json·`coverage.runner`로 고른다 — `${CLAUDE_PLUGIN_ROOT}/docs/refs/review-engine.md` §2
+3. 테스트 도구(기본 vitest)의 커버리지로 HEAD/BASE 측정 + per-file 비교 (`.dt-frontend.json`의 `coverage.mode`에 따라). 명령은 엔진이 lockfile·package.json·`testRunner`로 고르고, 규칙 경로는 `paths.src`·`layout`으로 바꾼다 — `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config.md`
 4. Critical/Important/Minor + Coverage 리포트 출력
 
 ## 활성화 조건
@@ -109,4 +109,4 @@ severity: minor (머지 블로킹 아님). 자세한 원칙은 `dt-frontend-codi
 ## 의존성
 - Node 18+
 - 외부 npm 의존성 없음 (built-in `fs`, `child_process`, `node:test`만 사용)
-- coverage 측정: 엔진이 고른 명령(`docs/refs/review-engine.md` §2)이 사용자 프로젝트에서 돌고 `coverage/coverage-summary.json`을 내야 함
+- coverage 측정: 엔진이 고른 명령(`docs/refs/stack-config.md` §2)이 사용자 프로젝트에서 돌고 `coverage/coverage-summary.json`을 내야 함

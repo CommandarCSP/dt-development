@@ -69,7 +69,7 @@ controller/service는 두 계층에 의존하므로 Phase 3/4에서 순차 진�
 ## 의존성
 - `dt-backend-architecture`/`dt-backend-testing` patterns (신규 프로젝트는 nest CLI 스캐폴드 + 설정 파일 직접 작성 — 보일러플레이트 미사용)
 - 공유 review 엔진 (partial + full, `--stack backend`)
-- Node 18+ / 사용자 프로젝트에 `npx tsc`, `npx prisma`, `npx jest` 가용
+- Node 18+ / 사용자 프로젝트에 `tsc`·`prisma`·테스트 도구(기본 jest) 가용. 게이트의 테스트 명령은 `scripts/stackCommands.mjs --stack backend`가 고른다(`docs/refs/stack-config.md` §2)
 
 ## 한계 (v1)
 - Contract validator는 tsc + `prisma validate`에 의존 (export-name AST 검증은 추후)

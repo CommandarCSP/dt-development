@@ -3,6 +3,7 @@ import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadAllRules } from '../lib/rule-loader.mjs';
+import { applyLayout, readConfig } from '../lib/layout.mjs';
 import { matchAny } from '../lib/matcher.mjs';
 import { detectForbiddenImport } from '../lib/detection/forbidden-import.mjs';
 import { detectForbiddenCall } from '../lib/detection/forbidden-call.mjs';
@@ -23,7 +24,7 @@ import { resolveCoverageCommands } from '../lib/stacks.mjs';
 
 // Run a full review against the user project at cwd.
 // args: { pluginRoot, projectRoot, baseRef, runCoverage, stack, ruleLocations, configFileName, testCommand, installCommand }
-// testCommand·installCommand 를 넘기지 않으면 스택 설정 coverage.* 와 프로젝트(lockfile·package.json)로 고른다.
+// testCommand·installCommand 를 넘기지 않으면 scripts/stackCommands.mjs 가 스택 설정·프로젝트로 고른다.
 export async function runFullMode({
   pluginRoot, projectRoot, baseRef, runCoverage, verbose = false,
   stack = 'frontend',
@@ -33,7 +34,7 @@ export async function runFullMode({
   installCommand = undefined,
 }) {
   // 1. Load all rules
-  const rules = await loadAllRules(pluginRoot, ruleLocations);
+  const rules = applyLayout(await loadAllRules(pluginRoot, ruleLocations), await readConfig(projectRoot, configFileName));
   const overrideKeys = await loadOverrideKeys(projectRoot, configFileName);
   const skippedRuleIds = new Set();
 
@@ -93,9 +94,9 @@ export async function runFullMode({
   }
   let coverage = { findings: [] };
   if (runCoverage && baseRef) {
-    let cfgCoverage = {};
-    try { cfgCoverage = JSON.parse(await readFile(join(projectRoot, configFileName), 'utf8')).coverage ?? {}; } catch {}
-    const picked = resolveCoverageCommands(stack, projectRoot, cfgCoverage);
+    let cfg = {};
+    try { cfg = JSON.parse(await readFile(join(projectRoot, configFileName), 'utf8')) ?? {}; } catch {}
+    const picked = resolveCoverageCommands(stack, projectRoot, cfg);
     coverage = await runCoverageDiff({
       projectRoot, baseRef, changed, configFileName,
       testCommand: testCommand ?? picked.testCommand,
@@ -142,7 +143,7 @@ async function runCoverageDiff({ projectRoot, baseRef, changed, configFileName =
   const head = measureCoverage(projectRoot, { testCommand });
   if (!head.ok) {
     const cmd = [testCommand[0], ...testCommand[1]].join(' ');
-    return { findings: [{ severity: 'critical', file: '(test run)', message: `커버리지 명령 실패 — \`${cmd}\` [${describe}]. 맞지 않으면 스택 설정 coverage.runner·packageManager 나 coverage.command 로 고친다.\n${head.error}` }] };
+    return { findings: [{ severity: 'critical', file: '(test run)', message: `커버리지 명령 실패 — \`${cmd}\` [${describe}]. 맞지 않으면 스택 설정 testRunner·packageManager 나 commands.coverage 로 고친다.\n${head.error}` }] };
   }
   const base = measureBaselineCoverage(projectRoot, baseRef, { testCommand, installCommand });
   if (!base.ok) {

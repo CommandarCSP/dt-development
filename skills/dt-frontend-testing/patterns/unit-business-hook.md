@@ -5,7 +5,7 @@ severity: important
 appliesTo: ["src/business/hooks/**/__tests__/**/*.{ts,tsx}"]
 detection:
   - type: forbidden-call
-    matches: ["vi.mock"]
+    matches: ["vi.mock", "jest.mock"]
     matchArguments: ["**/store/queries/**"]
     rationale: "Business Hook 테스트도 Store Query를 mock하지 말고 MSW로 stub"
 relatedRules: [integration-no-hook-mocking, msw-handler-design]

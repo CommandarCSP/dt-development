@@ -10,12 +10,12 @@ description: Use when reviewing dt-backend (NestJS) project code for architectur
 > **다른 스킬과의 관계**
 > - 작성 시점 가이드: `dt-backend-architecture` (Atlas) + `dt-backend-testing` (Atlas)
 > - 본 skill은 review automation — patterns/*.md 의 detection 메타데이터를 직접 파싱해 적용
-> - **엔진은 FE와 공유**한다: stack-agnostic 리뷰 엔진(`scripts/review/review.mjs`)을 `--stack backend`로 호출하면 backend 룰 디렉토리(`dt-backend-architecture/patterns`, `dt-backend-testing/patterns`) + `.dt-backend.json` + 커버리지(기본 npm + jest)로 동작한다. 엔진 경로·커버리지 명령 고르기는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/review-engine.md`가 원본이다.
+> - **엔진은 FE와 공유**한다: stack-agnostic 리뷰 엔진(`scripts/review/review.mjs`)을 `--stack backend`로 호출하면 backend 룰 디렉토리(`dt-backend-architecture/patterns`, `dt-backend-testing/patterns`) + `.dt-backend.json` + 커버리지(기본 npm + jest)로 동작한다. 엔진 경로는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/review-engine.md`, 폴더 구조·명령 고르기는 `docs/refs/stack-config.md`가 원본이다.
 
 자동 검사:
 1. `git diff <base>...HEAD`로 변경 파일 식별
 2. 각 변경 파일에 대해 backend patterns/*.md frontmatter의 detection 메타데이터 적용
-3. 테스트 도구(기본 jest)의 커버리지로 HEAD/BASE 측정 + per-file 비교 (`.dt-backend.json`의 `coverage.mode`에 따라). vitest를 쓰면 엔진이 알아서 고르고, 못 고르면 `coverage.runner`
+3. 테스트 도구(기본 jest)의 커버리지로 HEAD/BASE 측정 + per-file 비교 (`.dt-backend.json`의 `coverage.mode`에 따라). vitest를 쓰면 엔진이 알아서 고르고, 못 고르면 `testRunner`(`docs/refs/stack-config.md`)
 4. Critical/Important/Minor + Coverage 리포트 출력
 
 ## 활성화 조건
@@ -68,4 +68,4 @@ FE와 동일한 스키마·detector를 사용한다 (`dt-frontend-review` SKILL.
 
 ## 의존성
 - Node 18+ / 외부 npm 의존성 없음
-- coverage 측정: 엔진이 고른 명령(`docs/refs/review-engine.md` §2)이 사용자 프로젝트에서 돌고 `coverage/coverage-summary.json`을 내야 함
+- coverage 측정: 엔진이 고른 명령(`docs/refs/stack-config.md` §2)이 사용자 프로젝트에서 돌고 `coverage/coverage-summary.json`을 내야 함

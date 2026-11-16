@@ -21,7 +21,7 @@ description: Use when writing or reviewing tests in a project that contains .dt-
 
 - 비중은 가이드라인. 비즈니스 리스크 높은 도메인은 통합/E2E 비중↑ OK.
 - **파일 suffix로 종류 명시**: 파일명만 보고 unit/integration 구분 가능.
-- CI/dev script 분리 실행: `pnpm test:unit` / `pnpm test:integration` / `pnpm test:e2e`.
+- CI/dev script 분리 실행: `test:unit` / `test:integration` / `test:e2e` 스크립트(프로젝트의 패키지 관리자로 — `docs/refs/stack-config.md` §2).
 - 판정 기준: **단일 SUT**(hook 하나, 함수 하나, view 하나) = unit. **2개 이상 협력**(query+mutation, hook+router, multi-query 합성 등) = integration. 헷갈리면 integration 쪽으로.
 - E2E(수용): `/dt-implement` 이후 `dt-e2e` 스킬로 사람이 주도해 작성·검증하는 수용 레이어다. 스캐폴드가 개발단 e2e를 자동생성하지 않는다. 개발단 렌더·플로우 신뢰는 page integration 테스트(`page-integration-required`)가 담당한다.
 

@@ -56,7 +56,7 @@ user-invocable: false
 6. 반복(failed 수정·재검증, 신규는 proposed append)
 
 ## 실행 대상 스위치
-- 기본 MSW 격리(`pnpm test:accept`), 실연동은 `pnpm test:accept:live`(E2E_LIVE=1). headed는 `--headed`.
+- 기본 MSW 격리(`commands.accept`, 기본 `<관리자> run test:accept`), 실연동은 `commands.acceptLive`(E2E_LIVE=1). headed는 `--headed`. 실제 명령은 `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackCommands.mjs" --stack frontend --json`으로 얻는다(`docs/refs/stack-config.md` §2).
 
 ## 데이터 수명주기 (상태 준비·청소 — 설계 §7.1)
 **공통: Arrange는 API·시드로, Act/Assert만 UI로.**

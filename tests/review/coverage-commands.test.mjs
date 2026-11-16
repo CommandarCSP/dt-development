@@ -1,4 +1,4 @@
-// 커버리지 명령 고르기(GEN-08) — 설정 → package.json → lockfile → 스택 기본값.
+// 스택 명령 고르기(GEN-08·GEN-04) — 설정 → package.json → lockfile → 스택 기본값.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolveCoverageCommands } from '../../scripts/review/lib/stacks.mjs';
+import { resolveStackCommands, commandString } from '../../scripts/stackCommands.mjs';
 
 function project(files) {
   const dir = mkdtempSync(join(tmpdir(), 'dt-cov-'));
@@ -61,10 +62,10 @@ test('pnpm·yarn lockfile 과 package.json packageManager 를 읽는다', () => 
   } finally { for (const d of [pn, yn, decl]) rmSync(d, { recursive: true, force: true }); }
 });
 
-test('설정 coverage.runner·packageManager 가 프로젝트 추측보다 앞선다', () => {
+test('설정 testRunner·packageManager 가 프로젝트 추측보다 앞선다', () => {
   const dir = project({ 'package-lock.json': '{}', 'package.json': { devDependencies: { jest: '^29', vitest: '^2' } } });
   try {
-    const r = resolveCoverageCommands('backend', dir, { runner: 'vitest', packageManager: 'pnpm' });
+    const r = resolveCoverageCommands('backend', dir, { testRunner: 'vitest', packageManager: 'pnpm' });
     assert.equal(flat(r.testCommand), 'pnpm exec vitest run --coverage --coverage.reporter=json-summary');
     assert.match(r.describe, /설정/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -76,18 +77,48 @@ test('두 도구가 다 있으면 scripts.test 로 가린다', () => {
   finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('coverage.command·installCommand 는 그대로 쓴다(문자열은 셸, 배열은 인자)', () => {
+test('commands.coverage·install 은 그대로 쓴다(문자열은 셸, 배열은 인자)', () => {
   const dir = project({});
   try {
-    const r = resolveCoverageCommands('frontend', dir, { command: 'make coverage', installCommand: ['bun', 'install'] });
+    const r = resolveCoverageCommands('frontend', dir, { commands: { coverage: 'make coverage', install: ['bun', 'install'] } });
     assert.deepEqual(r.testCommand, ['sh', ['-c', 'make coverage']]);
     assert.deepEqual(r.installCommand, ['bun', ['install']]);
+    assert.match(r.describe, /commands\.coverage/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('모르는 runner·packageManager 는 고칠 방법과 함께 막는다', () => {
-  assert.throws(() => resolveCoverageCommands('frontend', tmpdir(), { runner: 'mocha' }), /vitest \| jest.*coverage\.command/);
+test('모르는 testRunner·packageManager 는 고칠 방법과 함께 막는다', () => {
+  assert.throws(() => resolveCoverageCommands('frontend', tmpdir(), { testRunner: 'mocha' }), /vitest \| jest.*commands\.test/);
   assert.throws(() => resolveCoverageCommands('frontend', tmpdir(), { packageManager: 'bun' }), /pnpm \| npm \| yarn/);
+});
+
+test('stackCommands: 일반 테스트·수용 e2e·개발 서버 명령도 같은 고르기를 따른다', () => {
+  const dir = project({ 'package-lock.json': '{}', 'package.json': { devDependencies: { jest: '^29' } } });
+  try {
+    const r = resolveStackCommands('frontend', dir, { commands: { dev: 'npm start' } });
+    const s = Object.fromEntries(Object.entries(r.commands).map(([k, v]) => [k, commandString(v)]));
+    assert.equal(s.test, 'npx jest');
+    assert.equal(s.accept, 'npm run test:accept');
+    assert.equal(s.acceptLive, 'npm run test:accept:live');
+    assert.equal(s.dev, 'npm start');
+    assert.equal(r.from.dev, '설정');
+    const d = resolveStackCommands('frontend', project({}), {});
+    assert.equal(commandString(d.commands.test), 'pnpm exec vitest run');
+    assert.equal(commandString(d.commands.accept), 'pnpm run test:accept');
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('stackCommands CLI: 설정 파일을 읽어 JSON 으로 낸다', () => {
+  const dir = project({ 'yarn.lock': '', '.dt-backend.json': { testRunner: 'vitest' } });
+  try {
+    const cli = fileURLToPath(new URL('../../scripts/stackCommands.mjs', import.meta.url));
+    const out = spawnSync(process.execPath, [cli, '--stack', 'backend', '--project', dir, '--json'], { encoding: 'utf8' });
+    assert.equal(out.status, 0, out.stderr);
+    const j = JSON.parse(out.stdout);
+    assert.equal(j.packageManager, 'yarn');
+    assert.equal(j.testRunner, 'vitest');
+    assert.equal(j.commands.coverage, 'yarn vitest run --coverage --coverage.reporter=json-summary');
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
 test('옛 경로 skills/dt-frontend-review/scripts/review.mjs 는 새 엔진을 부르고 경고한다', () => {

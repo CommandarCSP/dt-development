@@ -38,6 +38,6 @@ test('backend stack loads architecture rules with no duplicate ruleIds', async (
 test('resolveStack returns knobs for known stacks and throws on unknown', () => {
   assert.equal(resolveStack('frontend').configFileName, '.dt-frontend.json');
   assert.equal(resolveStack('backend').configFileName, '.dt-backend.json');
-  assert.deepEqual(STACKS.backend.defaults, { packageManager: 'npm', runner: 'jest' });
+  assert.equal(STACKS.backend.configFileName, '.dt-backend.json');
   assert.throws(() => resolveStack('nope'), /unknown stack/);
 });

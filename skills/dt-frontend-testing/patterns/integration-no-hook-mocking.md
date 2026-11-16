@@ -5,7 +5,7 @@ severity: critical
 appliesTo: ["src/components/domain/**/__tests__/**/*.{ts,tsx}", "src/pages/**/__tests__/**/*.{ts,tsx}"]
 detection:
   - type: forbidden-call
-    matches: ["vi.mock"]
+    matches: ["vi.mock", "jest.mock"]
     matchArguments: ["**/business/hooks/**", "**/store/queries/**", "**/store/stores/**"]
     rationale: "Integration 테스트가 hook을 mock하면 통합 검증이 무의미해짐"
 relatedRules: [integration-domain]

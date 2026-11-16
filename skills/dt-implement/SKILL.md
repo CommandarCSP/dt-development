@@ -21,8 +21,8 @@ dt-spec 산출물을 읽어 dt-frontend-scaffold 엔진에 위임해 코드를 �
 
 ### [1] 매핑
 1. `import { parseSpecForScaffold } from '<plugin>/scripts/parseSpecForScaffold.mjs'`.
-2. 호출부에서 `src/business/hooks/`와 `src/store/queries/`를 스캔해 `existingDomains: string[]`를 만든다.
-3. `parseSpecForScaffold(specDir, { existingDomains })` → `ScaffoldSeed`(status/page/domains/multiDomain/draftFlags).
+2. 호출부에서 business hooks·store queries 폴더(기본 `src/business/hooks/`·`src/store/queries/`, 다르면 `.dt-frontend.json` `paths.src`·`layout` — `docs/refs/stack-config.md` §1)를 스캔해 `existingDomains: string[]`를 만든다.
+3. `parseSpecForScaffold(specDir, { existingDomains, projectRoot })`(`projectRoot`가 있으면 설정의 `apiPrefix`를 읽는다) → `ScaffoldSeed`(status/page/domains/multiDomain/draftFlags).
 4. 결정적이지 않은 부분은 **문서를 직접 읽어** 채운다:
    - design.md `## 데이터 모델 / API 계약` → 각 도메인 contract(ViewModel/DTO 타입, API method/endpoint/schema).
    - design.md `## 컴포넌트 구조` + layout-skeleton.md(`domain-boundary`/leaf placeholder) → componentHints(domain/view, 어느 구역). **표시 전용 composite(GNB/Toast)는 View 후보.**

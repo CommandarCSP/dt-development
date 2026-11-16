@@ -2,6 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { resolveStackCommands } from '../../../scripts/stackCommands.mjs';
 
 // Run a phase gate. Each subgate can be enabled/disabled.
 // Returns: { ok, failures: [{ gate, message }], skipped: [...], allowedSkips: [...] }
@@ -114,6 +115,18 @@ function binCmd(projectRoot, tool, toolArgs = []) {
   return ['npx', [tool, ...toolArgs]];
 }
 
+// 게이트 이름: vitest 기본 경로는 'vitest', 그 밖(jest·설정 명령)은 'test' — --allow-skip 이름과 같다.
+function pickTestCommand(projectRoot, stackName, runnerFlag) {
+  let runner = runnerFlag;
+  if (runner !== 'vitest' && runner !== 'jest') {
+    const r = resolveStackCommands(stackName, projectRoot);
+    if (r.from.test === '설정') return { testCommand: r.commands.test, testGate: 'test' };
+    runner = r.testRunner;
+  }
+  if (runner === 'jest') return { testCommand: binCmd(projectRoot, 'jest', ['--coverage=false']), testGate: 'test' };
+  return { testCommand: null, testGate: 'vitest' };
+}
+
 function autoDetectReviewScript() {
   // Primary: the shared review engine lives at <pluginRoot>/scripts/review/review.mjs,
   // two folders up from this file (skills/dt-frontend-scaffold/scripts/).
@@ -135,10 +148,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const opts = parseArgs(args);
   const projectRoot = resolve(opts.project || process.cwd());
-  // --test-runner jest selects the BE jest command; default keeps vitest.
-  const testCommand = opts['test-runner'] === 'jest'
-    ? binCmd(projectRoot, 'jest', ['--coverage=false'])
-    : null;
+  // 테스트 명령: --test-runner(vitest|jest)가 있으면 그것, 없으면 scripts/stackCommands.mjs 가 고른다
+  // (스택 설정 commands.test → testRunner → package.json → 스택 기본값). 로컬 바이너리를 npx 보다 먼저 쓴다.
+  const stackName = typeof opts.stack === 'string' ? opts.stack : 'frontend';
+  const { testCommand, testGate } = pickTestCommand(projectRoot, stackName, opts['test-runner']);
   const result = runGate({
     projectRoot,
     runTsc: opts.tsc !== 'false',
@@ -162,7 +175,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error(f.message);
   }
   if (result.ok) {
-    const testGate = opts['test-runner'] === 'jest' ? 'test' : 'vitest';
     const enabled = [
       opts.tsc !== 'false' && 'tsc',
       (opts.prisma === 'true' || opts.prisma === true) && 'prisma',

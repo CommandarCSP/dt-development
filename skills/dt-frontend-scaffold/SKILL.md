@@ -78,7 +78,7 @@ variant: `new-project | new-domain | extend-domain` (생략 시 의도 추론)
 - `dt-frontend-architecture`·`dt-frontend-testing`: 레이어·테스트 규칙 (신규 프로젝트는 공식 CLI 스캐폴드 — 보일러플레이트 템플릿 미사용)
 - `dt-frontend-review`: 리뷰 엔진(partial + full mode)
 - Node 18+
-- 사용자 프로젝트에 `pnpm`, `npx tsc`, `npx vitest` 가용
+- 사용자 프로젝트에 패키지 관리자·`tsc`·테스트 도구 가용. 게이트의 테스트 명령은 `scripts/stackCommands.mjs`가 고른다(`docs/refs/stack-config.md` §2). 새 프로젝트 만들기(`checklist/new-project.md`)는 pnpm + vitest 조합을 만든다(다른 조합은 GEN-07 프리셋)
 
 ## 한계
 

@@ -78,3 +78,24 @@ test('parseSpecForScaffold: 다중 도메인이면 multiDomain=true (readFile �
   assert.equal(seed.multiDomain, true);
   assert.deepEqual(seed.domains.map((d) => d.name), ['files', 'comments']);
 });
+
+test('parseEndpoints: apiPrefix 로 다른 주소 규칙에서도 도메인을 뽑는다(GEN-04)', () => {
+  assert.deepEqual(parseEndpoints('GET /api/v1/posts, POST /api/comments'), ['posts', 'comments']);
+  assert.deepEqual(parseEndpoints('GET /v1/posts/{id}', { apiPrefix: '/v1' }), ['posts']);
+  assert.deepEqual(parseEndpoints('GET /posts · DELETE /posts/{id} · 파일은 src/posts', { apiPrefix: '' }), ['posts', 'posts']);
+  assert.deepEqual(parseEndpoints('GET /bff/users · GET /api/files', { apiPrefix: ['/bff', 'api/'] }), ['users', 'files']);
+  assert.deepEqual(parseEndpoints('GET /api/files', { apiPrefix: '/v1' }), []);
+});
+
+test('parseSpecForScaffold: projectRoot 의 .dt-frontend.json apiPrefix 를 읽는다', async () => {
+  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const root = mkdtempSync(join(tmpdir(), 'dt-apiprefix-'));
+  writeFileSync(join(root, '.dt-frontend.json'), JSON.stringify({ apiPrefix: '/v2' }));
+  const readFile = (p) => (p.endsWith('requirements.md') ? '# Requirements: Feed\n<!-- status: finalized -->\nGET /v2/feeds' : '');
+  try {
+    const seed = parseSpecForScaffold('/fake/feed', { existingDomains: [], readFile, projectRoot: root });
+    assert.deepEqual(seed.domains.map((d) => d.name), ['feeds']);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

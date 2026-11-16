@@ -88,9 +88,9 @@ function depsOf(pkg) {
 /**
  * 한 스택의 설정 객체를 만든다.
  *
- * 코드가 실제로 읽는 키는 `coverage` 와 `overrides` 뿐이지만
- * (`scripts/review/lib/overrides.mjs`, `modes/full.mjs`),
- * `paths` 와 `enabledSkills` 는 스킬 문서가 읽는 값이라 함께 넣는다.
+ * 키 전체는 `docs/refs/stack-config.md`. 여기서는 감지로 정해지는 `paths.src` 와
+ * `coverage`·`overrides`·`enabledSkills` 만 넣는다 — 나머지(layout·packageManager·testRunner·commands·apiPrefix)는
+ * 적지 않으면 프로젝트를 보고 고르니 넣지 않는다.
  *
  * `coverage.mode` 기본값은 `full` — 스캐폴드가 새 프로젝트에 넣던 값과 맞춘다.
  * 새로 얹은 프로젝트만 다른 기준으로 검사되면 같은 플러그인이 두 결과를 낸다.

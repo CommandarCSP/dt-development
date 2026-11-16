@@ -74,6 +74,7 @@
 - 문제: 룰 `appliesTo`가 `src/...` 고정, `pnpm`·`vitest` 명령 하드코딩(`dt-frontend-review/scripts/lib/stacks.mjs`, `coverage.mjs`), `fe-builder`가 없는 `frontend.*` 키 참조, 도메인을 `/api/<seg>`에서만 추출(`parseSpecForScaffold.mjs`).
 - 할 일: `.dt-frontend.json`에 `layout.*`, `packageManager`(lockfile 감지), `commands.{test,install,dev,accept}`, `testRunner`, `apiPrefix` 추가. 룰 로더가 `appliesTo`를 `layout` 기준으로 재작성.
 - 완료 기준: `src` 대신 `app/` 레이아웃·npm·jest 조합 픽스처에서 리뷰 엔진 통과.
+- **완료(DEV-9, 2026-11-16).** 경로: 규칙 49개는 표준 경로(`src/…`·`e2e/…`) 그대로 두고, 엔진이 읽을 때 `paths.src`·`paths.e2e`·`layout`(src 아래 층 이름, 긴 키 먼저)으로 `appliesTo`·`excludePathPatterns`·import `matches`·호출 `matchArguments`를 바꾼다(`scripts/review/lib/layout.mjs`). 할 일의 "`layout.*`"는 층 이름 지도 하나로 했다. 명령: `packageManager`·`testRunner`·`commands.{install,test,coverage,accept,acceptLive,dev}`를 `scripts/stackCommands.mjs` 하나가 고르고(CLI `--json`), 엔진 커버리지·스캐폴드 게이트·e2e·가이드 스킬이 쓴다. 구조 테스트가 스킬·에이전트 문서의 고정 명령을 잡는다(새 프로젝트 체크리스트는 GEN-07까지 예외). `apiPrefix`(문자열·배열·빈 값, 버전 조각 건너뜀)는 `parseSpecForScaffold`가 `projectRoot`의 설정에서 읽는다. jest 프로젝트를 위해 테스트 규칙 2개에 `jest.mock`을 더했다. 키 원본 `docs/refs/stack-config.md`. 완료 기준 픽스처: `app/` + `layout.business=features` + npm + jest 프로젝트가 같은 내용의 `src/` 프로젝트와 같은 위반 목록을 낸다(`tests/review/layout.test.mjs`). 템플릿·부트스트랩은 새 키를 넣지 않는다(적지 않으면 감지).
 
 ### GEN-05 BE 스택 어댑터(ORM·DB·캐시·큐·인증)
 - 문제: 룰이 `@prisma/client`·`ioredis`·`new Queue(`를 문자 그대로 매칭 → 다른 ORM 프로젝트는 보호 없음. Passport+JWT를 "정석"으로 고정.
@@ -94,7 +95,7 @@
 - 문제: BE 리뷰가 `skills/dt-frontend-review/scripts/review.mjs`를 직접 호출. 커버리지 러너가 jest/vitest로 고정.
 - 할 일: 엔진을 `scripts/review/`로 이동, FE·BE가 스택 파라미터로 공유. `coverage.runner` 설정.
 - 완료 기준: FE·BE 리뷰가 같은 엔진 경로로 동작, 기존 테스트 통과.
-- **완료(DEV-13, 2026-11-16).** 엔진·검출기를 `scripts/review/`, 테스트를 `tests/review/`로 옮겼다(git 이력 유지). FE·BE 리뷰 스킬·`reviewer`·스캐폴드 게이트·`validateRules`가 새 경로를 부른다. 옛 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부르는 호환 파일로 0.16.x 동안 남긴다(호환 정책 §4, 0.17.0에서 지움). 커버리지 명령은 스택 설정 `coverage.command` → `coverage.packageManager`·`runner` → package.json(`packageManager`·의존성·`scripts.test`) → lockfile → 스택 기본값 순으로 고른다(`scripts/review/lib/stacks.mjs` `resolveCoverageCommands`). 설정·lockfile이 지금 조합과 같으면 명령도 같다(테스트). 원본 문서 `docs/refs/review-engine.md`. 스캐폴드 게이트의 자체 vitest 실행(`--test-runner`)은 GEN-04·06에서 이 고르기를 쓰도록 바꾼다.
+- **완료(DEV-13, 2026-11-16).** 엔진·검출기를 `scripts/review/`, 테스트를 `tests/review/`로 옮겼다(git 이력 유지). FE·BE 리뷰 스킬·`reviewer`·스캐폴드 게이트·`validateRules`가 새 경로를 부른다. 옛 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부르는 호환 파일로 0.16.x 동안 남긴다(호환 정책 §4, 0.17.0에서 지움). 커버리지 명령은 스택 설정 → package.json(`packageManager`·의존성·`scripts.test`) → lockfile → 스택 기본값 순으로 고른다(출시 전 GEN-04에서 키를 최상위 `packageManager`·`testRunner`·`commands.*`로 옮기고 `scripts/stackCommands.mjs`로 모았다). 설정·lockfile이 지금 조합과 같으면 명령도 같다(테스트). 원본 문서 `docs/refs/review-engine.md`.
 
 ## M2. 회사 프로세스
 

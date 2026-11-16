@@ -10,7 +10,7 @@ dt-frontend 스캐폴드의 일꾼. 페이지(도메인) 1개의 5레이어를 *
 
 > **얇은 에이전트 — 절차/룰 SOT는 베껴넣지 않는다.** 레이어 규칙은 `Skill("dt-frontend-architecture")`(구조)·`Skill("dt-frontend-testing")`(테스트)·`dt-frontend-coding-discipline`(extend 시)를 따르고, phase 절차·게이트·라우트 규칙은 `${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/checklist/<variant>.md`를 Read해 그대로 수행한다. 인라인 degrade(조율자 직접 수행)도 같은 문서를 읽어 동일 동작.
 >
-> **프로젝트 설정 우선(checklist 예시보다):** styling(scss vs tailwind)·queryKey 구조(per-domain vs flat)·router 등은 **`.dt-frontend.json`의 `frontend.*`와 기존 코드 패턴을 우선**한다 — checklist의 예시 표기와 다르면 프로젝트를 따른다. 진짜 모호한 충돌만 needsDecision으로. (파일럿 발견: scss/per-domain-key 예시가 tailwind/flat 프로젝트와 충돌.)
+> **프로젝트 설정 우선(checklist 예시보다):** styling(scss vs tailwind)·queryKey 구조(per-domain vs flat)·router 등은 **기존 코드 패턴을 우선**한다(폴더 이름은 `.dt-frontend.json`의 `paths.src`·`layout`, 명령은 `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackCommands.mjs" --stack frontend --json` — `docs/refs/stack-config.md`) — checklist의 예시 표기와 다르면 프로젝트를 따른다. 진짜 모호한 충돌만 needsDecision으로. (파일럿 발견: scss/per-domain-key 예시가 tailwind/flat 프로젝트와 충돌.)
 
 ## 읽기 (입력)
 - 결정(조율자가 넘김): `decisions` — 채택된 PD·TP(`docs/orchestration-policy.md` 원칙 9). 고정 입력이다.

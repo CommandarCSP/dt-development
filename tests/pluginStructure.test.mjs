@@ -591,3 +591,21 @@ test('리뷰 엔진: 옛 경로 skills/dt-frontend-review/scripts 를 가리키�
   assert.deepEqual(problems, []);
   assert.deepEqual(readdirSync(rel('skills/dt-frontend-review/scripts')), ['review.mjs'], '옛 경로에는 호환 파일 하나만 둔다');
 });
+
+// GEN-04 — 스킬·에이전트·명령 문서에 패키지 관리자 명령을 고정하지 않는다. 명령은 scripts/stackCommands.mjs 가 고른다.
+// 새 프로젝트 만들기 체크리스트(pnpm + vitest 조합을 만든다 — GEN-07 프리셋 전까지)·규칙 예시·시험 기록은 뺀다.
+test('명령 고정 없음: 스킬·에이전트 문서에 pnpm/npm run/yarn 실행 명령이 없다', () => {
+  const ALLOW = new Set(['skills/dt-frontend-scaffold/checklist/new-project.md']);
+  const RE = /`(pnpm|yarn) (test|install|dev|add|run|exec)\b|`npm (run|ci|test|install)\b|`npx (vitest|jest)\b/;
+  const problems = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(rel(dir), { withFileTypes: true })) {
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory()) { if (!['patterns', 'tests', 'examples'].includes(e.name)) walk(p); continue; }
+      if (!e.name.endsWith('.md') || ALLOW.has(p)) continue;
+      readFileSync(rel(p), 'utf8').split('\n').forEach((l, i) => { if (RE.test(l)) problems.push(`${p}:${i + 1}`); });
+    }
+  };
+  for (const d of ['skills', 'agents', 'commands']) walk(d);
+  assert.deepEqual(problems, []);
+});

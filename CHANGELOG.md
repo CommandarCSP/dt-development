@@ -12,9 +12,14 @@
 - 리뷰 규칙 머리말 스키마 `docs/refs/rule-frontmatter.schema.json`과 검사기 `scripts/validateRules.mjs` — 필수 필드·severity·검출 type과 type별 필수 인자·relatedRules (GEN-27)
 - README 전체 목록 자동 생성 `scripts/readmeCatalog.mjs` (GEN-27)
 - 스킬 동작 평가 `evals/` — `claude plugin eval` 형식 4건(dt-spec·dt-be-spec·dt-review·dt-migrate), 예제 프로젝트를 만들어 실제로 돌리고 결정적 채점기로 본다. CI에는 넣지 않고 손으로 돌린다(`evals/README.md`) (GEN-28)
-- 리뷰 커버리지 명령을 프로젝트에 맞게 고른다 — 스택 설정 `coverage.runner`(vitest|jest)·`coverage.packageManager`(pnpm|npm|yarn)·`coverage.command`·`coverage.installCommand`, 없으면 package.json·lockfile을 보고 고른다. 설정이 없고 지금 조합이면 명령은 그대로다. 원본 `docs/refs/review-engine.md` (GEN-08)
+- 스택 명령 고르기 `scripts/stackCommands.mjs` — 패키지 관리자(pnpm·npm·yarn)·테스트 도구(vitest·jest)를 스택 설정 `packageManager`·`testRunner` → package.json → lockfile 순으로 고르고, 설치·테스트·커버리지·수용 e2e·개발 서버 명령을 낸다(`commands.*`로 직접 적기). 리뷰 커버리지(GEN-08)·스캐폴드 게이트·e2e·가이드 스킬이 이것을 쓴다. 설정이 없고 지금 조합이면 명령은 그대로다 (GEN-08·GEN-04)
+- 폴더 구조 바꿔 끼우기 — 규칙은 표준 경로(`src/…`·`e2e/…`)로 두고, 리뷰 엔진이 스택 설정 `paths.src`·`paths.e2e`·`layout`으로 프로젝트 경로로 바꾼다. 지금까지는 `src/`가 아닌 프로젝트에서 검사 파일이 0개가 되어 "Ready to merge: Yes"를 냈다 (GEN-04)
+- 스택 설정 `apiPrefix` — 스펙의 API 주소에서 도메인을 뽑을 때 `/api` 말고 `/v1`·접두어 없음(`GET /posts`)·여러 접두어를 받는다. `/api/v1/…`의 버전 조각은 건너뛴다 (GEN-04)
+- 스택 설정 키 전체의 원본 `docs/refs/stack-config.md` (GEN-04)
 
 ### 고침
+- FE 테스트 규칙 `integration-no-hook-mocking`·`unit-business-hook`이 `vi.mock`만 보고 jest의 `jest.mock`을 놓치던 것 (GEN-04)
+- `fe-builder`가 없는 설정 키 `frontend.*`를 따르라고 하던 것 — 기존 코드 패턴·`paths.src`·`layout`·`stackCommands`로 (GEN-04)
 - 리뷰 full 모드가 git을 못 쓰면 0개 파일을 검사하고 "Ready to merge: Yes"를 내던 것 — git 실패 시 폴더를 훑고, 새 파일(untracked)도 보고, 검사 파일 수를 적고, 0개면 `Unknown`. 스킬 문서의 기본 범위 설명("커밋 안 된 변경")도 코드와 맞춰 "프로젝트 전체"로 (GEN-28 평가에서 발견)
 - `/dt-migrate`가 물을 수 없는 실행에서 확인 없이 `--write`로 쓰던 것 — 미리보기로 끝낸다 (GEN-28 평가에서 발견)
 - 결정 로그 규칙의 검출 8개가 정규식 없이 아무것도 검사하지 않던 것 — 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 날짜 순서·제목 갱신은 `manual`로 (GEN-27)
