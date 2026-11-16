@@ -15,7 +15,7 @@ import { parseSections, renderSections, mergeOwnedSections } from './lib/section
 
 export const OWNERS = { frontend: 'FE 크로스페이지', backend: 'BE 크로스리소스' };
 const ORDER = [OWNERS.frontend, OWNERS.backend];
-export const PREAMBLE = '# Interactions\n\n<!-- 크로스유닛 상호작용 맵(docs/refs/interaction-integrity.md). FE 절은 FE 스펙(spec-author), BE 절은 BE 스펙(bespec-author)이 쓴다 — 각자 자기 절만 scripts/interactionsSync.mjs merge 로 바꾼다. -->\n\n';
+export const PREAMBLE = '# Interactions\n\n<!-- dt-schema: interactions@2 -->\n<!-- 크로스유닛 상호작용 맵(docs/refs/interaction-integrity.md). FE 절은 FE 스펙(spec-author), BE 절은 BE 스펙(bespec-author)이 쓴다 — 각자 자기 절만 scripts/interactionsSync.mjs merge 로 바꾼다. -->\n\n';
 
 /** 소유 절 밖에 `##` 절이 있으면 옛 형식(절 구분 전 — spec-author 가 파일 전체를 쓰던 때). */
 export function detectLegacy(md) {

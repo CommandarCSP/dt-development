@@ -37,6 +37,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 ## plan.md 형식 (예)
 ```markdown
 # plan: <unit> (<stack>)
+<!-- dt-schema: plan@1 -->   ← 형식 버전 표시(docs/refs/compat-policy.md). 제목 바로 아래에 그대로 둔다
 > 출처 스펙: <경로> · definition v<N> · status: finalized · specHash: <node scripts/planFreshness.mjs <unitDir> --hash 결과 8자>
 > 크로스유닛: 이 유닛은 <다른유닛>과 연계 (아래 [X] 표시) · 실행 순서: <근거>
 ## Phase 1 — contract/types

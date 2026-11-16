@@ -4,6 +4,7 @@ import {
   isImplementationPrompt,
   decideWrapReminder,
   decideStartReminder,
+  decideSchemaNotice,
 } from '../scripts/lib/pipeline-state.mjs';
 
 test('isImplementationPrompt matches impl keywords (ko/en), ignores questions', () => {
@@ -43,4 +44,18 @@ test('decideStartReminder injects only on main + impl prompt + enabled', () => {
   assert.equal(decideStartReminder({ ...base, config: { enabled: true, startReminder: false } }).inject, false);
   assert.equal(decideStartReminder({ ...base, branch: 'feat/x' }).inject, false);
   assert.equal(decideStartReminder({ ...base, prompt: '이거 왜 안돼?' }).inject, false);
+});
+
+test('decideSchemaNotice: 훅이 켜져 있고 /dt- 명령일 때만, 옮길 것이 있으면 한 줄 알린다', () => {
+  const on = { enabled: true };
+  const scanFn = () => [{ status: 'migrate' }, { status: 'current' }, { status: 'newer' }];
+  const r = decideSchemaNotice({ config: on, prompt: '/dt-spec home', scanFn, repoRoot: '.' });
+  assert.equal(r.inject, true);
+  assert.match(r.context, /옛 형식 산출물 1개/);
+  assert.match(r.context, /새 형식 1개/);
+  assert.equal(decideSchemaNotice({ config: null, prompt: '/dt-spec', scanFn, repoRoot: '.' }).inject, false, '훅 꺼짐');
+  assert.equal(decideSchemaNotice({ config: on, prompt: '화면 고쳐줘', scanFn, repoRoot: '.' }).inject, false, 'dt 명령이 아님');
+  assert.equal(decideSchemaNotice({ config: on, prompt: '/dt-migrate', scanFn, repoRoot: '.' }).inject, false, '이전 명령 자신');
+  assert.equal(decideSchemaNotice({ config: on, prompt: '/dt-spec', scanFn: () => [{ status: 'current' }], repoRoot: '.' }).inject, false);
+  assert.equal(decideSchemaNotice({ config: on, prompt: '/dt-spec', scanFn: () => { throw new Error('x'); }, repoRoot: '.' }).inject, false, '실패해도 막지 않는다');
 });

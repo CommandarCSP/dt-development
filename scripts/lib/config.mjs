@@ -83,7 +83,7 @@ function readJson(path, warnings) {
 export function validate(raw, warnings = []) {
   const out = clone(DEFAULTS);
   const known = new Set(Object.keys(DEFAULTS));
-  for (const k of Object.keys(raw ?? {})) if (!known.has(k)) warnings.push(`알 수 없는 키 "${k}" — 무시했습니다(docs/refs/config-schema.md)`);
+  for (const k of Object.keys(raw ?? {})) if (!known.has(k) && k !== '$schemaVersion') warnings.push(`알 수 없는 키 "${k}" — 무시했습니다(docs/refs/config-schema.md)`);
 
   // hooks
   if (raw?.hooks != null) {

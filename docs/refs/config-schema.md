@@ -15,6 +15,10 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 
 병합 순서는 기본값 → `.dt-pipeline.json`(옛 훅 설정) → `.dt.json` → `.dt.local.json`이다. 객체는 키 단위로 합치고, 배열과 값은 뒤에 온 것이 이긴다. 틀린 값과 모르는 키는 `warnings`에 남기고 기본값을 쓴다. 로더는 던지지 않는다. `warnings`가 있으면 조율자는 사용자에게 한 줄씩 보인다.
 
+## 형식 버전
+
+최상위 `"$schemaVersion": 1`은 설정 파일의 형식 버전이다(`docs/refs/compat-policy.md`). 키가 아니라 표에 없고, 로더는 경고 없이 넘긴다. 없으면 현재 형식으로 본다. 플러그인보다 큰 값이면 `/dt-migrate`가 "플러그인을 업데이트하라"고 알린다.
+
 ## 키
 
 | 키 | 뜻 | 기본값 | 읽는 곳 |

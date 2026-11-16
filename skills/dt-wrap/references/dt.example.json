@@ -1,4 +1,5 @@
 {
+  "$schemaVersion": 1,
   "hooks": { "enabled": true, "commitThreshold": 1, "startReminder": true },
   "team": {
     "execution": "ask",

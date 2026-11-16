@@ -123,3 +123,22 @@ export function writeSnooze(repoRoot, sha) {
     /* 무시: 스누즈 실패는 치명적이지 않음 */
   }
 }
+
+/**
+ * 산출물 형식 알림(GEN-25) — 훅이 켜져 있고 dt 명령(`/dt-…`)을 시작할 때만, 옮길 산출물이 있으면 한 줄 알린다.
+ * 판정은 scripts/migrate.mjs scan. 실패해도 조용히 넘어간다(훅이 작업을 막으면 안 된다).
+ * @param {{ config: object|null, prompt: string, scanFn: (root: string) => {status: string}[], repoRoot: string }} p
+ */
+export function decideSchemaNotice({ config, prompt, scanFn, repoRoot }) {
+  if (!config || config.enabled === false) return { inject: false };
+  if (!/^\s*\/dt-(?!migrate\b)/.test(prompt || '')) return { inject: false };
+  let found;
+  try { found = scanFn(repoRoot); } catch { return { inject: false }; }
+  const migrate = found.filter((f) => f.status === 'migrate').length;
+  const newer = found.filter((f) => f.status === 'newer').length;
+  if (!migrate && !newer) return { inject: false };
+  const parts = [];
+  if (migrate) parts.push(`옛 형식 산출물 ${migrate}개(옮길 수 있음)`);
+  if (newer) parts.push(`플러그인보다 새 형식 ${newer}개(플러그인 업데이트 필요)`);
+  return { inject: true, context: `[dt-development] ${parts.join(' · ')} — 사용자에게 한 줄 알리고 /dt-migrate 로 미리보기를 권한다(지금 작업은 막지 않는다).` };
+}

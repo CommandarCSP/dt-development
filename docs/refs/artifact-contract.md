@@ -66,3 +66,7 @@
 |---|---|---|---|---|
 | `.dt.json` | — | `dt-wrap` | 모든 조율자(원칙 8) · 훅 | `--init`으로 만들고, 그 뒤는 사람이 고친다 |
 | `.dt-frontend.json` · `.dt-backend.json` | — | `docs/refs/stack-config-bootstrap.md` | 리뷰 엔진 · 스택 스킬 | 없을 때만 만든다. `overrides`는 근거 PD 필요(원칙 9) |
+
+## 형식 이전은 예외
+
+`/dt-migrate`(`scripts/migrate.mjs`)는 위 표의 쓰는 쪽이 아니어도 `docs/project-context.md`·`docs/specs/interactions.md`를 고친다. 플러그인 형식이 바뀌었을 때 옛 파일을 새 형식으로 옮기는 일이라서다. 대신 **내용은 바꾸지 않고 절 제목·형식 표시만** 바꾸고, 미리보기를 보인 뒤 사람이 확인해야 쓴다. 고를 것(겹치는 절)은 묻는다. 정책은 `docs/refs/compat-policy.md`.

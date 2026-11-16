@@ -4,7 +4,9 @@ import {
   loadPipelineConfig,
   currentBranch,
   decideStartReminder,
+  decideSchemaNotice,
 } from './lib/pipeline-state.mjs';
+import { scan } from '../../scripts/migrate.mjs';
 
 function readEvent() {
   try {
@@ -22,12 +24,14 @@ const config = loadPipelineConfig(repoRoot);
 const branch = currentBranch(repoRoot);
 
 const decision = decideStartReminder({ config, branch, prompt });
-if (decision.inject) {
+const notice = decideSchemaNotice({ config, prompt, scanFn: (root) => scan(root), repoRoot });
+const contexts = [decision, notice].filter((d) => d.inject).map((d) => d.context);
+if (contexts.length) {
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'UserPromptSubmit',
-        additionalContext: decision.context,
+        additionalContext: contexts.join('\n'),
       },
     }),
   );

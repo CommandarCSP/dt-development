@@ -106,6 +106,7 @@ export function buildStackConfig(stack, { srcPath }) {
     );
   }
   return {
+    $schemaVersion: 1, // 설정 형식 버전(docs/refs/compat-policy.md)
     paths: { src: srcPath },
     coverage: { mode: 'full', baselineRef: 'HEAD' },
     enabledSkills: [...skills],
