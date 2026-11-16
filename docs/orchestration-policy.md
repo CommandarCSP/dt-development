@@ -34,12 +34,13 @@ AskUserQuestion 템플릿:
 ## 원칙 4 — 에이전트 미지원 시 폴백
 런타임이 서브에이전트(Task/Agent)를 제공하지 않으면 인라인 실행으로 degrade하고, 그 사실을 사용자에게 1줄로 고지한다.
 인라인으로 돌 때도 **원칙 5의 반환 형식을 그대로** 만든 뒤 다음 단계로 넘긴다 — 실행 방식이 달라도 주고받는 모양은 같아야 한다.
+- **에이전트 종류가 등록되지 않았을 때**(설치된 플러그인이 예전 버전이라 새 에이전트 이름으로 dispatch가 실패할 때 — dt-adopt 검증에서 실제로 겪음): 그만두지 않는다. 일반 서브에이전트를 dispatch하고 첫 지시로 `${CLAUDE_PLUGIN_ROOT}/agents/<이름>.md`를 읽고 그대로 따르게 한다. 사용자에게 "플러그인을 갱신하면 전용 에이전트로 돈다"고 한 줄 알린다.
 
 ## 원칙 5 — 반환 봉투 (에이전트 → 조율자)
 에이전트는 산출물을 **파일로 쓰고**, 조율자에게는 아래 봉투만 돌려준다. 에이전트는 두 종류다.
 
 **작업형** — 스펙·계획·구현·분석·집필·추적 에이전트
-(definition-author · spec-author · bespec-author · plan-author · fe-builder · be-builder · e2e-author · guide-analyst · guide-author · handbook-analyst · handbook-tracer · handbook-author)
+(definition-author · spec-author · bespec-author · plan-author · fe-builder · be-builder · e2e-author · adopt-extractor · guide-analyst · guide-author · handbook-analyst · handbook-tracer · handbook-author)
 ```
 { status: done | draft | blocked,          // done=완결 · draft=미해소 남음(needsDecision 또는 TODO) · blocked=진행 불가(이유는 summary)
   artifacts: [<쓴 파일 경로>],
@@ -114,7 +115,7 @@ AskUserQuestion 템플릿:
 | 프로젝트 전체·다음 실행에도 | **프로젝트 결정 PD** `docs/decisions/PD-NNN-*.md` | "삭제는 전부 휴지통 방식", "스타일은 SCSS 모듈", 규칙 끄기의 근거 |
 | 팀의 모든 프로젝트 | **팀 정책 TP** 플러그인 `docs/policies/TP-NNN-*.md` | "Jira 서브태스크 이름 규칙" |
 
-- **읽기 — 시작할 때.** 스펙·정의서·플랜·구현 조율자는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/decisions.mjs" list <projectRoot> --json`으로 채택된 PD·TP를 읽어, 작성 에이전트에 `decisions`(id·제목·범위·파일 경로)로 넘긴다. 에이전트는 이것을 **고정 입력**으로 쓴다 — PD가 정한 것은 묻지 않고, 근거에 `PD-NNN`을 적는다. 새 소스가 PD와 어긋나면 조용히 덮지 않고 needsDecision으로 "PD를 바꿀지" 올린다. 만료된 결정(`expired: true`)은 그대로 따르되 사용자에게 다시 검토할지 한 줄로 묻는다.
+- **읽기 — 시작할 때.** 스펙·정의서·플랜·구현 조율자는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/decisions.mjs" list <projectRoot> --json`으로 채택된 PD·TP를 읽어(저장소가 나뉘면 `.dt.json` `decisions.sharedDir`의 공유 폴더까지), 작성 에이전트에 `decisions`(id·제목·범위·파일 경로)로 넘긴다. 에이전트는 이것을 **고정 입력**으로 쓴다 — PD가 정한 것은 묻지 않고, 근거에 `PD-NNN`을 적는다. 새 소스가 PD와 어긋나면 조용히 덮지 않고 needsDecision으로 "PD를 바꿀지" 올린다. 만료된 결정(`expired: true`)은 그대로 따르되 사용자에게 다시 검토할지 한 줄로 묻는다.
 - **쓰기 — 답을 받은 뒤.** 조율자는 needsDecision 답 가운데 **여러 단위나 다음 실행에도 걸리는 것**을 골라 PD 초안을 제안한다("이 답을 프로젝트 결정으로 남길까요?"). 승인하면 `dt-decision` 스킬 new 절차로 쓴다. 한 단위에만 걸리는 답은 제안하지 않는다. 판단이 애매하면 묻지 않고 산출물에만 남긴다.
 - **규칙 끄기.** 스택 설정(`.dt-frontend.json`·`.dt-backend.json`)의 `overrides.<키>`는 `{ "value": …, "decisionRef": "PD-NNN" }`(또는 `"PD-NNN"`)으로 근거를 가리킨다. 풀 리뷰는 근거가 없거나 유효하지 않은 override를 Critical(`override-decision-ref`)로, 만료된 근거를 Important로 낸다. 빌더의 Phase 게이트(partial)는 이것으로 막지 않는다 — 사람 결정은 빌더가 만들 수 없다.
 - 인라인 degrade(원칙 4)에서도 같다.
@@ -129,5 +130,5 @@ AskUserQuestion 템플릿:
 정말 멈춰야 하는 곳(진행하면 데이터가 망가지거나 잘못된 산출물이 생기는 곳, 할 일이 없는 곳)은 문서의 그 줄에 `<!-- hard-stop: 사유 -->`를 단다. 그래도 이유와 다음 할 일은 보인다. 구조 테스트가 사유 없는 멈춤을 잡는다.
 
 ## 적용 스킬
-- **오케스트레이터(원칙 1~10):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-guide / dt-handbook
+- **오케스트레이터(원칙 1~10):** dt-devspec / dt-spec-generate-spec / dt-bespec-generate-spec / dt-implement / dt-be-implement / dt-frontend-scaffold / dt-backend-scaffold / dt-fullstack / dt-audit / dt-adopt / dt-guide / dt-handbook
 - **판정형 에이전트를 부르는 스킬(원칙 3·5·7):** dt-frontend-review / dt-backend-review(reviewer) · dt-ko / dt-explain / dt-worklog-sync / dt-confluence-doc / dt-guide / dt-handbook(ko-writing-reviewer)

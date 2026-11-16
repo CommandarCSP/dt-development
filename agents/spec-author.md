@@ -14,6 +14,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 - 조율자가 넘긴: **`pages` 목록**(1개 이상; 각 슬러그+소스 locator), `--scope`/`--only`/`--api-doc` 등 인자, (있으면) 직전 라운드의 사용자 답변.
 - 파일: `docs/specs/definition.md`(게이트), `docs/project-context.md`, 대상 페이지 디렉토리(재실행 시), `.dt-spec/<page>/progress.md`(재개).
 - 결정(조율자가 넘김): `decisions` — 채택된 PD·TP 목록(`docs/orchestration-policy.md` 원칙 9). **고정 입력**이다. 정해진 자리는 묻지 않고 근거에 `PD-NNN`·`TP-NNN`을 적는다. 소스가 결정과 어긋나면 needsDecision으로 "결정을 바꿀지" 올린다.
+- **as-built 소스(`dt-adopt`에서 올 때)**: 소스가 `as-built:.dt-adopt/extraction.json`이면 다른 소스처럼 분석 절차를 거치지 않고 그 파일의 항목(근거·신뢰도 포함)을 추출 결과로 쓴다. 머리에 `<!-- origin: as-built @<ref> -->`를 더하고(ref = 그 파일의 `origin.<stack>.ref` — 커밋 sha, 안 올린 변경이 있으면 `<sha>-dirty`, git이 아니면 `nogit-<날짜>`. 지어내지 않는다) `status: draft`로 둔다. 코드에서 읽은 FR은 `[inferred]`, 사람이 확인한 것은 `[user-resolved]`. 신뢰도 `guess` 항목은 가정(`assumptions`)으로 올린다.
 - 참조(Read): `${CLAUDE_PLUGIN_ROOT}/skills/dt-spec-analyze-figma/SKILL.md`(+`references/layout-extraction.md`) · `…/dt-spec-analyze-document/SKILL.md`(소스 분석 절차) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/ears-patterns.md`(EARS 변환·라벨) · `…/docs/refs/askquestion-principle.md`(needsDecision 품질) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md`(크로스페이지 상호작용·액션→리액션 정합) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/fe-spec-checklist.md`(완성도 점검 체크리스트) · `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(한글 서술 — 페이지 목적·스토리·FR의 한글 부분·결정 근거 — 는 묶음 B·C를 따른다. EARS 키워드·요소 목록·라벨은 검사 대상이 아니다(EARS 줄의 한글 서술은 대상): B1 「내부 구조 문서」 행)
 
 ## 소유 경로 (출력)
@@ -44,7 +45,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 - **2개 이상 페이지면 `interactions.md`가 1급 필수** — 액션→리액션 정합(생성/수정/삭제/토글이 반영되는 목록·상세)이 비면 needsDecision surface, 그래도 비면 `TODO` + draft. 조용한 누락 금지.
 - 필수 산출물이 빈 placeholder면 검증 실패(존재-게이트).
 - **정의서 정합(필수, consume일 때)**: 확정 직전에 `node "${CLAUDE_PLUGIN_ROOT}/scripts/checkDefinitionDrift.mjs" <정의서> docs/specs/pages/<page>/requirements.md docs/specs/pages/<page>/design.md`를 돌린다. 미반영 드리프트가 남으면(exit 1) 반영(T2/T3)하거나 `<!-- conflict: IF-n -->`로 큐잉한다. 그래도 남으면 그 유닛은 `status: draft`. 의미 차이(응답 shape·정렬 규칙)는 `docs/refs/upward-alignment.md`대로 직접 판단한다.
-- **형식 검사(필수)**: 산출물을 다 쓴 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/pages/<page>/*.md docs/specs/interactions.md --json`을 돌린다. 오류(`errors`)는 스스로 고치고 다시 돌린다. 그래도 남으면 그 유닛은 `status: draft`로 두고 남은 오류를 summary에 적는다 — 형식이 깨진 산출물은 확정하지 않는다. 경고(`warnings`)는 summary에 개수만 적는다.
+- **형식 검사(필수)**: 산출물을 다 쓴 뒤 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateSpec.mjs" docs/specs/pages/<page>/*.md docs/specs/interactions.md --json`을 돌린다. 오류(`errors`)는 스스로 고치고 다시 돌린다. 그래도 남으면 그 유닛은 `status: draft`로 두고 남은 오류를 summary에 적는다 — 형식이 깨진 산출물은 확정하지 않는다. 경고(`warnings`)는 summary에 개수만 적는다. 단 `fr-from-missing`(머리에 결속한 IF를 가리키는 FR이 없음)은 스스로 고친다 — 그 IF에서 온 FR 줄 끝에 `<!-- from: IF-n -->`를 단다(정의서 변경 때 FR 단위 영향 산출의 입력).
 - **한글 lint(필수)**: 산출 `.md`마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/koWritingLint.mjs" <file> --docType spec --json`을 돌려 findings를 **스스로 고친다**(대체어는 readable-writing.md C1~C3 표). 문맥상 자연스러워 남기는 항목은 그 줄 끝에 `<!-- ko-lint: keep <id> — 사유 -->`를 붙인다. 고친 뒤 재실행해 findings 0(kept만 남음)을 확인한다. 종료 코드 2(파일·사용법 오류)면 게이트 실패로 보고한다. 고친 수·남긴 수를 세어 둔다.
 
 ## 핸드오프 (반환 — 작업형 봉투, `docs/orchestration-policy.md` 원칙 5·6)

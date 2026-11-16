@@ -63,6 +63,18 @@ test('틀린 값은 경고하고 기본값을 쓴다', () => {
   });
 });
 
+test('decisions.sharedDir: 문자열이면 받고, 아니면 경고 후 null', () => {
+  withDir({ '.dt.json': { decisions: { sharedDir: ' ../fe/docs/decisions ' } } }, (dir) => {
+    assert.equal(loadConfig(dir).config.decisions.sharedDir, '../fe/docs/decisions');
+  });
+  withDir({ '.dt.json': { decisions: { sharedDir: 3, other: true } } }, (dir) => {
+    const { config, warnings } = loadConfig(dir);
+    assert.equal(config.decisions.sharedDir, null);
+    assert.ok(warnings.some((w) => w.includes('decisions.sharedDir')));
+    assert.ok(warnings.some((w) => w.includes('"decisions.other"')));
+  });
+});
+
 test('모르는 키는 경고만 하고 버린다', () => {
   withDir({ '.dt.json': { tracker: 'jira', team: { colour: 'red' } } }, (dir) => {
     const { config, warnings } = loadConfig(dir);

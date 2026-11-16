@@ -20,7 +20,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 - **신규격(표준):** `<!-- basedOnDefinition: <상대경로>@v<N> | IF-a,IF-b,... -->`
   - `<상대경로>`: leaf에서 정의서(`definition.md` 또는 `definition.<slug>.md`)까지의 상대 경로.
   - `@v<N>`: 소비한 `definitionVersion` — `isStale(basedOnDefinition, currentVersion)`의 낡음 판정 기준(현재 버전이 크면 stale).
-  - `| IF 리스트`: 이 leaf가 결속된 IF id들 — `computeImpacted`가 **보조 전파 소스**로 합산한다(본문 `<!-- from: -->` 역참조와 중복 제거). **`from:` 마커가 없는 FE 페이지 spec엔 이 리스트가 유일한 결속**(없으면 전파망 밖). IF가 없으면 `| ...` 생략 가능.
+  - `| IF 리스트`: 이 leaf가 결속된 IF id들 — `computeImpacted`가 **보조 전파 소스**로 합산한다(본문 `<!-- from: -->` 역참조와 중복 제거). 이 리스트는 **파일 단위** 결속이고, FR 단위는 본문 `from:`이 맡는다 — FE·BE 모두 FR 줄에 단다. 리스트는 본문 표시가 없는 옛 스펙도 전파망에 넣는 보조 소스다(리스트에 있는데 어느 FR도 가리키지 않으면 `validateSpec` `fr-from-missing` 경고). IF가 없으면 `| ...` 생략 가능.
 - **하위호환(구 정수형):** `<!-- basedOnDefinition: N -->` — `extractBasedOnDefinition`이 계속 읽는다(version만; path·IF 리스트 없음 → 전파 결속 없음, isStale만 동작). 신규 산출은 신규격으로 emit.
 - **emit 주체:** dt-spec/dt-bespec의 게이트 통과 산출은 `buildSpecHeader({..., definitionVersion, definitionPath, definitionIfIds})`로 신규격을 emit(손 주석 주입 금지). 소급 부여(§1-b)는 dt-devspec이 직접 신규격으로 쓴다.
 

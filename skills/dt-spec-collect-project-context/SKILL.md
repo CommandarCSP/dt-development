@@ -133,7 +133,12 @@ description: Use when dt-spec needs the project's overview, constraints, domain 
    - `{{FRAMEWORK}}` ~ `{{NODE_VERSION}}` = Step 3에서 분류한 techStack 객체 (null이면 "(미식별)")
    - `{{DESIGN_TOKENS}}` = `designTokens` 직렬화 (아래 형식). 최초 실행 + 토큰 비어있음 → `(없음 — 페이지 분석 시 누적됨)`로 표기.
    - `{{PROJECT_LIBRARIES}}` = `projectLibraries` 원문 그대로. 비어있으면 `(없음)`. **package.json 자동 동기화 대상이 아니므로 재실행 시에도 기존 사용자 작성 내용을 절대 덮어쓰지 않는다** (Step 2-A.5에서 복원한 값 보존).
-3. **병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack frontend --from .dt-spec/project-context.rendered.md`로 합친다. FE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 옛 형식 파일이다 — `migrate --file docs/project-context.md`로 미리보기를 보이고 확인받은 뒤 `--write`로 옮기고 다시 merge 한다.
+3. **병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack frontend --from .dt-spec/project-context.rendered.md`로 합친다. FE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 **플러그인 형식이 아닌 파일**이다(옛 단일 템플릿, 또는 플러그인 전부터 있던 문서 — 제목·언어가 달라도 제목 키워드로 잡는다). 옆에 절을 붙이지 않고 멈춘다. `migrate --file docs/project-context.md --stack frontend --root .` 미리보기를 보이고 한 번에 묻는다(원칙 6):
+   - `옮김`: 제목만 플러그인 절 이름으로 바꾼다(내용 그대로) — 확인만 받는다.
+   - `겹침`: 같은 자리의 플러그인 절이 이미 있다 — "옛 절 지우기(`--resolve drop`) / `옛 기록 — `으로 남기기(`--resolve keep`)"를 묻는다. 기본값은 keep(사람이 쓴 내용을 지우지 않는다).
+   - `낡음?`: 적혔는데 `package.json`에 없는 기술 — 스크립트는 고치지 않는다. 그 줄을 고칠지 지울지 묻고, 답대로 고친다.
+   - `그대로`: 플러그인 절과 대응하지 않는 절 — 손대지 않는다고 알린다.
+   확인받은 뒤 `--write`(겹침이 있으면 `--resolve`와 함께)로 옮기고 다시 merge 한다.
 4. 메모리 객체로 반환.
 
 **designTokens 직렬화 형식** (Step 2-A.5 파싱과 호환되도록 정해진 모양 유지):

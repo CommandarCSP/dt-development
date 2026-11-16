@@ -116,6 +116,17 @@ export function validateSpec(text, { kind, stack = null, siblings = {} } = {}) {
       if (p && p !== 'Unwanted' && !/\bSHALL\b/.test(fr.body)) warn(fr.line, 'ears-shall', `${fr.id}: 본문에 SHALL 이 없다`);
     }
     if (!frs.length && !bad.length) warn(1, 'fr-none', 'FR 이 하나도 없다');
+
+    // 정의서 결속의 FR 단위 — 머리 basedOnDefinition 의 IF 목록은 "이 스펙이 어느 IF 에 묶였나"(파일 단위)만 말한다.
+    // 정의서가 바뀌었을 때 어느 FR 을 다시 볼지 찾으려면 FR 줄에 <!-- from: IF-n --> 가 있어야 한다(computeImpacted 의 주 소스).
+    // 경고로만 낸다 — 표시 없이 쓴 기존 스펙을 막지 않는다.
+    const head = text.match(/<!--\s*basedOnDefinition:[^|>]*\|\s*([^>]*?)\s*-->/);
+    if (head) {
+      const listed = head[1].split(/[,\s]+/).filter((x) => /^IF-\d+$/.test(x));
+      const marked = new Set([...text.matchAll(/<!--\s*(?:from|conflict|skipped):\s*(IF-\d+)/g)].map((m) => m[1]));
+      const missing = listed.filter((id) => !marked.has(id));
+      if (missing.length) warn(lineOf(text, head.index), 'fr-from-missing', `머리에 결속된 ${missing.join(', ')} 를 가리키는 FR 이 없다 — 그 IF 에서 온 FR 줄 끝에 <!-- from: IF-n --> 를 단다(정의서 변경 때 FR 단위 영향 산출)`);
+    }
   }
 
   if (kind === 'design' || kind === 'tasks') {

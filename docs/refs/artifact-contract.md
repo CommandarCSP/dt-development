@@ -14,6 +14,7 @@
 |---|---|---|---|---|
 | `docs/specs/definition.md` · `docs/specs/definition.<scope>.md` | — | `definition-author` | `spec-author` · `bespec-author` · `plan-author` · `dt-implement` · `dt-be-implement` · `auditor` | 스코프가 있으면 `definition.<scope>.md`. 재실행은 diff 후 확인, `확정` IF는 잠금. 스펙 단계의 상향 정합은 `docs/refs/upward-alignment.md` 절차로만 IF 상태를 바꾼다 |
 | `.dt-devspec/<scope>/` | — | `definition-author` | — | 스크래치(재개용, git 무시) |
+| `.dt-adopt/extraction.json` · `.dt-adopt/progress.md` | — | `adopt-extractor` | `dt-adopt` · `spec-author` · `bespec-author` | 기계 추출(`scripts/adopt/extract.mjs`) 뼈대 위에 워커가 채운다. 스크래치 |
 | `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` | — | `spec-author` | `plan-author` · `fe-builder` · `dt-implement` · `dt-e2e` · `auditor` | 재실행은 diff 후 항목별 확인 |
 | `docs/specs/assets/<page>/` | — | `spec-author` | `fe-builder` · `dt-implement` | Figma에서 수거한 실제 에셋 |
 | `.dt-spec/<page>/` | — | `spec-author` | — | 스크래치 |

@@ -33,7 +33,7 @@ export const SUPPORTED_LOCALES = ['ko'];
  */
 export const AGENT_TIERS = {
   planner: ['definition-author', 'spec-author', 'bespec-author', 'plan-author',
-    'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author'],
+    'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author', 'adopt-extractor'],
   builder: ['fe-builder', 'be-builder'],
   reviewer: ['reviewer', 'ko-writing-reviewer', 'auditor'],
 };
@@ -50,6 +50,8 @@ export const DEFAULTS = Object.freeze({
     locale: 'ko',
     requiredMcp: [],
   },
+  // 저장소가 FE·BE 로 나뉘었을 때, 정의서가 있는 저장소의 결정 폴더(이 프로젝트 루트 기준 상대 경로). null = 자기 폴더만.
+  decisions: { sharedDir: null },
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -121,6 +123,17 @@ export function validate(raw, warnings = []) {
     if ('requiredMcp' in t) {
       if (Array.isArray(t.requiredMcp) && t.requiredMcp.every((s) => typeof s === 'string' && s.trim())) out.team.requiredMcp = [...new Set(t.requiredMcp.map((s) => s.trim()))];
       else warnings.push('team.requiredMcp: 문자열 배열이어야 합니다 — 무시했습니다');
+    }
+  }
+
+  // decisions
+  const d = raw?.decisions;
+  if (d != null && !isObj(d)) warnings.push('decisions: 객체여야 합니다 — 무시했습니다');
+  else if (d) {
+    for (const k of Object.keys(d)) if (!(k in DEFAULTS.decisions)) warnings.push(`알 수 없는 키 "decisions.${k}" — 무시했습니다`);
+    if ('sharedDir' in d) {
+      if (d.sharedDir === null || (typeof d.sharedDir === 'string' && d.sharedDir.trim())) out.decisions.sharedDir = d.sharedDir?.trim() ?? null;
+      else warnings.push('decisions.sharedDir: 경로 문자열이어야 합니다 — 자기 폴더만 읽습니다');
     }
   }
   return out;

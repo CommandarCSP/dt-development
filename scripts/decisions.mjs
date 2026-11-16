@@ -10,12 +10,17 @@
  * CLI
  *   node scripts/decisions.mjs list  <projectRoot> [--all] [--json]   채택된 PD + TP (--all: 모든 상태)
  *   node scripts/decisions.mjs next  <projectRoot> [--prefix PD|TP]   다음 번호
- *   node scripts/decisions.mjs check <dir>                            양식 검사, 문제가 있으면 exit 1
+ *   node scripts/decisions.mjs check <dir|projectRoot>                양식 검사(프로젝트 루트면 공유 폴더·번호 중복까지), 문제가 있으면 exit 1
  *   node scripts/decisions.mjs show  <projectRoot> <id>               한 건의 메타·파일 경로
+ *   node scripts/decisions.mjs dirs  <projectRoot>                    읽는 폴더(자기·공유)와 공유 폴더가 있는지
+ *
+ * 공유 결정 폴더 — FE·BE 저장소가 나뉘면 PD 는 정의서가 있는 저장소에 한 벌로 둔다. 다른 저장소는 `.dt.json`
+ * `decisions.sharedDir`(프로젝트 루트 기준 상대 경로)로 그 폴더를 가리킨다. 읽기·번호·근거 검사가 두 폴더를 함께 본다.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadConfig } from './lib/config.mjs';
 
 export const STATUSES = ['proposed', 'accepted', 'superseded', 'deprecated'];
 export const REQUIRED_META = ['id', 'title', 'status', 'scope', 'date'];
@@ -77,18 +82,43 @@ export function loadDecisionDir(dir) {
     });
 }
 
-/** 프로젝트 PD + 플러그인 TP. */
+/**
+ * 프로젝트가 읽는 결정 폴더. shared 는 `.dt.json` `decisions.sharedDir` 이 있을 때만(자기 폴더와 같으면 null).
+ * @returns {{ local: string, shared: string|null, sharedMissing: boolean }}
+ */
+export function decisionDirs(projectRoot) {
+  const local = resolve(projectRoot, PROJECT_DIR);
+  const rel = loadConfig(projectRoot).config.decisions?.sharedDir;
+  const shared = rel ? resolve(projectRoot, rel) : null;
+  if (!shared || shared === local) return { local, shared: null, sharedMissing: false };
+  return { local, shared, sharedMissing: !existsSync(shared) };
+}
+
+/** 프로젝트 PD(자기 폴더 + 공유 폴더) + 플러그인 TP. 각 항목에 origin: local|shared|policy. */
 export function loadDecisions(projectRoot, pluginRoot = PLUGIN_ROOT) {
-  return [...loadDecisionDir(join(projectRoot, PROJECT_DIR)), ...loadDecisionDir(join(pluginRoot, POLICY_DIR))];
+  const { local, shared } = decisionDirs(projectRoot);
+  const tag = (origin) => (d) => ({ ...d, origin });
+  return [
+    ...loadDecisionDir(local).map(tag('local')),
+    ...(shared ? loadDecisionDir(shared).map(tag('shared')) : []),
+    ...loadDecisionDir(join(pluginRoot, POLICY_DIR)).map(tag('policy')),
+  ];
+}
+
+/** 같은 id 가 두 파일 이상에 있으면 [{ id, files }]. 자기·공유 폴더에 같은 번호가 생겼을 때 잡는다. */
+export function duplicateIds(docs) {
+  const byId = new Map();
+  for (const d of docs) if (d.meta.id) byId.set(d.meta.id, [...(byId.get(d.meta.id) ?? []), d.file]);
+  return [...byId].filter(([, files]) => files.length > 1).map(([id, files]) => ({ id, files }));
 }
 
 export function findDecision(projectRoot, id, pluginRoot = PLUGIN_ROOT) {
   return loadDecisions(projectRoot, pluginRoot).find((d) => d.meta.id === id) ?? null;
 }
 
-/** 다음 번호(3자리). 기존 최대 + 1. */
+/** 다음 번호(3자리). 기존 최대 + 1. dir 에 배열을 주면 모든 폴더의 최대 + 1(공유 폴더와 번호가 겹치지 않게). */
 export function nextId(dir, prefix = 'PD') {
-  const nums = loadDecisionDir(dir).map((d) => d.meta.id).filter((id) => id?.startsWith(`${prefix}-`)).map((id) => Number(id.split('-')[1]));
+  const nums = [dir].flat().filter(Boolean).flatMap(loadDecisionDir).map((d) => d.meta.id).filter((id) => id?.startsWith(`${prefix}-`)).map((id) => Number(id.split('-')[1]));
   return `${prefix}-${String((nums.length ? Math.max(...nums) : 0) + 1).padStart(3, '0')}`;
 }
 
@@ -99,7 +129,12 @@ export function nextId(dir, prefix = 'PD') {
 export function checkDecisionRef(projectRoot, ref, { pluginRoot = PLUGIN_ROOT, today } = {}) {
   if (!ref) return { ok: false, level: 'error', message: '근거 결정(decisionRef)이 없다 — /dt-decision 으로 PD 를 남기고 decisionRef 를 적는다' };
   const d = findDecision(projectRoot, ref, pluginRoot);
-  if (!d) return { ok: false, level: 'error', message: `근거 결정 ${ref} 를 ${PROJECT_DIR}/ 에서 찾지 못했다` };
+  if (!d) {
+    // 공유 폴더를 가리키는데 그 폴더가 없다(예: 이 저장소만 받은 CI) — 없다고 단정할 수 없으니 막지 않고 알린다.
+    const dirs = decisionDirs(projectRoot);
+    if (dirs.sharedMissing) return { ok: true, level: 'warn', message: `근거 결정 ${ref} 를 확인하지 못했다 — 공유 결정 폴더 ${dirs.shared} 가 없다(decisions.sharedDir)` };
+    return { ok: false, level: 'error', message: `근거 결정 ${ref} 를 ${PROJECT_DIR}/${dirs.shared ? `·${dirs.shared}` : ''} 에서 찾지 못했다` };
+  }
   if (!isActive(d.meta)) return { ok: false, level: 'error', message: `근거 결정 ${ref} 가 지금 유효하지 않다(status: ${d.meta.status}${d.meta.supersededBy ? `, 대체: ${d.meta.supersededBy}` : ''})` };
   if (isExpired(d.meta, today)) return { ok: true, level: 'warn', message: `근거 결정 ${ref} 가 만료됐다(${d.meta.expires}) — 다시 검토한다` };
   return { ok: true, level: null, message: null };
@@ -121,22 +156,40 @@ function cli(argv) {
     return 0;
   }
   if (cmd === 'next') {
-    const dir = prefix === 'TP' ? join(root, POLICY_DIR) : join(root, PROJECT_DIR);
-    process.stdout.write(nextId(dir, prefix) + '\n');
+    if (prefix === 'TP') { process.stdout.write(nextId(join(root, POLICY_DIR), prefix) + '\n'); return 0; }
+    const { local, shared } = decisionDirs(root);
+    process.stdout.write(nextId([local, shared], prefix) + '\n');
+    return 0;
+  }
+  if (cmd === 'dirs') {
+    process.stdout.write(JSON.stringify(decisionDirs(root), null, 2) + '\n');
     return 0;
   }
   if (cmd === 'check') {
-    const bad = loadDecisionDir(root).filter((d) => d.problems.length);
+    // 프로젝트 루트(docs/decisions 가 있거나 .dt.json 이 있음)면 자기·공유 폴더를 함께 보고 번호 중복도 잡는다. 아니면 그 폴더만.
+    const isProject = existsSync(join(root, PROJECT_DIR)) || existsSync(join(root, '.dt.json'));
+    let docs;
+    const notes = [];
+    if (isProject) {
+      const { local, shared, sharedMissing } = decisionDirs(root);
+      if (sharedMissing) notes.push(`공유 결정 폴더 ${shared} 가 없다(decisions.sharedDir) — 자기 폴더만 검사했다`);
+      docs = [...loadDecisionDir(local), ...(shared ? loadDecisionDir(shared) : [])];
+    } else docs = loadDecisionDir(root);
+    const bad = docs.filter((d) => d.problems.length);
+    const dups = duplicateIds(docs);
     for (const d of bad) process.stdout.write(`${d.file}\n${d.problems.map((x) => `  - ${x}`).join('\n')}\n`);
-    process.stdout.write(bad.length ? `문제 ${bad.length}건\n` : '결정 문서 양식 문제 0건\n');
-    return bad.length ? 1 : 0;
+    for (const d of dups) process.stdout.write(`번호 중복 ${d.id}\n${d.files.map((f) => `  - ${f}`).join('\n')}\n`);
+    for (const n of notes) process.stdout.write(`! ${n}\n`);
+    const n = bad.length + dups.length;
+    process.stdout.write(n ? `문제 ${n}건\n` : '결정 문서 양식 문제 0건\n');
+    return n ? 1 : 0;
   }
   if (cmd === 'show') {
     const d = findDecision(root, pos[1]);
     process.stdout.write(JSON.stringify(d, null, 2) + '\n');
     return d ? 0 : 1;
   }
-  process.stderr.write('usage: decisions.mjs list|next|check|show …\n');
+  process.stderr.write('usage: decisions.mjs list|next|check|show|dirs …\n');
   return 2;
 }
 

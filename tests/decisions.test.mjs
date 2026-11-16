@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
   parseDecision, validateDecision, isExpired, isActive, nextId, loadDecisions, checkDecisionRef, PLUGIN_ROOT,
+  decisionDirs, duplicateIds,
 } from '../scripts/decisions.mjs';
 
 const doc = (meta, sections = ['맥락', '결정', '이유', '버린 대안', '출처']) =>
@@ -99,4 +100,64 @@ test('CLI: list 는 채택된 것만, --all 은 전부, check 는 문제가 있�
 test('플러그인 팀 정책(docs/policies)은 모두 양식을 지킨다', () => {
   const script = fileURLToPath(new URL('../scripts/decisions.mjs', import.meta.url));
   execFileSync('node', [script, 'check', join(PLUGIN_ROOT, 'docs/policies')], { encoding: 'utf8' });
+});
+
+// 저장소가 FE·BE 로 나뉜 경우 — BE 저장소가 .dt.json decisions.sharedDir 로 FE 저장소(정의서 쪽)의 결정 폴더를 가리킨다.
+function splitRepos({ shared = {}, local = {}, sharedDir = '../fe/docs/decisions' } = {}) {
+  const base = mkdtempSync(join(tmpdir(), 'dt-dec-split-'));
+  const fe = join(base, 'fe'); const be = join(base, 'be');
+  for (const [root, files] of [[fe, shared], [be, local]]) {
+    mkdirSync(join(root, 'docs/decisions'), { recursive: true });
+    for (const [name, body] of Object.entries(files)) writeFileSync(join(root, 'docs/decisions', name), body);
+  }
+  if (sharedDir !== null) writeFileSync(join(be, '.dt.json'), JSON.stringify({ decisions: { sharedDir } }));
+  return { base, fe, be };
+}
+
+test('공유 결정 폴더: 읽기·번호·근거 검사가 두 폴더를 함께 본다', () => {
+  const { base, fe, be } = splitRepos({
+    shared: { 'PD-001-a.md': doc(META), 'PD-009-b.md': doc({ ...META, id: 'PD-009', topic: 'stack.be.unitTest' }) },
+    local: { 'PD-002-c.md': doc({ ...META, id: 'PD-002' }) },
+  });
+  try {
+    const dirs = decisionDirs(be);
+    assert.equal(dirs.shared, join(fe, 'docs/decisions'));
+    assert.equal(dirs.sharedMissing, false);
+    const docs = loadDecisions(be);
+    assert.deepEqual(docs.filter((d) => d.origin !== 'policy').map((d) => `${d.origin}:${d.meta.id}`), ['local:PD-002', 'shared:PD-001', 'shared:PD-009']);
+    assert.equal(nextId([dirs.local, dirs.shared], 'PD'), 'PD-010', '번호는 두 폴더의 최대 + 1');
+    assert.equal(checkDecisionRef(be, 'PD-009').level, null, '공유 폴더의 PD 도 override 근거가 된다');
+    assert.equal(checkDecisionRef(be, 'PD-404').level, 'error');
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test('공유 결정 폴더가 없으면(이 저장소만 받은 CI) 못 찾은 근거는 error 대신 warn', () => {
+  const { base, be } = splitRepos({ sharedDir: '../nowhere/docs/decisions' });
+  try {
+    assert.equal(decisionDirs(be).sharedMissing, true);
+    const r = checkDecisionRef(be, 'PD-001');
+    assert.equal(r.level, 'warn');
+    assert.match(r.message, /공유 결정 폴더/);
+    assert.equal(checkDecisionRef(be, null).level, 'error', '근거를 아예 안 적은 것은 여전히 error');
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test('sharedDir 이 없거나 자기 폴더면 지금과 같다', () => {
+  const { base, be } = splitRepos({ sharedDir: null }); // .dt.json 없음
+  try {
+    assert.equal(decisionDirs(be).shared, null);
+    writeFileSync(join(be, '.dt.json'), JSON.stringify({ decisions: { sharedDir: 'docs/decisions' } }));
+    assert.equal(decisionDirs(be).shared, null);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test('CLI: 프로젝트 루트 check 는 두 폴더의 번호 중복을 잡고, next 는 이어 붙인다', () => {
+  const script = fileURLToPath(new URL('../scripts/decisions.mjs', import.meta.url));
+  const { base, be } = splitRepos({ shared: { 'PD-001-a.md': doc(META) }, local: { 'PD-001-dup.md': doc(META) } });
+  try {
+    assert.equal(execFileSync('node', [script, 'next', be], { encoding: 'utf8' }).trim(), 'PD-002');
+    assert.deepEqual(duplicateIds(loadDecisions(be)).map((d) => d.id), ['PD-001']);
+    assert.throws(() => execFileSync('node', [script, 'check', be], { encoding: 'utf8' }), (e) => /번호 중복 PD-001/.test(e.stdout));
+    execFileSync('node', [script, 'check', join(be, 'docs/decisions')], { encoding: 'utf8' }); // 폴더만 주면 그 폴더만 — 중복 없음
+  } finally { rmSync(base, { recursive: true, force: true }); }
 });

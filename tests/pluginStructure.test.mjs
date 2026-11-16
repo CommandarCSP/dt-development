@@ -112,7 +112,7 @@ test('README 의 스킬·에이전트·명령 개수가 실제와 같다', () =>
 });
 
 // 에이전트 반환 봉투 — docs/orchestration-policy.md 원칙 5·6. 에이전트를 새로 넣으면 아래 두 목록 중 하나에 넣는다.
-const WORKER_AGENTS = ['definition-author', 'spec-author', 'bespec-author', 'plan-author', 'fe-builder', 'be-builder', 'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author'];
+const WORKER_AGENTS = ['definition-author', 'spec-author', 'bespec-author', 'plan-author', 'fe-builder', 'be-builder', 'guide-analyst', 'guide-author', 'handbook-analyst', 'handbook-tracer', 'handbook-author', 'e2e-author', 'adopt-extractor'];
 const JUDGE_AGENTS = ['reviewer', 'ko-writing-reviewer', 'auditor'];
 
 /** "## 핸드오프" 또는 "## 반환" 으로 시작하는 절 본문. */
@@ -451,4 +451,12 @@ test('정책: draft 구현 규칙(원칙 6.5)이 있고 구현 조율자가 가�
   assert.match(readFileSync(rel('docs/orchestration-policy.md'), 'utf8'), /## 원칙 6\.5 — draft 스펙으로 구현할 때/);
   for (const s of ['dt-implement', 'dt-be-implement']) assert.match(readFileSync(rel(`skills/${s}/SKILL.md`), 'utf8'), /원칙 6\.5/);
   assert.match(readFileSync(rel('skills/dt-fullstack/SKILL.md'), 'utf8'), /원칙 6\.5/);
+});
+
+// GEN-29 — dt-adopt 는 스펙을 직접 쓰지 않고 표준 작성 에이전트에 맡기며, as-built 표시는 새 상태값이 아니라 origin 마커다.
+test('dt-adopt: 기계 추출 스크립트·워커·표준 작성 에이전트를 쓰고, 새 status 값을 만들지 않는다', () => {
+  const t = readFileSync(rel('skills/dt-adopt/SKILL.md'), 'utf8');
+  for (const s of ['scripts/adopt/extract.mjs', 'agents/adopt-extractor.md', 'bespec-author', 'spec-author', 'definition-author', 'dt-decision', 'origin: as-built']) assert.ok(t.includes(s), `dt-adopt 에 ${s} 가 없다`);
+  assert.ok(!/status: as-built/.test(t), 'as-built 는 status 값이 아니라 origin 마커로 표시한다');
+  for (const a of ['spec-author', 'bespec-author']) assert.match(readFileSync(rel(`agents/${a}.md`), 'utf8'), /as-built 소스/);
 });

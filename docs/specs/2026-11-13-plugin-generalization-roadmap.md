@@ -15,9 +15,9 @@
 | DEV-3 [M2] | GEN-09 DEV-14 · GEN-10 DEV-15 · GEN-11 DEV-16 · GEN-12 DEV-17 · GEN-13 DEV-18 |
 | DEV-4 [M3] | GEN-14 DEV-19 |
 | DEV-5 [M4] | GEN-15 DEV-20 · GEN-16 DEV-21 · GEN-17 DEV-22 |
-| (에픽 없음) | GEN-18 DEV-23 (버그 — GEN-24가 흡수) |
-| DEV-24 [M5] | GEN-19 DEV-25 · GEN-20 DEV-26 · GEN-21 DEV-27 · GEN-22 DEV-28 · GEN-23 DEV-29 · GEN-24 DEV-30 · GEN-25 DEV-31 · GEN-26 DEV-32 · GEN-27 DEV-33 · GEN-28 DEV-34 |
-| DEV-35 [M6] | GEN-29 DEV-36 · GEN-30 DEV-37 · GEN-31 DEV-38 · GEN-32 DEV-39 · GEN-33 DEV-40 · GEN-34 DEV-41 · GEN-35 DEV-42 · GEN-36 DEV-43 · GEN-37 DEV-44 · GEN-38 DEV-45 · GEN-39 DEV-46 |
+| (에픽 없음) | GEN-18 DEV-23 (버그 — GEN-24가 흡수) · GEN-42 DEV-51 (버그 — Atlassian MCP v2, GEN-09·10과 겹침) |
+| DEV-24 [M5] | GEN-19 DEV-25 · GEN-20 DEV-26 · GEN-21 DEV-27 · GEN-22 DEV-28 · GEN-23 DEV-29 · GEN-24 DEV-30 · GEN-25 DEV-31 · GEN-26 DEV-32 · GEN-27 DEV-33 · GEN-28 DEV-34 · GEN-40 DEV-49 |
+| DEV-35 [M6] | GEN-29 DEV-36 · GEN-30 DEV-37 · GEN-31 DEV-38 · GEN-32 DEV-39 · GEN-33 DEV-40 · GEN-34 DEV-41 · GEN-35 DEV-42 · GEN-36 DEV-43 · GEN-37 DEV-44 · GEN-38 DEV-45 · GEN-39 DEV-46 · GEN-41 DEV-50 |
 
 ## 진행 순서
 
@@ -34,6 +34,7 @@
 5 흐름 완성 ─ GEN-38 산출물 소유 경계 → GEN-39 전문 에이전트 보강 → GEN-37 dt-fullstack 확장
 6 검증    ─ GEN-22 산출물 검증 → GEN-23 게이트 엄격화 → GEN-24 지침·재실행(GEN-18 흡수)
 7 도입    ─ GEN-29 dt-adopt (GEN-21·22 이후)
+7.5 후속   ─ GEN-42 Atlassian MCP v2 도구 이름(v1 종료 2027-03-01 전) · GEN-40 남은 AST 규칙 · GEN-41 에이전트 비용
 8 유지보수 ─ GEN-25 버전 → GEN-26 중복·진입점(GEN-08 함께) → GEN-27 기여 가이드 → GEN-28 evals
 9 범용화  ─ M1~M4. GEN-09·10(새 Jira·Confluence 규칙)은 GEN-21 위에서 팀 정책(TP)으로 정한다.
 ```
@@ -244,6 +245,7 @@
 | GEN-37 dt-fullstack 확장 | P3 | e2e·감사·가이드·핸드북·마무리 선택 단계, 단계 이름화, 명령 파일, plan 담당·경로 통일 |
 | GEN-38 산출물 소유 경계 | P3 | interactions.md FE·BE 섹션, 파이프라인 계약 표, plan·e2e 원장 입력 명시 |
 | GEN-39 전문 에이전트 보강 | P4 | e2e-author 신설, 페이지 조립 fe-builder로, 읽기 전용 에이전트 도구 제한, tracer needsDecision, ko-writing-reviewer 계약 |
+| GEN-41 에이전트 비용 측정과 절감 | P4 | 대표 흐름별 토큰·시간 기준선, 큰 비용 원인 분석, 절감안 적용 후 재측정(GEN-29 검증: 리소스 1·화면 1에 서브에이전트 약 90만 토큰) |
 
 기존 피처에 붙인 원칙 리뷰 항목: GEN-09(DEV-14) Git 호스트별 URL, GEN-12(DEV-17) 기본 브랜치, GEN-05(DEV-10) BE 비기본 스택 감지.
 
@@ -258,3 +260,4 @@
 - **GEN-38 완료(DEV-45, 2026-11-13).** 결정: 계약은 문서 한 장의 표(`docs/refs/artifact-contract.md` — 경로·절·쓰는 쪽·읽는 쪽·고칠 때)로 두고 테스트가 읽는다. `interactions.md`는 `## FE 크로스페이지`(spec-author)·`## BE 크로스리소스`(bespec-author) 절로 나누고 `scripts/interactionsSync.mjs`(merge·migrate — 옛 형식은 소유 밖 절을 FE 절 아래로 한 단계 내려 모음)로만 쓴다. GEN-34 병합을 `scripts/lib/sections.mjs`(`mergeOwnedSections`)로 일반화해 project-context·interactions가 같이 쓴다. 입력 명시: plan-author(자기 스택 절은 근거, 상대 절은 읽기만), dt-e2e·dt-be-e2e(`plan.md` `[X]` 배선을 여정 근거로, 원장·테스트만 씀). 구조 테스트: 표의 쓰는 쪽 문서가 경로·절을 적었는지, 같은 경로·절의 쓰는 쪽이 한 줄인지, 에이전트 소유 경로가 표에서 그 에이전트 몫인지.
 - **GEN-39 완료(DEV-46, 2026-11-13).** 결정: e2e 작성 에이전트는 FE·BE 공유 `e2e-author`(stack 파라미터, planner 티어) 하나 — 원장 제안(propose)·저작(author)·headless 사전 실행(preflight)을 맡고, 승인·`verified`·live 게이트·질문은 조율자(dt-e2e·dt-be-e2e)에 남는다. 페이지 조립은 dt-implement [5]가 도메인 빌더 뒤 fe-builder를 `variant: assemble`로 한 번 더 부른다(조율자는 홈 라우트 판단만). 판정 에이전트 도구 제한: reviewer·ko-writing-reviewer `tools: Read, Grep, Glob, Bash`, auditor는 ux 트랙의 브라우저 MCP(이름이 환경마다 다름) 때문에 허용 목록 없이 사유를 머리말에 적었다. ko-writing-reviewer: "한 번 불리면 한 번 판정, 반복은 조율자가 정함"(dt-handbook 최대 3회와 맞춤), `docType: spec` 추가, 임시 파일 `/tmp` → `.dt-ko/`, 번호 중복 정리. 에이전트 15개. 계약 표·분류·티어·정책 목록 갱신, 구조 테스트 3개.
 - **GEN-37 완료(DEV-44, 2026-11-13).** dt-fullstack을 이름 있는 단계로 다시 썼다: 기본 `definition → be-spec → be-build → fe-spec → fe-build`, 선택 `e2e`·`audit`·`guide`·`handbook`·`wrap`. 결정: 선택 단계는 시작할 때 multiSelect 한 번(권장 기본 e2e·wrap 켬), 별도 리뷰 단계는 없앴다(implement가 격리 리뷰·수리를 이미 함 — 봉투에서 모아 보고). 플랜 담당은 implement 스킬로 통일(fullstack은 플랜을 따로 만들지 않음), 경로 `docs/specs/<pages|resources>/<unit>/plan.md`로 바로잡음. 진행 기록 `.dt-fullstack/progress.json`으로 재개, `--from`·`--only` 부분 실행, 단계 사이 확인 없이 넘어가지 않음. 새 명령 `/dt-fullstack`(커맨드 22). 구조 테스트: 단계표·실제 스킬·플랜 경로·리뷰 단계 부재·명령 인자.
+- **GEN-29 완료(DEV-36, 2026-11-16).** `/dt-adopt`: 기존 프로젝트를 정의서·스펙·PD로 들인다. 코드는 고치지 않는다. 결정: 스펙은 새 형식을 만들지 않고 표준 작성 에이전트(spec-author·bespec-author)가 소스 `as-built:.dt-adopt/extraction.json`으로 쓴다 — 머리 `<!-- origin: as-built @<ref> -->`, `status: draft`, FR 라벨 `[inferred]`·`[user-resolved]`. 현행 동작을 의도로 가정하지 않고 "의도/버그/모르겠음"을 묻는다 — 버그로 답한 것은 스펙에 고친 동작을 쓰고 코드 수정 과제로 올린다. 기계 추출 `scripts/adopt/`(NestJS 엔드포인트·가드·상태 코드, FE API 호출, FE↔BE 대조와 짝 없는 엔드포인트, 결정 후보) 위에 새 워커 `adopt-extractor`(planner)가 근거(파일:줄)·신뢰도(code·doc·guess)를 단다. 정의서 역합치 뒤 **§3 협의로 버전이 정해진 다음** 스펙을 결속한다(6.5 — 병렬로 돌렸다가 v1 결속·v2 정의서로 어긋난 것을 겪음). 검증: 실제 FE·BE 저장소 사본(리소스 1·화면 1)으로 끝까지 — 화면 4·FE 호출 19·엔드포인트 23, 확인 10건, FR 16+28, 정의서 IF 15(v2), PD 9, 형식 검사·정합 0. 검증 리뷰에서 고친 것: ① 저장소가 나뉘면 `.dt.json` `decisions.sharedDir`로 정의서 쪽 결정 폴더를 함께 읽는다(읽기·번호 이어 세기·번호 중복 검사, 폴더가 없으면 근거 검사는 경고) ② 플러그인 형식이 아닌 project-context(제목·언어 무관 — 키워드로 절 자리를 찾음)는 merge가 멈추고 migrate 미리보기로 옮김·겹침(drop|keep)·코드에 없는 기술·대응 없는 절을 보인다 ③ FE도 FR 줄에 `<!-- from: IF-n -->`(스킬 문서끼리 규칙이 달랐음) — 형식 검사 `fr-from-missing` 경고 ④ 출처 ref `<sha>`·`<sha>-dirty`·`nogit-<날짜>` ⑤ 새 에이전트 타입이 설치본에 없으면 일반 에이전트가 지시 문서를 읽어 실행(정책 원칙 4). 이미 푸시한 GEN-22·23 결함(옛 열 이름·원장 마커·radix-ui)은 별도 fix 커밋. 후속: GEN-40(AST 규칙)·GEN-41(에이전트 비용)·GEN-42(Atlassian MCP v2).

@@ -45,5 +45,10 @@ description: Use within dt-bespec to collect/maintain backend project context (f
 ## 출력
 `templates-backend/project-context.md.tmpl`을 채운 내용을 `docs/project-context.md`에 **병합**한다. 모든 리소스 스펙이 이 규약을 참조(중복 금지).
 
-**병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack backend --from .dt-spec/project-context.rendered.md`로 합친다. BE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 옛 형식 파일이다 — `migrate --file docs/project-context.md`로 미리보기를 보이고 확인받은 뒤 `--write`로 옮기고 다시 merge 한다.
+**병합해 저장한다 — 파일 전체를 덮어쓰지 않는다.** 이 파일은 FE·BE 스킬이 함께 쓴다. 채운 템플릿을 `.dt-spec/project-context.rendered.md`에 쓰고 `node "${CLAUDE_PLUGIN_ROOT}/scripts/projectContextSync.mjs" merge --file docs/project-context.md --stack backend --from .dt-spec/project-context.rendered.md`로 합친다. BE 절만 바뀌고, 공통 절(개요·제약사항·도메인 용어)은 없을 때만 채워지며, 상대 스택의 절은 그대로 남는다. 종료 코드 3이면 **플러그인 형식이 아닌 파일**이다(옛 단일 템플릿, 또는 플러그인 전부터 있던 문서 — 제목·언어가 달라도 제목 키워드로 잡는다). 옆에 절을 붙이지 않고 멈춘다. `migrate --file docs/project-context.md --stack backend --root .` 미리보기를 보이고 한 번에 묻는다(원칙 6):
+   - `옮김`: 제목만 플러그인 절 이름으로 바꾼다(내용 그대로) — 확인만 받는다.
+   - `겹침`: 같은 자리의 플러그인 절이 이미 있다 — "옛 절 지우기(`--resolve drop`) / `옛 기록 — `으로 남기기(`--resolve keep`)"를 묻는다. 기본값은 keep(사람이 쓴 내용을 지우지 않는다).
+   - `낡음?`: 적혔는데 `package.json`에 없는 기술 — 스크립트는 고치지 않는다. 그 줄을 고칠지 지울지 묻고, 답대로 고친다.
+   - `그대로`: 플러그인 절과 대응하지 않는 절 — 손대지 않는다고 알린다.
+   확인받은 뒤 `--write`(겹침이 있으면 `--resolve`와 함께)로 옮기고 다시 merge 한다.
 
