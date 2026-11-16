@@ -33,7 +33,7 @@ test('스킬의 규칙 목록(- **ruleId** _(severity)_ — summary)이 규칙 �
   const { join, basename } = await import('node:path');
   const { PLUGIN_ROOT } = await import('../scripts/validateRules.mjs');
   const rules = new Map(validateAll().map((r) => [r.file, r]));
-  const { parseFrontmatter } = await import('../skills/dt-frontend-review/scripts/lib/frontmatter.mjs');
+  const { parseFrontmatter } = await import('../scripts/review/lib/frontmatter.mjs');
   const problems = [];
   for (const skill of ['dt-frontend-architecture', 'dt-backend-architecture', 'dt-frontend-testing', 'dt-backend-testing']) {
     const text = readFileSync(join(PLUGIN_ROOT, `skills/${skill}/SKILL.md`), 'utf8');

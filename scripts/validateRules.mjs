@@ -9,12 +9,12 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseFrontmatter } from '../skills/dt-frontend-review/scripts/lib/frontmatter.mjs';
-import { STACK_RULE_LOCATIONS } from '../skills/dt-frontend-review/scripts/lib/rule-loader.mjs';
+import { parseFrontmatter } from './review/lib/frontmatter.mjs';
+import { STACK_RULE_LOCATIONS } from './review/lib/rule-loader.mjs';
 
 export const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const SCHEMA = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'docs/refs/rule-frontmatter.schema.json'), 'utf8'));
-const DETECTION_DIR = 'skills/dt-frontend-review/scripts/lib/detection';
+const DETECTION_DIR = 'scripts/review/lib/detection';
 
 /** 검출 type 목록 — 검출기 파일 이름 + manual(검출기 없음, 사람 확인). 스키마의 enum 과 같아야 한다(테스트). */
 export function engineDetectionTypes(root = PLUGIN_ROOT) {

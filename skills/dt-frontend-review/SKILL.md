@@ -15,7 +15,7 @@ description: Use when reviewing dt-frontend project code for architecture/test r
 자동 검사:
 1. `git diff <base>...HEAD`로 변경 파일 식별
 2. 각 변경 파일에 대해 patterns/*.md frontmatter의 detection 메타데이터 적용
-3. `vitest --coverage`로 HEAD/BASE 측정 + per-file 비교 (`.dt-frontend.json`의 `coverage.mode`에 따라)
+3. 테스트 도구(기본 vitest)의 커버리지로 HEAD/BASE 측정 + per-file 비교 (`.dt-frontend.json`의 `coverage.mode`에 따라). 명령은 엔진이 lockfile·package.json·`coverage.runner`로 고른다 — `${CLAUDE_PLUGIN_ROOT}/docs/refs/review-engine.md` §2
 4. Critical/Important/Minor + Coverage 리포트 출력
 
 ## 활성화 조건
@@ -36,7 +36,7 @@ description: Use when reviewing dt-frontend project code for architecture/test r
 2. **팀 설정** — `node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" .`의 `warnings`가 있으면 한 줄씩 보인다.
 3. **실행**
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" <명령 인자>
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs" <명령 인자>
    ```
    - 모드가 없으면 `full`. `--base`가 없으면 **프로젝트 전체**(git이 아는 파일 + 아직 추가 안 한 새 파일, `.gitignore` 제외 — git을 못 쓰면 폴더를 훑는다). `--base <ref>`를 주면 그 뒤로 바뀐 파일만. 보고서 Assessment에 검사한 소스 파일 수가 나오고, 0개면 `Ready to merge: Unknown`이다(위반 없음이 아니다). Manual Review 휴리스틱은 룰별 개수로 요약되고, `--verbose`면 파일별로 펼친다.
 4. **보고서를 그대로 보인다.** 요약하거나 고치지 않는다. 종료 코드 1이면 Critical이 있다(Ready to merge: No).
@@ -109,4 +109,4 @@ severity: minor (머지 블로킹 아님). 자세한 원칙은 `dt-frontend-codi
 ## 의존성
 - Node 18+
 - 외부 npm 의존성 없음 (built-in `fs`, `child_process`, `node:test`만 사용)
-- coverage 측정: 사용자 프로젝트의 `pnpm test --coverage` 명령 실행 가능해야 함
+- coverage 측정: 엔진이 고른 명령(`docs/refs/review-engine.md` §2)이 사용자 프로젝트에서 돌고 `coverage/coverage-summary.json`을 내야 함

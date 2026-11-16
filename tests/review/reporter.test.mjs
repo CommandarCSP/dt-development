@@ -1,7 +1,7 @@
-// skills/dt-frontend-review/tests/reporter.test.mjs
+// tests/review/reporter.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderReport } from '../scripts/lib/reporter.mjs';
+import { renderReport } from '../../scripts/review/lib/reporter.mjs';
 
 test('renders empty report when no findings', () => {
   const out = renderReport({ findings: [], coverage: { findings: [] } });
@@ -57,7 +57,7 @@ test('manualReview findings show full list when verbose=true', () => {
 });
 
 test('검사한 소스 파일이 0개면 Ready to merge: Unknown — "위반 없음"이라고 하지 않는다', async () => {
-  const { renderReport } = await import('../scripts/lib/reporter.mjs');
+  const { renderReport } = await import('../../scripts/review/lib/reporter.mjs');
   const empty = { findings: [], coverage: { findings: [] }, overrides: null };
   const zero = renderReport({ ...empty, scope: { scanned: 0, base: null } });
   assert.match(zero, /검사한 소스 파일: 0개/);

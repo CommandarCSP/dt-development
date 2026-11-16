@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { detectRequiresAcceptanceLedger } from '../scripts/lib/detection/requires-acceptance-ledger.mjs';
+import { detectRequiresAcceptanceLedger } from '../../scripts/review/lib/detection/requires-acceptance-ledger.mjs';
 
 function makeProject() {
   return mkdtempSync(join(tmpdir(), 'dt-ledger-'));

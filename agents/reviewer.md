@@ -20,8 +20,8 @@ description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict
 - `interactions`(있으면): `docs/specs/interactions.md` 위치 — 크로스유닛 정합 검증 대상
 
 ## 할 일
-1. **리뷰 엔진 실행** — 엔진은 FE·BE 공유(`${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs`):
-   - **frontend**: `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" <mode> --project <worktreePath> --base <baseRef>`
+1. **리뷰 엔진 실행** — 엔진은 FE·BE 공유(`${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs`):
+   - **frontend**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs" <mode> --project <worktreePath> --base <baseRef>`
    - **backend**: 위와 동일 + `--stack backend`
    - `partial` 모드는 `--base` 대신 `--paths a.ts,b.ts`로 변경 파일 전달(`baseRef` 자리 무시). CLI 인자가 다르면 review.mjs Usage 주석을 읽어 맞춘다.
 2. 위반(특히 Critical)과 diff coverage를 읽고, 각 위반을 **어느 파일/레이어 소관**인지 매핑한다.

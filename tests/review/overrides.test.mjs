@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { loadOverrideKeys } from '../scripts/lib/overrides.mjs';
+import { loadOverrideKeys } from '../../scripts/review/lib/overrides.mjs';
 
 test('loadOverrideKeys returns declared keys', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ov-'));
@@ -23,7 +23,7 @@ test('loadOverrideKeys empty when no config / no overrides', async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
-import { decisionRefOf, loadOverrides, overrideDecisionFindings } from '../scripts/lib/overrides.mjs';
+import { decisionRefOf, loadOverrides, overrideDecisionFindings } from '../../scripts/review/lib/overrides.mjs';
 import { mkdir } from 'node:fs/promises';
 
 const PD = (id, status = 'accepted', extra = '') => `---\nid: ${id}\ntitle: t\nstatus: ${status}\nscope: s\ndate: 2026-11-13\n${extra}---\n## 맥락\n## 결정\n## 이유\n## 버린 대안\n## 출처\n`;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFrontmatter } from '../scripts/lib/frontmatter.mjs';
+import { parseFrontmatter } from '../../scripts/review/lib/frontmatter.mjs';
 
 test('parses simple scalar fields', () => {
   const md = `---

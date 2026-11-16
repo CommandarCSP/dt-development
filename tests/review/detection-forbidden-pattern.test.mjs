@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { detectForbiddenPattern } from '../scripts/lib/detection/forbidden-pattern.mjs';
+import { detectForbiddenPattern } from '../../scripts/review/lib/detection/forbidden-pattern.mjs';
 
 // sentry-single-capture 룰이 쓰는 정규식과 동일해야 한다.
 const SENTRY_CAPTURE = 'Sentry\\.capture(Exception|Message)\\s*\\(';

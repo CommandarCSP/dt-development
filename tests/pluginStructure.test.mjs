@@ -409,8 +409,8 @@ test('형식 검사: 작성 에이전트 4개와 스펙 확정 단계가 validat
 
 // GEN-23 — 검출이 빈 규칙은 "검사하는 척"한다. 기계 검출이 없으면 type: manual 로 명시한다.
 test('리뷰 규칙: 검출이 빈 규칙이 없다(기계 검출 또는 manual)', async () => {
-  const { loadAllRules } = await import('../skills/dt-frontend-review/scripts/lib/rule-loader.mjs');
-  const { resolveStack } = await import('../skills/dt-frontend-review/scripts/lib/stacks.mjs');
+  const { loadAllRules } = await import('../scripts/review/lib/rule-loader.mjs');
+  const { resolveStack } = await import('../scripts/review/lib/stacks.mjs');
   const KNOWN = new Set(['forbidden-import', 'forbidden-call', 'forbidden-pattern', 'requires-sibling-test', 'required-pattern', 'requires-acceptance-ledger', 'ast-rule', 'pattern-pair', 'jsx-tag-attrs', 'registered-in-sibling-module', 'manual']);
   const problems = [];
   for (const st of ['frontend', 'backend']) {
@@ -572,4 +572,22 @@ test('단일 원본: 원본 문서의 규칙 문장이 스킬·에이전트·명
     }
   }
   assert.deepEqual(problems, []);
+});
+
+// GEN-08 — 리뷰 엔진은 scripts/review/ 하나. 옛 경로는 호환 파일만 남고 아무도 가리키지 않는다.
+test('리뷰 엔진: 옛 경로 skills/dt-frontend-review/scripts 를 가리키는 곳이 없다', () => {
+  const OLD = 'dt-frontend-review/scripts';
+  const ALLOW = new Set(['skills/dt-frontend-review/scripts/review.mjs', 'tests/pluginStructure.test.mjs', 'tests/review/coverage-commands.test.mjs', 'CHANGELOG.md', 'docs/refs/review-engine.md']);
+  const problems = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(rel(dir), { withFileTypes: true })) {
+      const p = dir ? `${dir}/${e.name}` : e.name;
+      if (e.isDirectory()) { if (!['node_modules', '.git', 'results', 'specs', 'vendor', 'fonts'].includes(e.name)) walk(p); continue; }
+      if (!/\.(md|mjs|js|json|sh|yaml)$/.test(e.name) || ALLOW.has(p)) continue;
+      if (readFileSync(rel(p), 'utf8').includes(OLD)) problems.push(p);
+    }
+  };
+  walk('');
+  assert.deepEqual(problems, []);
+  assert.deepEqual(readdirSync(rel('skills/dt-frontend-review/scripts')), ['review.mjs'], '옛 경로에는 호환 파일 하나만 둔다');
 });

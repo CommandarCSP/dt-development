@@ -20,6 +20,7 @@
 | `rules/vendored/` | 외부에서 들여온 규칙(출처를 `SOURCE.md`에) | 리뷰 엔진 |
 | `templates/` · `templates-backend/` | 산출물·설정 템플릿 | 스킬 |
 | `scripts/` · `scripts/lib/` | 여러 스킬이 쓰는 결정적 도구(Node, 의존성 없음) | 스킬·테스트 |
+| `scripts/review/` · `tests/review/` | FE·BE 공용 리뷰 엔진과 그 테스트([리뷰 엔진](docs/refs/review-engine.md)). 검출기는 `lib/detection/<type>.mjs` | 리뷰 스킬·`reviewer`·스캐폴드 게이트 |
 
 **`docs/refs/`냐 `references/`냐:** 두 스킬 이상이 읽으면 `docs/refs/`, 한 스킬만 읽으면 그 스킬의 `references/`. 구조 테스트가 원본 문장이 다른 곳에 다시 적혔는지 잡는다.
 
@@ -124,7 +125,7 @@ allowed-tools: Read, Bash, AskUserQuestion   # 스킬 절차에 필요한 도구
 4. **검사한다.**
    ```bash
    node scripts/validateRules.mjs                     # 머리말·검출 인자·relatedRules
-   node skills/dt-frontend-review/scripts/review.mjs partial --paths src/pages/Home.tsx --project <위반 예제가 있는 프로젝트>
+   node scripts/review/review.mjs partial --paths src/pages/Home.tsx --project <위반 예제가 있는 프로젝트>
    npm test                                           # 규칙 목록 = 머리말, 엔진 테스트
    ```
    위반 예제에서 그 ruleId가 나오고, 고친 예제에서는 안 나와야 한다.

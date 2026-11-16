@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadAllRules, STACK_RULE_LOCATIONS } from '../scripts/lib/rule-loader.mjs';
-import { STACKS, resolveStack } from '../scripts/lib/stacks.mjs';
+import { loadAllRules, STACK_RULE_LOCATIONS } from '../../scripts/review/lib/rule-loader.mjs';
+import { STACKS, resolveStack } from '../../scripts/review/lib/stacks.mjs';
 
-const PLUGIN_ROOT = new URL('../../..', import.meta.url).pathname;
+const PLUGIN_ROOT = new URL('../..', import.meta.url).pathname;
 
 test('default loadAllRules still resolves the frontend stack', async () => {
   const def = await loadAllRules(PLUGIN_ROOT);
@@ -38,6 +38,6 @@ test('backend stack loads architecture rules with no duplicate ruleIds', async (
 test('resolveStack returns knobs for known stacks and throws on unknown', () => {
   assert.equal(resolveStack('frontend').configFileName, '.dt-frontend.json');
   assert.equal(resolveStack('backend').configFileName, '.dt-backend.json');
-  assert.ok(Array.isArray(STACKS.backend.testCommand));
+  assert.deepEqual(STACKS.backend.defaults, { packageManager: 'npm', runner: 'jest' });
   assert.throws(() => resolveStack('nope'), /unknown stack/);
 });

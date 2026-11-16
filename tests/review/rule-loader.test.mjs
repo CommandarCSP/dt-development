@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadAllRules, STACK_RULE_LOCATIONS } from '../scripts/lib/rule-loader.mjs';
+import { loadAllRules, STACK_RULE_LOCATIONS } from '../../scripts/review/lib/rule-loader.mjs';
 
-const PLUGIN_ROOT = new URL('../../..', import.meta.url).pathname;
+const PLUGIN_ROOT = new URL('../..', import.meta.url).pathname;
 
 test('loads architecture patterns', async () => {
   const rules = await loadAllRules(PLUGIN_ROOT);

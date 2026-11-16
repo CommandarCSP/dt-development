@@ -89,7 +89,7 @@ function depsOf(pkg) {
  * 한 스택의 설정 객체를 만든다.
  *
  * 코드가 실제로 읽는 키는 `coverage` 와 `overrides` 뿐이지만
- * (`skills/dt-frontend-review/scripts/lib/overrides.mjs`, `modes/full.mjs`),
+ * (`scripts/review/lib/overrides.mjs`, `modes/full.mjs`),
  * `paths` 와 `enabledSkills` 는 스킬 문서가 읽는 값이라 함께 넣는다.
  *
  * `coverage.mode` 기본값은 `full` — 스캐폴드가 새 프로젝트에 넣던 값과 맞춘다.
@@ -114,7 +114,7 @@ export function buildStackConfig(stack, { srcPath }) {
   };
 }
 
-/** 스택 → 설정 파일 이름. `skills/dt-frontend-review/scripts/lib/stacks.mjs` 와 같은 값이다. */
+/** 스택 → 설정 파일 이름. `scripts/review/lib/stacks.mjs` 와 같은 값이다. */
 export const CONFIG_FILE_NAME = {
   frontend: '.dt-frontend.json',
   backend: '.dt-backend.json',

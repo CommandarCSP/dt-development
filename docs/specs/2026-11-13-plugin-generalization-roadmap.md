@@ -94,6 +94,7 @@
 - 문제: BE 리뷰가 `skills/dt-frontend-review/scripts/review.mjs`를 직접 호출. 커버리지 러너가 jest/vitest로 고정.
 - 할 일: 엔진을 `scripts/review/`로 이동, FE·BE가 스택 파라미터로 공유. `coverage.runner` 설정.
 - 완료 기준: FE·BE 리뷰가 같은 엔진 경로로 동작, 기존 테스트 통과.
+- **완료(DEV-13, 2026-11-16).** 엔진·검출기를 `scripts/review/`, 테스트를 `tests/review/`로 옮겼다(git 이력 유지). FE·BE 리뷰 스킬·`reviewer`·스캐폴드 게이트·`validateRules`가 새 경로를 부른다. 옛 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부르는 호환 파일로 0.16.x 동안 남긴다(호환 정책 §4, 0.17.0에서 지움). 커버리지 명령은 스택 설정 `coverage.command` → `coverage.packageManager`·`runner` → package.json(`packageManager`·의존성·`scripts.test`) → lockfile → 스택 기본값 순으로 고른다(`scripts/review/lib/stacks.mjs` `resolveCoverageCommands`). 설정·lockfile이 지금 조합과 같으면 명령도 같다(테스트). 원본 문서 `docs/refs/review-engine.md`. 스캐폴드 게이트의 자체 vitest 실행(`--test-runner`)은 GEN-04·06에서 이 고르기를 쓰도록 바꾼다.
 
 ## M2. 회사 프로세스
 

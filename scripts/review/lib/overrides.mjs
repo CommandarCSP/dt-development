@@ -43,7 +43,7 @@ export async function loadOverrides(projectRoot, configFileName = '.dt-frontend.
  * 근거 없음·못 찾음·유효하지 않음 → critical, 만료 → important.
  */
 export async function overrideDecisionFindings(projectRoot, configFileName = '.dt-frontend.json', opts = {}) {
-  const { checkDecisionRef } = await import('../../../../scripts/decisions.mjs');
+  const { checkDecisionRef } = await import('../../decisions.mjs');
   const out = [];
   for (const { key, decisionRef } of await loadOverrides(projectRoot, configFileName)) {
     const r = checkDecisionRef(projectRoot, decisionRef, opts);

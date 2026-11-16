@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadAllRules } from '../scripts/lib/rule-loader.mjs';
-import { detectForbiddenPattern } from '../scripts/lib/detection/forbidden-pattern.mjs';
+import { loadAllRules } from '../../scripts/review/lib/rule-loader.mjs';
+import { detectForbiddenPattern } from '../../scripts/review/lib/detection/forbidden-pattern.mjs';
 
-const PLUGIN_ROOT = new URL('../../..', import.meta.url).pathname;
+const PLUGIN_ROOT = new URL('../..', import.meta.url).pathname;
 
 async function e2eForbiddenPatterns() {
   const rules = await loadAllRules(PLUGIN_ROOT);

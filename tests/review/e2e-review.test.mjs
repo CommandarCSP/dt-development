@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const REVIEW_SCRIPT = new URL('../scripts/review.mjs', import.meta.url).pathname;
+const REVIEW_SCRIPT = new URL('../../scripts/review/review.mjs', import.meta.url).pathname;
 
 function makeTempProject(name, files, configExtra = {}) {
   const dir = mkdtempSync(join(tmpdir(), `dt-frontend-e2e-${name}-`));

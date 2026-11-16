@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectForbiddenImport } from '../scripts/lib/detection/forbidden-import.mjs';
+import { detectForbiddenImport } from '../../scripts/review/lib/detection/forbidden-import.mjs';
 
 test('detects exact module name', () => {
   const code = "import axios from 'axios';\n";

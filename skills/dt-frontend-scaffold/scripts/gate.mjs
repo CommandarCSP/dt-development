@@ -115,14 +115,14 @@ function binCmd(projectRoot, tool, toolArgs = []) {
 }
 
 function autoDetectReviewScript() {
-  // Primary: gate.mjs is at skills/dt-frontend-scaffold/scripts/, so
-  // ../../dt-frontend-review/scripts/review.mjs is the canonical relative path.
+  // Primary: the shared review engine lives at <pluginRoot>/scripts/review/review.mjs,
+  // two folders up from this file (skills/dt-frontend-scaffold/scripts/).
   // Fallback: honor CLAUDE_PLUGIN_ROOT env var if set (e.g. when plugin is invoked from a slash command).
   const candidates = [
-    new URL('../../dt-frontend-review/scripts/review.mjs', import.meta.url).pathname,
+    new URL('../../../scripts/review/review.mjs', import.meta.url).pathname,
   ];
   if (process.env.CLAUDE_PLUGIN_ROOT) {
-    candidates.push(`${process.env.CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs`);
+    candidates.push(`${process.env.CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs`);
   }
   for (const c of candidates) {
     if (existsSync(c)) return c;

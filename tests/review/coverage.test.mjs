@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCoverageSummary, compareCoverage } from '../scripts/lib/coverage.mjs';
+import { parseCoverageSummary, compareCoverage } from '../../scripts/review/lib/coverage.mjs';
 
 test('parseCoverageSummary extracts per-file line coverage', () => {
   const json = {

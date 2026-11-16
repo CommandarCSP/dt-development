@@ -182,8 +182,8 @@ test('ATLAS 블록에 decision-log-scope이 반영돼 있다', () => {
 });
 
 test('결정 로그 검출: 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 순서·제목 갱신은 manual 이다', async () => {
-  const { parseFrontmatter } = await import('../skills/dt-frontend-review/scripts/lib/frontmatter.mjs');
-  const { detectForbiddenPattern } = await import('../skills/dt-frontend-review/scripts/lib/detection/forbidden-pattern.mjs');
+  const { parseFrontmatter } = await import('../scripts/review/lib/frontmatter.mjs');
+  const { detectForbiddenPattern } = await import('../scripts/review/lib/detection/forbidden-pattern.mjs');
   for (const st of ['frontend', 'backend']) {
     const fm = (f) => parseFrontmatter(readFileSync(join(root, `skills/dt-${st}-architecture/patterns/${f}.md`), 'utf8')).data;
     const scope = fm('decision-log-scope').detection[0];

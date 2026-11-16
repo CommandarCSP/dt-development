@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectRequiredPattern } from '../scripts/lib/detection/required-pattern.mjs';
+import { detectRequiredPattern } from '../../scripts/review/lib/detection/required-pattern.mjs';
 
 test('flags if queryKey factory does not use params when params present', () => {
   const code = `

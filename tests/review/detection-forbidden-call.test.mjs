@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectForbiddenCall } from '../scripts/lib/detection/forbidden-call.mjs';
+import { detectForbiddenCall } from '../../scripts/review/lib/detection/forbidden-call.mjs';
 
 test('detects bare function call', () => {
   const code = `function Comp() { const data = useQuery(); }\n`;

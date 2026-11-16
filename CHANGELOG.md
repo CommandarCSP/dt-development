@@ -12,6 +12,7 @@
 - 리뷰 규칙 머리말 스키마 `docs/refs/rule-frontmatter.schema.json`과 검사기 `scripts/validateRules.mjs` — 필수 필드·severity·검출 type과 type별 필수 인자·relatedRules (GEN-27)
 - README 전체 목록 자동 생성 `scripts/readmeCatalog.mjs` (GEN-27)
 - 스킬 동작 평가 `evals/` — `claude plugin eval` 형식 4건(dt-spec·dt-be-spec·dt-review·dt-migrate), 예제 프로젝트를 만들어 실제로 돌리고 결정적 채점기로 본다. CI에는 넣지 않고 손으로 돌린다(`evals/README.md`) (GEN-28)
+- 리뷰 커버리지 명령을 프로젝트에 맞게 고른다 — 스택 설정 `coverage.runner`(vitest|jest)·`coverage.packageManager`(pnpm|npm|yarn)·`coverage.command`·`coverage.installCommand`, 없으면 package.json·lockfile을 보고 고른다. 설정이 없고 지금 조합이면 명령은 그대로다. 원본 `docs/refs/review-engine.md` (GEN-08)
 
 ### 고침
 - 리뷰 full 모드가 git을 못 쓰면 0개 파일을 검사하고 "Ready to merge: Yes"를 내던 것 — git 실패 시 폴더를 훑고, 새 파일(untracked)도 보고, 검사 파일 수를 적고, 0개면 `Unknown`. 스킬 문서의 기본 범위 설명("커밋 안 된 변경")도 코드와 맞춰 "프로젝트 전체"로 (GEN-28 평가에서 발견)
@@ -20,6 +21,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- 리뷰 엔진을 `skills/dt-frontend-review/scripts/`에서 공용 자리 `scripts/review/`로(테스트는 `tests/review/`). **옛 경로 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부른다 — 0.17.0에서 지운다** (GEN-08)
 - 코딩 규율 4원칙의 원본을 `docs/refs/coding-discipline.md` 하나로 — FE·BE 스킬(이름 그대로)은 스택 예시만 둔다. 결정 로그·쉬운 글쓰기 규칙을 다시 적던 곳은 원본을 가리킨다 (GEN-26)
 - FE·BE 스펙 파이프라인 공용 단계(실행 모드·정의서 게이트·헤더·역참조·변경 전파·상향 정합·상태·재실행·완료 알림)를 `docs/refs/spec-pipeline.md` 하나로. `dt-spec-generate-spec`은 548줄 → 289줄(소스 입력·산출물 본문을 `references/`로), 동작은 그대로 (GEN-26)
 - 진입점을 하나로: 같은 이름 명령이 있는 스킬 15개는 `/` 메뉴에서 숨긴다(`user-invocable: false` — 모델은 계속 부른다). 명령은 인자 처리와 스킬 가리키기만 하고, `/dt-review`·`/dt-be-review`의 절차는 리뷰 스킬로 옮겼다. 구조 테스트가 스킬 300줄·명령 40줄 상한, 명령의 절차 절, 원본 규칙 문장의 재서술을 잡는다 (GEN-26)

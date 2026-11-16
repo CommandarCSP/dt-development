@@ -19,11 +19,14 @@ import {
 } from '../lib/coverage.mjs';
 import { renderReport } from '../lib/reporter.mjs';
 import { loadOverrideKeys, overrideDecisionFindings } from '../lib/overrides.mjs';
+import { resolveCoverageCommands } from '../lib/stacks.mjs';
 
 // Run a full review against the user project at cwd.
-// args: { pluginRoot, projectRoot, baseRef, runCoverage, ruleLocations, configFileName, testCommand, installCommand }
+// args: { pluginRoot, projectRoot, baseRef, runCoverage, stack, ruleLocations, configFileName, testCommand, installCommand }
+// testCommand·installCommand 를 넘기지 않으면 스택 설정 coverage.* 와 프로젝트(lockfile·package.json)로 고른다.
 export async function runFullMode({
   pluginRoot, projectRoot, baseRef, runCoverage, verbose = false,
+  stack = 'frontend',
   ruleLocations = undefined,
   configFileName = '.dt-frontend.json',
   testCommand = undefined,
@@ -90,7 +93,15 @@ export async function runFullMode({
   }
   let coverage = { findings: [] };
   if (runCoverage && baseRef) {
-    coverage = await runCoverageDiff({ projectRoot, baseRef, changed, configFileName, testCommand, installCommand });
+    let cfgCoverage = {};
+    try { cfgCoverage = JSON.parse(await readFile(join(projectRoot, configFileName), 'utf8')).coverage ?? {}; } catch {}
+    const picked = resolveCoverageCommands(stack, projectRoot, cfgCoverage);
+    coverage = await runCoverageDiff({
+      projectRoot, baseRef, changed, configFileName,
+      testCommand: testCommand ?? picked.testCommand,
+      installCommand: installCommand ?? picked.installCommand,
+      describe: testCommand ? '호출자가 넘긴 명령' : picked.describe,
+    });
   }
 
   // 5. Render report
@@ -127,9 +138,12 @@ function runDetection(code, det, ctx) {
   }
 }
 
-async function runCoverageDiff({ projectRoot, baseRef, changed, configFileName = '.dt-frontend.json', testCommand, installCommand }) {
+async function runCoverageDiff({ projectRoot, baseRef, changed, configFileName = '.dt-frontend.json', testCommand, installCommand, describe }) {
   const head = measureCoverage(projectRoot, { testCommand });
-  if (!head.ok) return { findings: [{ severity: 'critical', file: '(test run)', message: head.error }] };
+  if (!head.ok) {
+    const cmd = [testCommand[0], ...testCommand[1]].join(' ');
+    return { findings: [{ severity: 'critical', file: '(test run)', message: `커버리지 명령 실패 — \`${cmd}\` [${describe}]. 맞지 않으면 스택 설정 coverage.runner·packageManager 나 coverage.command 로 고친다.\n${head.error}` }] };
+  }
   const base = measureBaselineCoverage(projectRoot, baseRef, { testCommand, installCommand });
   if (!base.ok) {
     return { findings: [{ severity: 'minor', file: '(baseline)', message: `baseline 계산 실패: ${base.error}. diff 검사 생략.` }] };

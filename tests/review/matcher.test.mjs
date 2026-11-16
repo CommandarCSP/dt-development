@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { matchGlob, matchAny } from '../scripts/lib/matcher.mjs';
+import { matchGlob, matchAny } from '../../scripts/review/lib/matcher.mjs';
 
 test('matches exact path', () => {
   assert.equal(matchGlob('src/foo.ts', 'src/foo.ts'), true);
