@@ -57,7 +57,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 
 읽는 순서는 **개인(`.local.json`) > 팀(`.json`) > 대화형 질문**입니다. `.local.json`은 커밋하지 않는 개인 값(예: 마지막으로 동기화를 마친 커밋 위치)이라 각자 `.gitignore`에 등록합니다.
 
-Jira 연동 위저드는 cloudId·site를 `getAccessibleAtlassianResources`로 자동 확인합니다. 사람이 고르는 것은 프로젝트 키 하나뿐이고, cloudId 같은 UUID를 손으로 찾아 넣을 일은 없습니다.
+Jira 연동 위저드는 cloudId·site를 `site.resources`로 자동 확인합니다. 사람이 고르는 것은 프로젝트 키 하나뿐이고, cloudId 같은 UUID를 손으로 찾아 넣을 일은 없습니다.
 
 ---
 

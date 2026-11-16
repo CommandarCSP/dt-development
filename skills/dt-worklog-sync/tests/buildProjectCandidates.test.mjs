@@ -15,7 +15,7 @@ import {
   ensureGitignoreEntry,
 } from '../scripts/buildProjectCandidates.mjs';
 
-// getVisibleJiraProjects(action=browse, expandIssueTypes=false) 응답의 축약 샘플.
+// 프로젝트 목록(jira.projects — v1 getVisibleJiraProjects, action=browse) 응답의 축약 샘플.
 const PAGE = {
   total: 3,
   isLast: true,
@@ -31,6 +31,15 @@ test('extractProjects normalizes a single-page response', () => {
   const got = extractProjects(PAGE);
   assert.equal(got.length, 3);
   assert.deepEqual(got[0], { id: '11780', key: 'SAP', name: '[ACME] AI PoC 과제', category: '2026년' });
+});
+
+test('extractProjects reads the v2 response wrapped in data (listJiraProjects)', () => {
+  const got = extractProjects({ data: PAGE });
+  assert.equal(got.length, 3);
+  assert.equal(got[1].key, 'S3W');
+  const pages = extractProjects([{ data: PAGE }, { data: { values: [{ id: '1', key: 'Y', name: 'y' }] } }]);
+  assert.equal(pages.length, 4);
+  assert.equal(pages[3].key, 'Y');
 });
 
 test('extractProjects flattens an array of page responses', () => {

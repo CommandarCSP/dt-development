@@ -116,7 +116,7 @@ Figma 소스가 1개 이상이면 순서대로 확인:
 - **markdown**: `Read` 도구로 파일 읽기.
 - **pdf**: `Read` 도구로 읽기 (`pages` 파라미터로 멀티페이지 추출).
 - **web (Notion)**: `notion-fetch` MCP 도구 사용.
-- **web (Atlassian/Confluence)**: `mcp__claude_ai_Atlassian__fetch` 또는 `mcp__claude_ai_Atlassian__getConfluencePage` 사용.
+- **web (Atlassian/Confluence)**: 하는 일 `confluence.get`(URL로 페이지 읽기). 실제 도구 이름·인자(v1·v2가 다르다)와 접두어는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/atlassian-mcp.md`에서 찾는다. 본문이 필요하므로 마크다운 전문으로 읽는다.
 - **web (일반 URL)**: `WebFetch` 도구 사용.
 - **figma**: 노드 참조만 보관 (실제 로드는 AnalyzeFigmaFrame 어댑터가 MCP로 수행).
 

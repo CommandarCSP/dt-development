@@ -2,10 +2,10 @@
 
 Jira Sub-task(및 Story/Task)의 세부사항에 **산출물(Output)** 커스텀 필드가 있다. 멀티라인 텍스트 필드로, 해당 업무의 산출물을 **확인할 수 있는 파일명 또는 URL**을 자유롭게 받는다. 이 문서가 그 입력 규칙의 SOT다.
 
-> **필드 식별(인스턴스별):** 필드 id는 Jira 인스턴스마다 다르다. 설정(`.dt-worklog.json`)의 `outputFieldId`가 있으면 그것을, 없으면 `getJiraIssueTypeMetaWithFields`로 이름(`outputFieldName`, 기본 `"산출물"`)에 매칭되는 `customfield_*` id를 찾아 쓴다. 못 찾으면 산출물은 코멘트/설명에만 남기고 필드 기재는 건너뛴다(침묵 실패 금지 — 보고).
+> **필드 식별(인스턴스별):** 필드 id는 Jira 인스턴스마다 다르다. 설정(`.dt-worklog.json`)의 `outputFieldId`가 있으면 그것을, 없으면 `jira.fieldMeta`로 이름(`outputFieldName`, 기본 `"산출물"`)에 매칭되는 `customfield_*` id를 찾아 쓴다. 못 찾으면 산출물은 코멘트/설명에만 남기고 필드 기재는 건너뛴다(침묵 실패 금지 — 보고).
 > - ACME SAP 인스턴스 기준값: `customfield_10731`.
 >
-> **값 형식 — ADF(리치텍스트) 필수:** 이 필드는 평문 문자열이 아니라 **Atlassian 문서(ADF)** 값을 요구한다(`{"type":"string"...:textarea}` 스키마여도 실제로는 리치텍스트). 평문 `"url1\nurl2"`를 넣으면 `"값은 Atlassian 문서여야 합니다"` 오류가 난다. **URL 한 줄 = paragraph 하나**로 ADF 문서를 구성해 `additional_fields`(생성) 또는 `editJiraIssue.fields`(수정)에 객체로 전달한다:
+> **값 형식 — ADF(리치텍스트) 필수:** 이 필드는 평문 문자열이 아니라 **Atlassian 문서(ADF)** 값을 요구한다(`{"type":"string"...:textarea}` 스키마여도 실제로는 리치텍스트). 평문 `"url1\nurl2"`를 넣으면 `"값은 Atlassian 문서여야 합니다"` 오류가 난다. **URL 한 줄 = paragraph 하나**로 ADF 문서를 구성해 `additional_fields`(생성) 또는 `jira.issue.edit.fields`(수정)에 객체로 전달한다:
 > ```json
 > { "customfield_10731": { "type": "doc", "version": 1, "content": [
 >   { "type": "paragraph", "content": [ { "type": "text", "text": "https://git.example.com/.../-/commit/<sha> (merge)" } ] },

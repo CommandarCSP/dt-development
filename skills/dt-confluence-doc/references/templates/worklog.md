@@ -7,4 +7,4 @@
 3. **이슈·리스크** — 패널(`<div data-type="panel-warning">`)로 강조
 4. **다음 계획** — `<ul>`
 
-소스: git log/diff(기간) + 현재 세션 + Jira(관련 프로젝트) `searchJiraIssuesUsingJql`. 기간 불명확하면 질문.
+소스: git log/diff(기간) + 현재 세션 + Jira(관련 프로젝트) `jira.search`. 기간 불명확하면 질문.

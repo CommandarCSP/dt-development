@@ -59,9 +59,9 @@ description: Use when the user wants a developer handbook for an existing codeba
 1. `<projectRoot>/.dt-handbook.json` 이 없으면 `${CLAUDE_PLUGIN_ROOT}/templates/dt-handbook.json.tmpl` 로 만든다 — `{{PRODUCT}}` 는 `package.json` 의 `name`(사람이 읽는 이름이 따로 있으면 질문), `{{PDF_NAME}}` 은 ASCII `<Product>-Handbook.pdf`.
 2. `docs/handbook/` 이 있으면 재실행이다: `inventory.md`·`structure.json`·`traces/*`·`handbook.md`·영수증의 유무를 표로 보이고, 있는 것은 `prior…Path` 로 워커에 넘긴다.
 3. `.gitignore` 에 `.dt-handbook/`(스크래치)·`docs/handbook/handbook.html`·`docs/handbook/handbook-s*.html`(빌드 중간 산출)이 없으면 그 줄을 더한다(바꿀 줄을 보이고 확인 — 무인이면 더한 뒤 기록).
-4. **외부 지식 원천 확인** — `sources.atlassian.enabled` 가 `off` 가 아니면 `mcp__atlassian__*` 도구가 있는지 본다. 없으면 **한 번만** 이렇게 알리고 그대로 진행한다.
+4. **외부 지식 원천 확인** — `sources.atlassian.enabled` 가 `off` 가 아니면 Atlassian MCP 도구(접두어 `mcp__atlassian__` 또는 `mcp__claude_ai_Atlassian__` — v1·v2 판정은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/atlassian-mcp.md` §1)가 있는지 본다. 없으면 **한 번만** 이렇게 알리고 그대로 진행한다.
    > Atlassian MCP 가 연결돼 있지 않다. 붙이면 "왜 이렇게 됐나"(2·4·8장)와 알려진 이슈를 티켓·설계 문서에서 가져올 수 있다. 없이도 문서는 나오지만 그 항목은 `[추정]` 으로 남는다.
-   > 연결: `claude mcp add --scope user --transport http atlassian https://mcp.atlassian.com/v1/mcp` → `/mcp` 인증 → `/dt-handbook analyze` 재실행.
+   > 연결: `claude mcp add --scope user --transport http atlassian https://mcp.atlassian.com/v2/mcp` → `/mcp` 인증 → `/dt-handbook analyze` 재실행.
 5. **무인 규칙** — 질문은 기본값으로 답하고 `assumed` 라벨을 붙인다. 체크포인트는 자동 승인으로 `.dt-handbook/progress.md` 에 적는다.
 
 ### §1. analyze

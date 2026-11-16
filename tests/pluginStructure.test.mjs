@@ -460,3 +460,66 @@ test('dt-adopt: 기계 추출 스크립트·워커·표준 작성 에이전트�
   assert.ok(!/status: as-built/.test(t), 'as-built 는 status 값이 아니라 origin 마커로 표시한다');
   for (const a of ['spec-author', 'bespec-author']) assert.match(readFileSync(rel(`agents/${a}.md`), 'utf8'), /as-built 소스/);
 });
+
+// Atlassian MCP — v1·v2 도구 이름이 다르다(GEN-42). 대응표 docs/refs/atlassian-mcp.md 가 단일 출처다.
+// ① 스킬·에이전트·명령 본문은 v1 전용 이름을 박지 않고 하는 일 이름(jira.*·confluence.*)을 쓴다
+// ② 적힌 Atlassian 도구(mcp__…atlassian__X)는 모두 대응표에 있다
+// ③ 명령 allowed-tools: v1 이름마다 v2 짝이 있고, 두 접두어가 다 있고, executeWrite 는 없다
+function atlassianTable() {
+  const doc = readFileSync(rel('docs/refs/atlassian-mcp.md'), 'utf8');
+  const ticks = (cell) => [...cell.matchAll(/`([A-Za-z][A-Za-z]*)`/g)].map((m) => m[1]);
+  const rows = [];
+  for (const line of doc.split('\n')) {
+    const cells = line.split('|').map((c) => c.trim());
+    if (cells.length < 5 || !/^`(site|user|jira|confluence)\./.test(cells[1])) continue;
+    const v1 = ticks(cells[2].replace(/\(.*$/, ''));
+    const v2cell = ticks(cells[3]);
+    const v2 = cells[3].includes('→') ? v2cell[0] : v2cell[0]; // 실행기 경로면 실행기(executeRead|executeWrite)가 allowed-tools 짝
+    rows.push({ cap: cells[1].replace(/`/g, ''), v1, v2, v2op: cells[3].includes('→') ? v2cell[1] : v2cell[0] });
+  }
+  const known = new Set([...doc.matchAll(/`([a-z][A-Za-z]+)[`(]/g)].map((m) => m[1]));
+  return { rows, known };
+}
+const walk = (dir, out = []) => {
+  for (const e of readdirSync(rel(dir), { withFileTypes: true })) {
+    const p = `${dir}/${e.name}`;
+    if (e.isDirectory()) { if (e.name !== 'node_modules') walk(p, out); } else out.push(p);
+  }
+  return out;
+};
+const ATL = /mcp__(claude_ai_)?[Aa]tlassian__(\w+)/g;
+const PREFIXES = ['mcp__atlassian__', 'mcp__claude_ai_Atlassian__'];
+
+test('Atlassian MCP: 본문은 하는 일 이름을 쓰고, 적힌 도구는 모두 대응표에 있다', () => {
+  const { rows, known } = atlassianTable();
+  assert.ok(rows.length >= 15, `대응표 행을 읽지 못했다(${rows.length})`);
+  const v2names = new Set(rows.flatMap((r) => [r.v2, r.v2op]));
+  const v1only = [...new Set(rows.flatMap((r) => r.v1))].filter((n) => !v2names.has(n) && n !== 'fetch'); // fetch 는 일반 낱말이라 접두어가 붙은 경우(②)만 본다
+  const problems = [];
+  const files = [...walk('skills'), ...walk('agents'), ...walk('commands')].filter((f) => f.endsWith('.md'));
+  for (const f of files) {
+    const text = readFileSync(rel(f), 'utf8');
+    const body = text.startsWith('---\n') ? text.slice(text.indexOf('\n---\n', 4) + 5) : text;
+    for (const m of text.matchAll(ATL)) if (!known.has(m[2])) problems.push(`${f}: ${m[0]} 은 대응표에 없다`);
+    for (const n of v1only) if (new RegExp(`\\b${n}\\b`).test(body.replace(/[가-힣]/g, ' '))) problems.push(`${f}: v1 전용 이름 ${n} — 하는 일 이름으로 쓴다(docs/refs/atlassian-mcp.md)`);
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('Atlassian MCP: 명령 allowed-tools 는 v1·v2 짝과 두 접두어를 갖추고 executeWrite 는 넣지 않는다', () => {
+  const { rows } = atlassianTable();
+  const problems = [];
+  for (const f of walk('commands').filter((x) => x.endsWith('.md'))) {
+    const fm = readFrontmatter(readFileSync(rel(f), 'utf8')) ?? {};
+    const tools = String(fm['allowed-tools'] ?? '').split(',').map((s) => s.trim());
+    const names = new Set(tools.filter((t) => /^mcp__(claude_ai_)?[Aa]tlassian__/.test(t)).map((t) => t.replace(/^mcp__(claude_ai_)?[Aa]tlassian__/, '')));
+    if (!names.size) continue;
+    for (const n of names) for (const p of PREFIXES) if (!tools.includes(p + n)) problems.push(`${f}: ${p}${n} 이 없다(두 접두어 모두)`);
+    if (names.has('executeWrite')) problems.push(`${f}: executeWrite 는 미리 허락하지 않는다`);
+    for (const r of rows) for (const v1 of r.v1) {
+      if (!names.has(v1) || r.v2 === 'executeWrite') continue;
+      if (!names.has(r.v2)) problems.push(`${f}: ${v1}(${r.cap}) 의 v2 짝 ${r.v2} 가 없다`);
+    }
+  }
+  assert.deepEqual(problems, []);
+});

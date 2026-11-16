@@ -1,7 +1,7 @@
 # 시각 표현 가이드라인 (dt-confluence-doc 참조)
 
 원칙: **시각화는 강제가 아니다.** 산문보다 이해를 더 잘 압축/전달할 때만 골라서 넣는다.
-페이지 본문은 `createConfluencePage`의 `contentFormat: "html"` 로 작성한다.
+페이지 본문은 `confluence.create`에 HTML로 넘긴다(v1 `contentFormat: "html"` · v2 `body: { format: "html", value }` — `docs/refs/atlassian-mcp.md`). v2에서는 서버의 형식 안내(`getContentFormatGuide`)가 아래 문법보다 우선한다.
 
 ## 무엇을 언제
 - **표(table)** — 항목 비교·수치·대조. `<table><thead><tr><th>..</th></tr></thead><tbody><tr><td>..</td></tr></tbody></table>`

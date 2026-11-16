@@ -2,12 +2,15 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-// getVisibleJiraProjects 응답에서 프로젝트 값 배열을 정규화해 꺼낸다.
-// 페이지네이션 병합 편의를 위해 세 형태를 모두 허용한다:
-//   1) { values: [...] }            — 단일 페이지 응답
+// 프로젝트 목록(하는 일 jira.projects — v1 getVisibleJiraProjects · v2 listJiraProjects, docs/refs/atlassian-mcp.md)
+// 응답에서 프로젝트 값 배열을 정규화해 꺼낸다. 페이지네이션 병합 편의를 위해 이런 형태를 모두 허용한다:
+//   1) { values: [...] }            — 단일 페이지 응답(v1)
 //   2) [ { values: [...] }, ... ]   — 페이지 응답들의 배열
 //   3) [ {id,key,...}, ... ]        — 이미 평탄화한 프로젝트 배열
+//   4) { data: { values: [...] } }  — v2 는 응답을 data 로 한 겹 감싼다(배열 안의 각 페이지도 마찬가지)
+const unwrap = (x) => (x && typeof x === 'object' && !Array.isArray(x) && x.data && typeof x.data === 'object' ? x.data : x);
 export function extractProjects(raw) {
+  raw = Array.isArray(raw) ? raw.map(unwrap) : unwrap(raw);
   let values;
   if (Array.isArray(raw)) {
     // 첫 원소가 .values를 가지면 "페이지 응답들의 배열"로 본다.

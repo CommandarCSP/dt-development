@@ -1,7 +1,7 @@
 ---
 description: Explain a discovered problem (Jira ticket, bug, issue) in structured plain language — evidence-labeled cause chain, project-grounded example, 2-3 solutions with downsides, one-line summary.
 argument-hint: '<티켓키 또는 문제 설명> [--quick]'
-allowed-tools: Read, Bash, Grep, Glob, Task, AskUserQuestion, mcp__atlassian__getJiraIssue
+allowed-tools: Read, Bash, Grep, Glob, Task, AskUserQuestion, mcp__atlassian__getJiraIssue, mcp__atlassian__discover, mcp__atlassian__executeRead, mcp__claude_ai_Atlassian__getJiraIssue, mcp__claude_ai_Atlassian__discover, mcp__claude_ai_Atlassian__executeRead
 ---
 
 dt-explain 스킬을 실행해 문제를 구조화된 쉬운 답변으로 설명한다.

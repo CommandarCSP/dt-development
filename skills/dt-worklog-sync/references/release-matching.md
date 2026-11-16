@@ -28,7 +28,7 @@ Jira의 **수정 버전(fixVersions)** 필드를 프로젝트의 **릴리즈(마
 
 ## 릴리즈 목록 조회
 
-공식 Atlassian MCP엔 프로젝트 버전 전용 조회 도구가 없다. **`getJiraIssueTypeMetaWithFields`**(대상 이슈 타입)의 `fixVersions.allowedValues`에서 목록을 얻는다.
+**`jira.versions`**로 목록을 얻는다(`docs/refs/atlassian-mcp.md`). v1에는 전용 도구가 없어 **`jira.fieldMeta`**(대상 이슈 타입)의 `fixVersions.allowedValues`를 쓰고, 이 길은 v2에서도 된다.
 - 각 항목: `{ id, name, description?, released, archived, releaseDate?, startDate? }`.
 - `archived: true`는 후보에서 제외한다.
 - **미출시(`released: false`)를 먼저** 보여주고, 출시 완료분은 목록 아래에 접어 둔다.
@@ -60,11 +60,11 @@ Jira의 **수정 버전(fixVersions)** 필드를 프로젝트의 **릴리즈(마
 
 ### ③ 맞는 릴리즈가 없으면 — 초안을 추천하고, 생성은 사람이
 
-**공식 MCP엔 버전 생성 도구가 없다**(`createJiraIssue`·`editJiraIssue`는 이슈용, `fetch`는 ARI 읽기 전용). 그래서 스킬은 만들지 못한다.
+**스킬은 릴리즈를 만들지 않는다.** v1에는 버전 생성 도구가 없고(`jira.issue.create`·`jira.issue.edit`는 이슈용), v2에는 있지만(`manageJiraProjectVersion`) 릴리즈는 여러 이슈·팀이 함께 쓰는 단위라 사람이 정한다.
 
 1. 이번 작업 범위에서 **릴리즈 초안**을 뽑아 보여준다: 이름(제품 접두어 + 작업 묶음), 시작일·종료일, 한 줄 설명.
 2. Jira 릴리즈 화면 링크를 함께 띄운다: `https://<site>/projects/<KEY>?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page`
-3. 사람이 만든 뒤 알려주면 `getJiraIssueTypeMetaWithFields`로 **목록을 다시 읽어** ②로 돌아간다.
+3. 사람이 만든 뒤 알려주면 `jira.fieldMeta`로 **목록을 다시 읽어** ②로 돌아간다.
 
 프로젝트에 릴리즈가 **하나도 없을 때도 같다.** 조용히 넘어가지 않는다.
 
@@ -74,8 +74,8 @@ Jira의 **수정 버전(fixVersions)** 필드를 프로젝트의 **릴리즈(마
 
 ## 기재 방법
 
-- 생성 시 `createJiraIssue`의 `additional_fields`에 `{ "fixVersions": [ { "id": "<versionId>" } ] }`.
-- 기존 이슈면 `editJiraIssue`의 `fields`에 같은 형태.
+- 생성 시 `jira.issue.create`의 `additional_fields`에 `{ "fixVersions": [ { "id": "<versionId>" } ] }`.
+- 기존 이슈면 `jira.issue.edit`의 `fields`에 같은 형태.
 - **이름보다 id를 우선**한다(중복 이름·리네임에 안전). id는 `allowedValues`에서 얻는다.
 
 ## dry-run 표기
