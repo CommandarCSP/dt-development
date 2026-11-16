@@ -62,7 +62,7 @@ description: >-
 - 각 단위는 개발자의 **Sub-task가 기본**(개발 결함 작업이면 Bug). 부모(Story/Task) 타입은 [3]에서 결정한다.
 - **본문 슬롯 매핑** — 각 단위를 `references/worklog-templates.md`의 description 슬롯(What/Why/How/DoD, Bug는 변형)에 매핑한다. 맥락에서 못 채우는 슬롯은 임의로 지어내지 말고 `{확인 필요}`로 둔다.
 - **산출물(Output) 필드 매핑** — 각 단위의 산출물을 `references/output-field-rules.md` 규칙대로 모은다. 개발 작업은 보통 **커밋/MR의 GitLab URL**이다: `git remote get-url origin`(또는 설정 `gitWebBaseUrl`)에서 웹 베이스를 도출(ssh→https)하고, 작업 단위의 **머지 커밋 URL을 우선**(`<베이스>/-/commit/<sha>`), 머지 커밋이 없거나 단위가 여러 파트로 나뉘었을 때만 주요 파트 커밋 URL을 줄바꿈으로 나열한다. 파일 산출물(설계서·테스트결과)은 첨부 후 파일명을 함께 적는다. 이 값이 [4] dry-run 표·[5] 산출물 필드 기재의 입력이다.
-- **가독성 적용** — 슬롯을 채울 때 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`를 따른다: 약어는 첫 등장에서 풀어쓰고(A1), 내부 용어·파일명엔 한 줄 설명을 붙이며(A2), Jira 설명은 개조식 문체로 통일한다(B1). 기계에 사람 행위를 붙이지 않고(C1), `~에 의해`·`~을 통해` 같은 번역투와 `수행·존재·해당` 같은 낯선 말을 쓰지 않는다(C2·C3). 새로 보는 사람이 따라 읽을 수 있게 쓴다.
+- **가독성 적용** — 슬롯을 채울 때 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(규칙 원본)를 따르고, 그 문서의 「텍스트 품질 체크리스트」로 점검한다. 문체(B1)는 그 표의 「Jira 설명·코멘트」 행. 새로 보는 사람이 따라 읽을 수 있게 쓴다.
 
 ### 3. 부모 매칭/생성 (Resolve) — 검색 → 없으면 사용자 확인 후 생성
 개발자의 Sub-task는 **반드시 부모 Story/Task 아래**에 둔다(가이드라인 기본규칙 1). 담당자 = 인증된 나(`user.me`).

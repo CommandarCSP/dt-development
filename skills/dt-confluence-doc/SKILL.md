@@ -40,7 +40,7 @@ description: Use when the user wants to write a Confluence document from their d
 
 ### 3. 구성 (Compose)
 - 템플릿 구조대로 본문을 **HTML**로 작성. 시각 요소는 visual-guideline 기준 충족 시에만(표/코드/패널/상태/태스크·결정 리스트). 다이어그램은 v1에서 mermaid 코드블록까지만.
-- **가독성 적용** — 본문 문장은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`를 따른다: 약어는 첫 등장에서 풀어쓰고(A1), 내부 용어·파일명엔 한 줄 설명을 붙이며(A2), 산문은 "~합니다" 정중체로 통일한다(B1). 기계에 사람 행위를 붙이지 않고(C1), 번역투·낯선 말·AI 상투구를 쓰지 않는다(C2~C4). 처음 보는 독자가 따라 읽을 수 있게 쓴다.
+- **가독성 적용** — 본문 문장은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`(규칙 원본)를 따르고, 그 문서의 「텍스트 품질 체크리스트」로 점검한다. 문체(B1)는 그 표의 「Confluence 산문」 행. 처음 보는 독자가 따라 읽을 수 있게 쓴다.
 - 라벨 = 설정 labelsByType[type] (+ 필요 라벨).
 
 ### 4. 미리보기 (Preview)
