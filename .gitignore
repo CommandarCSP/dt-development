@@ -6,3 +6,4 @@ dist/
 .dt-frontend/worktrees/
 
 tools/
+evals/results/

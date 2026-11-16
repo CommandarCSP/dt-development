@@ -11,8 +11,11 @@
 - `CONTRIBUTING.md` — 폴더 구분·이름·언어·머리말 형식, 리뷰 규칙 하나 추가 따라 하기, 올리기 전 점검 (GEN-27)
 - 리뷰 규칙 머리말 스키마 `docs/refs/rule-frontmatter.schema.json`과 검사기 `scripts/validateRules.mjs` — 필수 필드·severity·검출 type과 type별 필수 인자·relatedRules (GEN-27)
 - README 전체 목록 자동 생성 `scripts/readmeCatalog.mjs` (GEN-27)
+- 스킬 동작 평가 `evals/` — `claude plugin eval` 형식 4건(dt-spec·dt-be-spec·dt-review·dt-migrate), 예제 프로젝트를 만들어 실제로 돌리고 결정적 채점기로 본다. CI에는 넣지 않고 손으로 돌린다(`evals/README.md`) (GEN-28)
 
 ### 고침
+- 리뷰 full 모드가 git을 못 쓰면 0개 파일을 검사하고 "Ready to merge: Yes"를 내던 것 — git 실패 시 폴더를 훑고, 새 파일(untracked)도 보고, 검사 파일 수를 적고, 0개면 `Unknown`. 스킬 문서의 기본 범위 설명("커밋 안 된 변경")도 코드와 맞춰 "프로젝트 전체"로 (GEN-28 평가에서 발견)
+- `/dt-migrate`가 물을 수 없는 실행에서 확인 없이 `--write`로 쓰던 것 — 미리보기로 끝낸다 (GEN-28 평가에서 발견)
 - 결정 로그 규칙의 검출 8개가 정규식 없이 아무것도 검사하지 않던 것 — 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 날짜 순서·제목 갱신은 `manual`로 (GEN-27)
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 

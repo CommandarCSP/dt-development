@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: fe-spec-login
+tags: [spec, fe, slow]
+context:
+  scaffold_script: scaffold.sh
