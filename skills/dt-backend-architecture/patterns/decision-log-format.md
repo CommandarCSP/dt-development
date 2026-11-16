@@ -8,12 +8,14 @@ detection:
     description: "결정 로그 블록은 제목 줄로 시작하고 항목은 `- YYYY-MM · 출처: ` 형태여야 함"
     rationale: "제목 줄이 현재 규칙을 고정해야 로그가 길어져도 읽는 비용이 늘지 않음"
   - type: forbidden-pattern
+    pattern: "^[ \t]*[*][ \t]*- [0-9]{4}-[0-9]{2} · [^:\n]+: [^.\n]+\n[ \t]*([*][ \t]*- [0-9]{4}|[*]/)"
+    flags: "gm"
     description: "출처만 있고 이유가 없는 결정 로그 항목 (예: `- 2026-09 · PROJ-412: 확정 시점 변경`)"
     rationale: "키만 남은 참조는 시간이 지나면 아무것도 말해주지 않음 — 기본 주석 규칙이 태스크 참조를 막던 이유"
-  - type: forbidden-pattern
+  - type: manual
     description: "결정 로그 항목의 날짜가 내림차순 — 시간순 위반"
     rationale: "변천을 순서대로 읽을 수 있어야 함"
-  - type: forbidden-pattern
+  - type: manual
     description: "결정 로그 항목이 추가된 diff인데 제목 줄이 그대로임 — 첫 줄 미갱신"
     rationale: "제목 줄이 현재 규칙과 어긋나면 주석이 거짓말을 시작함. 형식 검사보다 반 발 나간 항목이므로 부담되면 이 항목만 제거 가능"
 relatedRules: [decision-log-scope]

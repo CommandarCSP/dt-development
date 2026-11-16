@@ -8,7 +8,7 @@ detection:
   - type: forbidden-import
     matches: ["@prisma/client", "**/prisma.service", "**/prisma/prisma.service"]
     rationale: "Service의 비즈니스 로직과 지속성(Prisma)을 분리 — Repository를 통해서만 DB 접근"
-relatedRules: [repository-only-prisma, where-does-business-logic-go]
+relatedRules: [repository-only-prisma, controller-no-business-logic]
 ---
 
 # Service는 Prisma 직접 호출 금지
@@ -53,4 +53,4 @@ export class OrdersService {
 
 ## 관련 규칙
 - [[repository-only-prisma]]
-- [[where-does-business-logic-go]]
+- [[controller-no-business-logic]] · 레이어별 책임은 `dt-backend-architecture` 「이 로직 어디에 둘까?」

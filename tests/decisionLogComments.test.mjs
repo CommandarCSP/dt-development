@@ -180,3 +180,19 @@ test('ATLAS 블록에 decision-log-scope이 반영돼 있다', () => {
     );
   }
 });
+
+test('결정 로그 검출: 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 순서·제목 갱신은 manual 이다', async () => {
+  const { parseFrontmatter } = await import('../skills/dt-frontend-review/scripts/lib/frontmatter.mjs');
+  const { detectForbiddenPattern } = await import('../skills/dt-frontend-review/scripts/lib/detection/forbidden-pattern.mjs');
+  for (const st of ['frontend', 'backend']) {
+    const fm = (f) => parseFrontmatter(readFileSync(join(root, `skills/dt-${st}-architecture/patterns/${f}.md`), 'utf8')).data;
+    const scope = fm('decision-log-scope').detection[0];
+    assert.equal(detectForbiddenPattern('/**\n * 한도\n * - 2026-05 · PROJ-1(CS팀): 늘림. 문의가 많았음\n */\n', scope).length, 1, `${st}: 밖 레이어 결정 로그`);
+    assert.equal(detectForbiddenPattern('// 목록 - 일반 주석\nconst a = 1;\n', scope).length, 0);
+    const fmt = fm('decision-log-format');
+    const noReason = fmt.detection.find((d) => d.type === 'forbidden-pattern');
+    assert.equal(detectForbiddenPattern('/**\n * 한도: 48시간\n * - 2026-01 · 초기: 24시간 전까지\n */\n', noReason).length, 1, `${st}: 이유 없는 항목`);
+    assert.equal(detectForbiddenPattern('/**\n * 한도: 48시간\n * - 2026-01 · 초기: 24시간 전까지. 경쟁사 기준\n * - 2026-05 · PROJ-1: 48시간.\n *   분쟁 문의가 많았음.\n */\n', noReason).length, 0);
+    assert.equal(fmt.detection.filter((d) => d.type === 'manual').length, 2, `${st}: 날짜 순서·제목 갱신은 정규식으로 못 잡아 manual`);
+  }
+});

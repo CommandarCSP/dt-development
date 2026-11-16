@@ -5,6 +5,8 @@ severity: minor
 appliesTo: ["src/**/*.controller.ts", "src/**/*.repository.ts", "src/**/dto/*.ts"]
 detection:
   - type: forbidden-pattern
+    pattern: "^[ \t]*([*]|//)[ \t]*- [0-9]{4}-[0-9]{2} · "
+    flags: "gm"
     description: "허용 레이어(Service) 밖의 결정 로그 블록 — `- YYYY-MM · 출처:` 항목을 가진 주석"
     rationale: "비즈니스 규칙이 Controller/Repository에 있다면 주석을 달 게 아니라 Service로 옮겨야 함"
 relatedRules: [decision-log-format, controller-no-business-logic]

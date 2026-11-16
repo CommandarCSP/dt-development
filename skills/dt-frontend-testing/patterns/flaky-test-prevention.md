@@ -1,6 +1,6 @@
 ---
 ruleId: flaky-test-prevention
-summary: "waitFor + 적절한 timeout, setTimeout/raw sleep 금지, cross-tree subscription 누락은 hook들을 한 트리에서 묶어 호출"
+summary: "waitFor·findBy 기본 timeout(늘리면 이유 주석), setTimeout/raw sleep 금지, cross-tree subscription 누락은 hook들을 한 트리에서 묶어 호출"
 severity: important
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}", "e2e/**/*.spec.ts"]
 detection:

@@ -8,7 +8,7 @@ detection:
   - type: ast-rule
     description: "Controller 메서드는 DTO 검증 후 Service 호출 결과를 반환만 해야 함 — 메서드 본문의 분기/반복/계산은 Service로 이동 (v1: 수동 검토)"
     rationale: "비즈니스 로직은 Service에 집중 — Controller 비대화 방지"
-relatedRules: [service-no-http-context, where-does-business-logic-go]
+relatedRules: [service-no-http-context, service-no-direct-prisma]
 ---
 
 # Controller에 비즈니스 로직을 두지 않는다
@@ -44,4 +44,4 @@ create(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
 
 ## 관련 규칙
 - [[service-no-http-context]]
-- [[where-does-business-logic-go]]
+- [[service-no-direct-prisma]] · 레이어별 책임은 `dt-backend-architecture` 「이 로직 어디에 둘까?」
