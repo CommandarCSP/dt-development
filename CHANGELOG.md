@@ -7,6 +7,15 @@
 
 ## [미출시]
 
+### 추가
+- `CONTRIBUTING.md` — 폴더 구분·이름·언어·머리말 형식, 리뷰 규칙 하나 추가 따라 하기, 올리기 전 점검 (GEN-27)
+- 리뷰 규칙 머리말 스키마 `docs/refs/rule-frontmatter.schema.json`과 검사기 `scripts/validateRules.mjs` — 필수 필드·severity·검출 type과 type별 필수 인자·relatedRules (GEN-27)
+- README 전체 목록 자동 생성 `scripts/readmeCatalog.mjs` (GEN-27)
+
+### 고침
+- 결정 로그 규칙의 검출 8개가 정규식 없이 아무것도 검사하지 않던 것 — 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 날짜 순서·제목 갱신은 `manual`로 (GEN-27)
+- BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
+
 ### 변경
 - 코딩 규율 4원칙의 원본을 `docs/refs/coding-discipline.md` 하나로 — FE·BE 스킬(이름 그대로)은 스택 예시만 둔다. 결정 로그·쉬운 글쓰기 규칙을 다시 적던 곳은 원본을 가리킨다 (GEN-26)
 - FE·BE 스펙 파이프라인 공용 단계(실행 모드·정의서 게이트·헤더·역참조·변경 전파·상향 정합·상태·재실행·완료 알림)를 `docs/refs/spec-pipeline.md` 하나로. `dt-spec-generate-spec`은 548줄 → 289줄(소스 입력·산출물 본문을 `references/`로), 동작은 그대로 (GEN-26)

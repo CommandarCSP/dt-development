@@ -40,6 +40,108 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 형식 이전 | 플러그인을 올린 뒤 프로젝트의 dt 산출물이 지금 형식과 맞는지 보고, 옮길 수 있는 것은 미리보기 → 확인 → 옮긴다. 바뀐 점은 [CHANGELOG](CHANGELOG.md) | `/dt-migrate` |
 | 마무리 | 브랜치 통합, 커밋→문서화 판단→Jira 동기화 순서 안내 | `/dt-git` · `/dt-wrap` |
 
+<!-- catalog:start -->
+
+<details><summary>전체 목록 — 명령 24 · 스킬 39 · 에이전트 16 (자동 생성: <code>node scripts/readmeCatalog.mjs --write</code>)</summary>
+
+**명령** — 사용자가 `/`로 부르는 입구. 절차는 따르는 스킬에 있다.
+
+| 명령 | 하는 일 | 따르는 스킬 |
+|---|---|---|
+| `/dt-adopt` | 이미 만들어진 프로젝트를 정의서·스펙·결정 기록(PD)으로 들인다 | `dt-adopt` |
+| `/dt-audit` | Audit the implemented app against dt spec artifacts | `dt-audit` |
+| `/dt-be-e2e` | Author and verify scenario-based acceptance e2e (Jest+Supertest+Testcontainers) for implemented backend resou… | `dt-be-e2e` |
+| `/dt-be-implement` | Turn dt-bespec resource artifacts into NestJS code by delegating to the dt-backend-scaffold engine | `dt-be-implement` |
+| `/dt-be-review` | Run dt-backend rule and coverage review against current project | `dt-backend-review` |
+| `/dt-be-scaffold` | Generate or extend dt-backend (NestJS) module code via multi-agent scaffold workflow | `dt-backend-scaffold` |
+| `/dt-be-spec` | Build backend SDD spec documents (requirements.md/design.md/tasks.md/api-contract.md) for a REST resource fro… | `dt-bespec-generate-spec` |
+| `/dt-confluence` | 개발 작업(git/세션/Jira)을 Confluence 문서로 작성한다 | `dt-confluence-doc` |
+| `/dt-decision` | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고, 찾고, 대체한다 | `dt-decision` |
+| `/dt-devspec` | Build the project-level development definition (docs/specs/definition.md) | `dt-devspec` |
+| `/dt-e2e` | Author and verify scenario-based acceptance e2e (Playwright) for implemented pages, driven by page specs and… | `dt-e2e` |
+| `/dt-explain` | Explain a discovered problem (Jira ticket, bug, issue) in structured plain language | `dt-explain` |
+| `/dt-fullstack` | 요구사항·UX 소스에서 풀스택 웹앱을 이름 있는 단계(definition → be-spec → be-build → fe-spec → fe-build, 선택 e2e·audit·guide·handbo… | `dt-fullstack` |
+| `/dt-git` | 피처 브랜치를 표준 절차로 main에 통합한다. start=origin 최신 main에서 분기, finish=리베이스→--no-ff 머지→main push→피처 브랜치 정리 | `dt-git-flow` |
+| `/dt-guide` | Generate an end-user guide PDF for a web-frontend or Electron project | `dt-guide` |
+| `/dt-handbook` | Generate a developer handbook PDF for an existing codebase | `dt-handbook` |
+| `/dt-implement` | Turn dt-spec page artifacts into code by delegating to the dt-frontend-scaffold engine | `dt-implement` |
+| `/dt-ko` | Check Korean prose in the given files (or the git diff) | `dt-ko` |
+| `/dt-migrate` | 플러그인을 올린 뒤 프로젝트의 dt 산출물(스펙·정의서·project-context·interactions·플랜·원장·결정·설정)이 지금 형식과 맞는지 점검하고, 옮길 수 있는 것은 미리보기 →… | `dt-migrate` |
+| `/dt-review` | Run dt-frontend rule and coverage review against current project | `dt-frontend-review` |
+| `/dt-scaffold` | Generate or extend dt-frontend domain code via multi-agent scaffold workflow | `dt-frontend-scaffold` |
+| `/dt-spec` | Build SDD-format spec documents (requirements.md/design.md/tasks.md/layout-skeleton.md) for a page from multi… | `dt-spec-generate-spec` |
+| `/dt-worklog` | 개발 작업(git + 세션 + 메모)을 조직 Jira 가이드라인에 맞게 Jira Sub-task로 동기화한다. dry-run 승인 후 생성/상태전이/산출물 첨부 | `dt-worklog-sync` |
+| `/dt-wrap` | 작업 마무리 루틴을 순서대로 진행한다 | `dt-wrap` |
+
+**스킬** — 명령이 부르거나, 조건이 맞으면 모델이 스스로 부른다. 같은 이름 명령이 있는 스킬은 `/` 메뉴에 나오지 않는다.
+
+| 스킬 | 하는 일 |
+|---|---|
+| `dt-adopt` (/dt-adopt) | bringing an existing (brownfield) project under dt management |
+| `dt-audit` (/dt-audit) | auditing whether the implemented app (static code + running app) satisfies dt spec artifacts |
+| `dt-backend-architecture` | writing or reviewing NestJS/TypeScript code in a project that contains .dt-backend.json |
+| `dt-backend-coding-discipline` | writing, reviewing, or refactoring code in a project that contains .dt-backend.json |
+| `dt-backend-review` | reviewing dt-backend (NestJS) project code for architecture/test rule violations, when the backend scaffold w… |
+| `dt-backend-scaffold` | the user requests creating a new NestJS project following dt-backend architecture, adding a new module/resour… |
+| `dt-backend-testing` | writing or reviewing tests in a NestJS project that contains .dt-backend.json |
+| `dt-be-e2e` (/dt-be-e2e) | Use after /dt-be-implement to author and verify scenario-based acceptance e2e (Jest+Supertest+Testcontainers)… |
+| `dt-be-implement` (/dt-be-implement) | the user wants to turn dt-bespec resource artifacts (requirements/design/tasks/api-contract in docs/specs/res… |
+| `dt-bespec-analyze-datamodel` | Use within dt-bespec to analyze ERD diagrams, SQL DDL, or data-model documents and extract entities, fields,… |
+| `dt-bespec-analyze-document` | Use within dt-bespec to extract intent, flows, business rules, edge cases, and endpoint candidates from Markd… |
+| `dt-bespec-analyze-openapi` | Use within dt-bespec to analyze an OpenAPI/Swagger 3.x spec (yaml/json) and extract endpoints, HTTP methods,… |
+| `dt-bespec-ask-missing` | Use within dt-bespec to resolve source conflicts/duplicates and fill missing endpoint details (method, path,… |
+| `dt-bespec-collect-project-context` | Use within dt-bespec to collect/maintain backend project context (framework, ORM, database, cache/queue, auth… |
+| `dt-bespec-generate-spec` | generating backend SDD spec documents (requirements.md/design.md/tasks.md/api-contract.md) for a REST resourc… |
+| `dt-confluence-doc` | the user wants to write a Confluence document from their dev work |
+| `dt-decision` (/dt-decision) | Record, list, and supersede long-lived decisions |
+| `dt-devspec` (/dt-devspec) | starting a new project/feature and the team needs a project-level Source of Truth before FE/BE specs |
+| `dt-e2e` (/dt-e2e) | Use after /dt-implement to author and verify scenario-based acceptance e2e (Playwright) for implemented pages |
+| `dt-explain` (/dt-explain) | the user asks to explain a problem, bug, Jira ticket, or issue |
+| `dt-frontend-architecture` | writing or reviewing React/TypeScript code in a project that contains .dt-frontend.json |
+| `dt-frontend-coding-discipline` | writing, reviewing, or refactoring code in a project that contains .dt-frontend.json |
+| `dt-frontend-review` | reviewing dt-frontend project code for architecture/test rule violations, when scaffold workflow needs a phas… |
+| `dt-frontend-scaffold` | the user requests creating a new React project following dt-frontend architecture, adding a new domain (e.g.… |
+| `dt-frontend-testing` | writing or reviewing tests in a project that contains .dt-frontend.json |
+| `dt-fullstack` (/dt-fullstack) | the user wants to build a full web app end-to-end from requirements/UX sources |
+| `dt-git-flow` | integrating a feature branch into main following the team's git workflow |
+| `dt-guide` (/dt-guide) | the user wants an end-user guide (사용자 가이드·사용 설명서·매뉴얼 PDF) for a web-frontend or Electron project |
+| `dt-handbook` (/dt-handbook) | the user wants a developer handbook for an existing codebase (인수인계서·코드 설명서·아키텍처 문서·핸드북 PDF) |
+| `dt-implement` (/dt-implement) | the user wants to turn dt-spec page artifacts (requirements/design/tasks/layout-skeleton in docs/specs/pages/… |
+| `dt-ko` (/dt-ko) | the user wants Korean prose checked or cleaned up |
+| `dt-migrate` (/dt-migrate) | Check a project's dt artifacts (specs, definition, project-context, interactions, plans, e2e ledgers, decisio… |
+| `dt-spec-analyze-document` | dt-spec needs to extract intent/flow/rules/API candidates AND infer UI structure from a document source (Mark… |
+| `dt-spec-analyze-figma` | dt-spec needs to analyze a Figma design page (the screen the user will build), extract UI tree/components/sem… |
+| `dt-spec-ask-missing` | dt-spec needs to fill missing requirements via user askQuestion |
+| `dt-spec-collect-project-context` | dt-spec needs the project's overview, constraints, domain glossary, and tech stack |
+| `dt-spec-generate-spec` | the user runs /dt-spec to build SDD spec documents for a page |
+| `dt-worklog-sync` | >- |
+| `dt-wrap` (/dt-wrap) | wrapping up a chunk of work |
+
+**에이전트** — 사용자가 부르지 않는다. 조율 스킬이 일을 맡긴다. 티어는 `.dt.json` `team.models`로 모델을 고르는 묶음이다.
+
+| 에이전트 | 티어 | 하는 일 |
+|---|---|---|
+| `adopt-extractor` | planner | /dt-adopt 역추출 워커 |
+| `auditor` | reviewer | >- |
+| `be-builder` | builder | 한 리소스/모듈의 BE 계층(repository·dto·service·controller·module)을 스펙대로 한 컨텍스트에서 구현하는 일회성 워커 |
+| `bespec-author` | planner | 요청 범위의 BE 리소스 스펙 전체(requirements/design/tasks/api-contract)와 크로스리소스 통합(트랜잭션 경계·cascade·스키마 관계)을 한 컨텍스트에서 홀리스틱… |
+| `definition-author` | planner | 프로젝트 정의서(docs/specs/definition.md |
+| `e2e-author` | planner | 수용 e2e 워커(stack: frontend\|backend) |
+| `fe-builder` | builder | 한 페이지/도메인의 FE 5레이어(services·store·business·view·domain·page)를 스펙대로 한 컨텍스트에서 구현하는 일회성 워커 |
+| `guide-analyst` | planner | /dt-guide analyze 워커 |
+| `guide-author` | planner | /dt-guide write 워커 |
+| `handbook-analyst` | planner | /dt-handbook analyze 워커 |
+| `handbook-author` | planner | /dt-handbook write 워커 |
+| `handbook-tracer` | planner | /dt-handbook trace 워커 |
+| `ko-writing-reviewer` | reviewer | 플러그인이 생성한 한글 본문을 readable-writing.md(A·B·C 묶음)로 판정하고, 위반 문장마다 대체 문장(before→after)을 돌려주는 격리 리뷰 워커 |
+| `plan-author` | planner | 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스펙 + interactions.md를 한 컨텍스트에서 읽고, 유닛별 코드-레벨 체크박스 플랜(plan.md)에 크로스유닛 연계 배선까지 박… |
+| `reviewer` | reviewer | dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict만 반환하는 격리 리뷰 워커 |
+| `spec-author` | planner | 요청 범위의 FE 페이지 스펙 전체(requirements/design/tasks/layout-skeleton)와 크로스페이지 interactions.md를 한 컨텍스트에서 홀리스틱하게 작성하는… |
+
+</details>
+
+<!-- catalog:end -->
+
 ---
 
 ## 설정 — 회사·프로젝트 값은 어디에 넣나
@@ -94,6 +196,8 @@ Jira 연동 위저드는 cloudId·site를 `site.resources`로 자동 확인합�
 ---
 
 ## 개발
+
+스킬·리뷰 규칙·에이전트·명령을 더하거나 고치는 법은 [CONTRIBUTING.md](CONTRIBUTING.md), 바뀐 점은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
 
 ```bash
 npm test        # tests/ · skills/*/tests/ · hooks/tests/ 전부

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dt-development/rule-frontmatter",
+  "title": "리뷰 규칙 머리말",
+  "description": "skills/dt-*-architecture|testing/patterns/*.md 와 rules/vendored/*/*.md 의 YAML 머리말. 검사는 scripts/validateRules.mjs 가 이 스키마와 같은 규칙으로 한다(의존성 없이). 쓰는 법은 CONTRIBUTING.md 「리뷰 규칙 하나 추가」.",
+  "type": "object",
+  "required": ["ruleId", "summary", "severity", "appliesTo", "detection"],
+  "additionalProperties": false,
+  "properties": {
+    "ruleId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "kebab-case. 파일 이름(확장자 뺀 것)과 같다" },
+    "summary": { "type": "string", "minLength": 1, "description": "한 줄 — 스킬 SKILL.md 의 규칙 목록과 보고서에 그대로 쓰인다" },
+    "severity": { "enum": ["critical", "important", "minor", "suggestion"], "description": "suggestion 은 minor 의 별칭(외부에서 들여온 규칙용) — 보고서에는 minor 로 나온다" },
+    "appliesTo": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "검사할 파일 glob" },
+    "excludePathPatterns": { "type": "array", "items": { "type": "string" }, "description": "appliesTo 에서 뺄 경로 정규식" },
+    "relatedRules": { "type": "array", "items": { "type": "string" }, "description": "같은 스택에 있는 ruleId" },
+    "overridable": { "type": "boolean", "description": "true 면 스택 설정 overrides.<overrideKey> 로 끌 수 있다(근거 결정 decisionRef 필요)" },
+    "overrideKey": { "type": "string" },
+    "source": { "type": "string", "description": "외부에서 들여온 규칙의 출처" },
+    "placeholder": { "type": "boolean", "description": "외부 규칙을 자리만 잡아 둔 것" },
+    "condition": { "type": "string", "description": "외부 규칙이 걸리는 조건(예: framework: nextjs-app-router)" },
+    "detection": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "enum": ["forbidden-import", "forbidden-call", "forbidden-pattern", "required-pattern", "requires-sibling-test", "requires-acceptance-ledger", "pattern-pair", "jsx-tag-attrs", "registered-in-sibling-module", "ast-rule", "manual"] },
+          "description": { "type": "string" },
+          "rationale": { "type": "string" }
+        },
+        "allOf": [
+          { "if": { "properties": { "type": { "const": "forbidden-import" } } }, "then": { "required": ["matches"] } },
+          { "if": { "properties": { "type": { "const": "forbidden-call" } } }, "then": { "required": ["matches"] } },
+          { "if": { "properties": { "type": { "const": "forbidden-pattern" } } }, "then": { "required": ["pattern"] } },
+          { "if": { "properties": { "type": { "const": "pattern-pair" } } }, "then": { "required": ["when"] } },
+          { "if": { "properties": { "type": { "const": "jsx-tag-attrs" } } }, "then": { "required": ["tags", "requireAll"] } },
+          { "if": { "properties": { "type": { "const": "required-pattern" } } }, "then": { "required": ["description"] } },
+          { "if": { "properties": { "type": { "const": "ast-rule" } } }, "then": { "required": ["description"] } },
+          { "if": { "properties": { "type": { "const": "manual" } } }, "then": { "required": ["description"] } }
+        ]
+      }
+    }
+  },
+  "dependentRequired": { "overridable": ["overrideKey"] }
+}
