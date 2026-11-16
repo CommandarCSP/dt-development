@@ -1,6 +1,7 @@
 ---
 name: dt-be-implement
 description: Use when the user wants to turn dt-bespec resource artifacts (requirements/design/tasks/api-contract in docs/specs/resources/<resource>/) into NestJS code. Reads the spec, maps api-contract.md to the Phase 1 contract + Prisma schema delta, and delegates code generation to the dt-backend-scaffold engine.
+user-invocable: false
 ---
 
 # dt-be-implement — spec→scaffold 다리 (Backend)

@@ -1,6 +1,7 @@
 ---
 name: dt-devspec
 description: Use when starting a new project/feature and the team needs a project-level Source of Truth before FE/BE specs — analyzes multi-source UX(Figma pages/PDF/links) — lightweight structure discovery (get_metadata) + a targeted per-screen deep-read (get_design_context, once per data-bearing screen) for IF contract rules — and produces docs/specs/definition.md (FE/BE scope split + interface contract + change traceability). Triggers on "개발 정의서", "FE/BE 범위 정의", "/dt-devspec". Pairs with dt-spec(FE 페이지 스펙)·dt-bespec(BE 리소스 스펙) which reference it.
+user-invocable: false
 ---
 
 # dt-devspec — 개발 정의서(프로젝트 SOT) 생성

@@ -1,6 +1,7 @@
 ---
 name: dt-ko
 description: Use when the user wants Korean prose checked or cleaned up — "한국어 좀 봐줘", "문장 다듬어줘", "표현 이상한 데 없나", "/dt-ko". Runs koWritingLint (mechanical) plus one isolated ko-writing-reviewer pass over the given files (or the git diff), shows before/after, and applies only what the user approves. Works on any Korean markdown — README·CHANGELOG·배포 문서·스펙·UI 문구.
+user-invocable: false
 ---
 
 # dt-ko — 한국어 문장 검사 (사용자 호출)

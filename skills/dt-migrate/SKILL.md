@@ -1,6 +1,7 @@
 ---
 name: dt-migrate
 description: Check a project's dt artifacts (specs, definition, project-context, interactions, plans, e2e ledgers, decisions, .dt*.json) against the plugin's current formats after a plugin update, and migrate the ones that have a migrator — preview first, write only on approval. Use after updating the plugin, when a skill reports an old-format artifact, when CHANGELOG lists an artifact format change, or via /dt-migrate. Never changes content a person wrote; asks when there is a choice.
+user-invocable: false
 ---
 
 # dt-migrate — 산출물 형식 점검·이전

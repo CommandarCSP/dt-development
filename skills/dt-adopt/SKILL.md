@@ -1,6 +1,7 @@
 ---
 name: dt-adopt
 description: Use when bringing an existing (brownfield) project under dt management — "기존 프로젝트 들여오기", "이미 만든 프로젝트 스펙 뽑아줘", "ADR·결정 추출", or /dt-adopt. Detects stack, extracts screens/APIs/endpoints from code with evidence, asks intent-vs-bug questions, then has the standard spec authors write as-built specs (status draft, origin as-built), reverse-merges a definition, and proposes PD drafts. Nothing is finalized without human confirmation. Does not modify code.
+user-invocable: false
 ---
 
 # dt-adopt — 기존 프로젝트를 스펙·결정 기록으로 들이기

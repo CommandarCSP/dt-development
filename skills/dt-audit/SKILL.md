@@ -1,6 +1,7 @@
 ---
 name: dt-audit
 description: Use when auditing whether the implemented app (static code + running app) satisfies dt spec artifacts — extracts as-built spec per track(fe|be|ux), diffs against docs/specs (definition.md·pages·resources), detects git-based spec→code drift, and emits an action-oriented audit report to docs/audits/. Triggers on "스펙 감사", "구현이 스펙대로 됐는지", "스펙 드리프트 찾아줘", "/dt-audit". Read-only(진단만) — dt-review(아키텍처 룰)와 별개로 스펙 충족만 판정.
+user-invocable: false
 ---
 
 # dt-audit — 스펙↔구현 정합 감사 리포트

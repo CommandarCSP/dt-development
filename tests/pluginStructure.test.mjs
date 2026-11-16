@@ -523,3 +523,53 @@ test('Atlassian MCP: 명령 allowed-tools 는 v1·v2 짝과 두 접두어를 갖
   }
   assert.deepEqual(problems, []);
 });
+
+// GEN-26 — 진입점·크기·단일 원본
+const SKILL_MAX_LINES = 300;
+const COMMAND_MAX_LINES = 40;
+
+test('스킬 크기: SKILL.md 는 300줄 이하 — 길면 references/ 나 docs/refs/ 로 나눈다', () => {
+  const over = skillDirs.map((d) => [d, readFileSync(rel(`skills/${d}/SKILL.md`), 'utf8').trimEnd().split('\n').length]).filter(([, n]) => n > SKILL_MAX_LINES);
+  assert.deepEqual(over, [], `${SKILL_MAX_LINES}줄 초과`);
+});
+
+test('명령 = 인자 처리 + 스킬 가리키기: 40줄 이하, 절차 절(흐름·순서·단계·절차)을 두지 않는다', () => {
+  const problems = [];
+  for (const f of commandFiles) {
+    const text = readFileSync(rel(`commands/${f}`), 'utf8');
+    const n = text.trimEnd().split('\n').length;
+    if (n > COMMAND_MAX_LINES) problems.push(`${f}: ${n}줄 — 절차는 스킬에 둔다`);
+    for (const m of text.matchAll(/^## (흐름|순서|단계|절차|재실행)\b.*$/gm)) problems.push(`${f}: "${m[0]}" — 절차는 스킬에 둔다`);
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('진입점 하나: 같은 이름 명령이 있는 스킬은 user-invocable: false 로 / 메뉴에서 숨긴다', () => {
+  const problems = [];
+  for (const f of commandFiles) {
+    const name = f.replace(/\.md$/, '');
+    if (!skillDirs.includes(name)) continue;
+    const fm = readFrontmatter(readFileSync(rel(`skills/${name}/SKILL.md`), 'utf8')) ?? {};
+    if (fm['user-invocable'] !== 'false') problems.push(`skills/${name}: 명령 /${name} 과 이름이 같다 — user-invocable: false`);
+  }
+  assert.deepEqual(problems, []);
+});
+
+test('단일 원본: 원본 문서의 규칙 문장이 스킬·에이전트·명령에 다시 적혀 있지 않다', () => {
+  const SOURCES = [
+    ['docs/refs/coding-discipline.md', ['시니어 개발자가 이거 과하다고 할까', '과엔지니어링은 "명백히 틀린" 게 아니라']],
+    ['docs/refs/readable-writing.md', ['`~에 의해`·`~을 통해`·이중 피동']],
+    ['docs/refs/spec-pipeline.md', ['**레거시 면제** — scope 헤더', '마커 사칭 금지; 다음 실행에서 hand-authored로 재진입', '변경 전파와 상향 정합은 별개 쓰기 계기']],
+    ['docs/refs/decision-log-comments.md', ['애매하면 남긴다', '이유 없는 항목은 위반']],
+  ];
+  const files = [...walk('skills'), ...walk('agents'), ...walk('commands')].filter((f) => f.endsWith('.md'));
+  const problems = [];
+  for (const [src, phrases] of SOURCES) {
+    const srcText = readFileSync(rel(src), 'utf8');
+    for (const ph of phrases) {
+      if (!srcText.includes(ph)) problems.push(`${src}: 원본에 "${ph}" 가 없다(검사 문장 갱신 필요)`);
+      for (const f of files) if (readFileSync(rel(f), 'utf8').includes(ph)) problems.push(`${f}: "${ph}" — ${src} 를 가리킨다`);
+    }
+  }
+  assert.deepEqual(problems, []);
+});

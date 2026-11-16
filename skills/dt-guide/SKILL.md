@@ -1,6 +1,7 @@
 ---
 name: dt-guide
 description: Use when the user wants an end-user guide (사용자 가이드·사용 설명서·매뉴얼 PDF) for a web-frontend or Electron project — "가이드 만들어줘", "사용 설명서 PDF", "/dt-guide". Analyzes the project in four stages (stack → docs → code·comments·tests → questions), writes docs/guide/inventory.md, scaffolds a capture recipe, screenshots screens with Playwright, drafts a Korean guide reviewed once by ko-writing-reviewer, and builds a gated PDF into docs/guide/. Engine lives in the plugin; only content lands in the project.
+user-invocable: false
 ---
 
 # dt-guide — 사용자 가이드 PDF 생성 (조율자)

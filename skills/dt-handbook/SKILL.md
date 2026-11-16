@@ -1,6 +1,7 @@
 ---
 name: dt-handbook
 description: Use when the user wants a developer handbook for an existing codebase (인수인계서·코드 설명서·아키텍처 문서·핸드북 PDF) — "인수인계 문서 만들어줘", "코드 구조 설명서", "/dt-handbook". Extracts the static axis first (data owners, code clusters, boundaries, hotspots), then traces scenario call chains, writes an 8-chapter Korean handbook with mermaid and hand-drawn SVG figures, reviews it once, and builds a gated PDF into docs/handbook/. Engine lives in the plugin; only content lands in the project.
+user-invocable: false
 ---
 
 # dt-handbook — 코드 인수인계 핸드북 PDF (조율자)

@@ -1,6 +1,7 @@
 ---
 name: dt-fullstack
 description: Use when the user wants to build a full web app end-to-end from requirements/UX sources — "웹앱 만들어줘", "풀스택 구축", or /dt-fullstack. 최상위 얇은 조율자로 이름 있는 단계(definition → be-spec → be-build → fe-spec → fe-build, 선택 e2e·audit·guide·handbook·wrap)를 한 흐름으로 합성한다. 개별 스킬을 대체하지 않고 합성만 하며, 각 단위는 파일로 소통해 단독 실행도 그대로 가능. --from·--only로 부분 실행, 진행 기록으로 재개.
+user-invocable: false
 ---
 
 # dt-fullstack — 전체 파이프라인 통합 (최상위 조율자)

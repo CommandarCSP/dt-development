@@ -1,6 +1,7 @@
 ---
 name: dt-be-e2e
 description: Use after /dt-be-implement to author and verify scenario-based acceptance e2e (Jest+Supertest+Testcontainers) for implemented backend resources. Derives risk-tagged Given-When-Then scenarios strictly from resource specs (api-contract.md endpoints/status codes + requirements EARS), authors full-AppModule HTTP tests, and a human verifies by reviewing ledger↔test diff plus green run. Scenarios tracked in a status ledger. Triggers on "/dt-be-e2e", "BE 수용 테스트", "API e2e 시나리오".
+user-invocable: false
 ---
 
 # dt-be-e2e — 시나리오 기반 BE 수용 e2e

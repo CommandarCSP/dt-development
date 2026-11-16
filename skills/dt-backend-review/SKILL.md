@@ -35,7 +35,19 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" $ARGUM
 - `--verbose`: Manual Review 휴리스틱 스텁(AST 미구현 룰)을 파일별로 출력.
 
 ### 단독 실행 절차 (`/dt-be-review`)
-사용자가 직접 부른 리뷰는 **보고서 전문을 보려는 것**이다. 그래서 메인 세션에서 스크립트를 돌려 출력을 그대로 보인다(`docs/orchestration-policy.md` 원칙 3의 단독 실행 예외). 해석·수리 판단은 하지 않는다. 순서는 `commands/dt-be-review.md`의 1~5단계다 — 스택 설정 확인(없으면 부트스트랩) → 팀 설정 경고 → 실행 → 보고서 그대로 → 후속 안내. 명령 파일이 스크립트만 부르고 이 순서를 건너뛰면 설정 없이 조용히 기본값으로 리뷰하게 된다(GEN-33에서 고친 결함).
+사용자가 직접 부른 리뷰는 **보고서 전문을 보려는 것**이다. 그래서 메인 세션에서 스크립트를 돌려 출력을 그대로 보인다(`docs/orchestration-policy.md` 원칙 3의 단독 실행 예외). 해석·수리 판단은 하지 않는다. 아래 1~5단계를 건너뛰지 않는다 — 명령 파일이 스크립트만 부르고 이 순서를 건너뛰면 설정 없이 조용히 기본값으로 리뷰하게 된다(GEN-33에서 고친 결함).
+
+1. **스택 설정** — 프로젝트 루트에 `.dt-backend.json`이 없으면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config-bootstrap.md` 절차로 만든다(스택을 못 가리면 묻는다). 만들었으면 한 줄로 알린다.
+2. **팀 설정** — `node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" .`의 `warnings`가 있으면 한 줄씩 보인다.
+3. **실행**
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-review/scripts/review.mjs" <명령 인자> --stack backend
+   ```
+   - 모드가 없으면 `full`. `--base`가 없으면 `HEAD`(커밋 안 된 변경). Manual Review 휴리스틱은 룰별 개수로 요약되고, `--verbose`면 파일별로 펼친다.
+4. **보고서를 그대로 보인다.** 요약하거나 고치지 않는다. 종료 코드 1이면 Critical이 있다(Ready to merge: No).
+5. **후속 안내** — 보고서 뒤에 해당하는 것만 한 줄씩 덧붙인다. 자동으로 고치지 않는다.
+   - `override-decision-ref`가 있으면: "`/dt-decision override <키>`로 규칙 끄기에 근거 결정을 단다(또는 override를 지운다)."
+   - 1번에서 설정을 새로 만들었으면: "`.dt-backend.json`의 `paths.src`가 맞는지 확인한다."
 
 ## override 근거 검사
 - full 모드: 스택 설정의 `overrides.<키>`마다 근거 결정(`decisionRef: "PD-NNN"`)을 확인한다. 근거 없음·못 찾음·대체됨은 Critical `override-decision-ref`, 만료는 Important. partial 모드(빌더 게이트)는 검사하지 않는다. 고치는 법: `/dt-decision override <키>`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 9)

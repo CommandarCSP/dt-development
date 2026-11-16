@@ -1,6 +1,7 @@
 ---
 name: dt-e2e
 description: Use after /dt-implement to author and verify scenario-based acceptance e2e (Playwright) for implemented pages. Derives risk-tagged Given-When-Then scenarios strictly from page specs (requirements FR/tasks) and interactions.md, authors Playwright specs, and a human verifies results headed. Scenarios tracked in a status ledger. Triggers on "/dt-e2e", "수용 테스트", "e2e 시나리오". Optional Playwright MCP for authoring accuracy and AI pre-flight.
+user-invocable: false
 ---
 
 # dt-e2e — 시나리오 기반 수용 e2e

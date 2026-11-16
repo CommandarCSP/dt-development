@@ -1,6 +1,7 @@
 ---
 name: dt-decision
 description: Record, list, and supersede long-lived decisions — project decisions (PD, docs/decisions/) and team policies (TP, plugin docs/policies/). Use when a human decision should hold beyond one page or resource (a convention, a tech choice, a rule override), when a skill proposes a PD draft after a needsDecision answer, or via /dt-decision. Drafts are shown and written only on approval.
+user-invocable: false
 ---
 
 # dt-decision — 결정 기록(TP · PD)

@@ -1,6 +1,7 @@
 ---
 name: dt-explain
 description: Use when the user asks to explain a problem, bug, Jira ticket, or issue — "이게 왜 이런거야", "설명해줘", "어떻게 고쳐?", "원인이 뭐야" — or when answering any newly discovered defect. Produces a structured, plain-language answer (problem → evidence-labeled cause chain → project-grounded example → 2-3 solutions with downsides → one-line summary) instead of an unstructured dump.
+user-invocable: false
 ---
 
 # dt-explain

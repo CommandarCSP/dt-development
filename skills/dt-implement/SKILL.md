@@ -1,6 +1,7 @@
 ---
 name: dt-implement
 description: Use when the user wants to turn dt-spec page artifacts (requirements/design/tasks/layout-skeleton in docs/specs/pages/<page>/) into code. Reads the spec, maps it to a ScaffoldSeed, and delegates code generation to the dt-frontend-scaffold engine. Single-domain pages fully; multi-domain pages compose domain components into one layout page.
+user-invocable: false
 ---
 
 # dt-implement — spec→scaffold 다리

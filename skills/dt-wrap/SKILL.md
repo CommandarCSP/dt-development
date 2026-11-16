@@ -1,6 +1,7 @@
 ---
 name: dt-wrap
 description: Use when wrapping up a chunk of work — chains commit (feature branch) → Confluence doc decision → Jira sync into one routine. Triggered by the Stop hook reminder ("정리 안 된 작업 N커밋") or manually via /dt-wrap. Stops are nudged, never auto-run; each step keeps its own dry-run→approval. Triggers on "마무리 루틴", "작업 정리해줘", "/dt-wrap".
+user-invocable: false
 ---
 
 # dt-wrap
