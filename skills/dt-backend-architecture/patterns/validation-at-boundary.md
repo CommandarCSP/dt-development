@@ -7,7 +7,7 @@ detection:
   - type: required-pattern
     description: "request DTO must carry class-validator decorator (validation at boundary)"
     rationale: "검증을 경계(요청 DTO)에 모으면 Service는 검증된 입력을 가정할 수 있음"
-relatedRules: [dto-no-prisma-import]
+relatedRules: [dto-no-orm-import]
 ---
 
 # 검증은 경계(요청 DTO)에서
@@ -43,4 +43,4 @@ export class CreateOrderDto {
 ```
 
 ## 관련 규칙
-- [[dto-no-prisma-import]]
+- [[dto-no-orm-import]]

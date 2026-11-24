@@ -17,9 +17,11 @@
 - 스택 설정 `apiPrefix` — 스펙의 API 주소에서 도메인을 뽑을 때 `/api` 말고 `/v1`·접두어 없음(`GET /posts`)·여러 접두어를 받는다. `/api/v1/…`의 버전 조각은 건너뛴다 (GEN-04)
 - 스택 설정 키 전체의 원본 `docs/refs/stack-config.md` (GEN-04)
 - 테스트 파일 이름·자리 바꿔 끼우기 — 스택 설정 `testing.location`(`__tests__`·`colocated`)·`testing.suffix.{unit,integration,e2e,any}`·`paths.test`로 리뷰 엔진이 테스트 규칙의 경로와 "테스트가 있어야 한다" 규칙이 찾는 이름을 바꾼다. NestJS 관례(`posts.service.spec.ts`·`test/app.e2e-spec.ts`) 예시는 `docs/refs/stack-config.md` §3. 설정이 없으면 그대로다 (GEN-06)
+- BE 스택 어댑터 `scripts/stackAdapters.mjs` — 스택 설정 `stack.orm`(`prisma`·`typeorm`·`drizzle`·`none`)·`stack.db`·`stack.cache`·`stack.queue`·`stack.auth`. 적지 않으면 package.json(DB는 `schema.prisma` provider)에서 대안만 감지하고, 없으면 기본값(prisma·postgresql·redis·bullmq·passport-jwt)이다. 리뷰 엔진이 ORM 규칙의 빈칸(`"$orm.access"`·`{{orm.mockRegex}}`)을 그 ORM으로 채우고, `none`인 영역의 규칙(머리말 `requiresStack`)은 건너뛴다. 보고서 끝에 고른 스택과 근거가 나온다. `--json`의 `container`로 `be-builder`·e2e 작성이 DB별 Testcontainers 모듈을 고른다. 설정 없는 Prisma 프로젝트의 규칙은 그대로다 (GEN-05)
 - 선택 참고 문서 `docs/refs/docker-runtime-hints.md` — colima·rancher-desktop·podman 소켓, Ryuk 끄기. 규칙·체크리스트·`be-builder`에 흩어져 있던 값을 모았다 (GEN-06)
 
 ### 고침
+- TypeORM·Drizzle 프로젝트에서 계층 규칙(서비스·컨트롤러·DTO의 ORM 직접 사용, 통합 테스트의 DB mock)이 하나도 걸리지 않던 것 — 위 `stack.orm`으로 (GEN-05)
 - 테스트를 `__tests__` 밖에 두거나 `*.spec.ts`로 짓는 프로젝트에서 테스트 파일 규칙(mock·대기 금지·전체 앱 부팅 등)이 하나도 걸리지 않던 것 — 위 `testing` 설정으로 (GEN-06)
 - FE 테스트 규칙 `integration-no-hook-mocking`·`unit-business-hook`이 `vi.mock`만 보고 jest의 `jest.mock`을 놓치던 것 (GEN-04)
 - `fe-builder`가 없는 설정 키 `frontend.*`를 따르라고 하던 것 — 기존 코드 패턴·`paths.src`·`layout`·`stackCommands`로 (GEN-04)
@@ -29,6 +31,8 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- BE 규칙 이름을 계층 기준으로: `repository-only-prisma` → `repository-only-orm`, `controller-no-direct-prisma` → `controller-no-direct-orm`, `service-no-direct-prisma` → `service-no-direct-orm`, `dto-no-prisma-import` → `dto-no-orm-import`. 규칙 끄기(`overrides`)는 규칙 이름을 쓰지 않아 설정은 그대로 둔다 — 보고서·CI에서 옛 이름을 찾고 있었다면 바꾼다. `service-requires-unit-test`는 `src/prisma/**`의 서비스에도 단위 테스트를 요구하지 않는다 (GEN-05)
+- 스택 사전 점검: TypeORM·Drizzle은 `blocking`이 아니라 `adaptable`(리뷰 규칙 어댑터가 있다). 아키텍처 문서의 인증 "캐논"은 `stack.auth: passport-jwt`일 때의 기본값으로 — `other`면 프로젝트 방식을 따른다 (GEN-05)
 - 리뷰 엔진을 `skills/dt-frontend-review/scripts/`에서 공용 자리 `scripts/review/`로(테스트는 `tests/review/`). **옛 경로 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부른다 — 0.17.0에서 지운다** (GEN-08)
 - 코딩 규율 4원칙의 원본을 `docs/refs/coding-discipline.md` 하나로 — FE·BE 스킬(이름 그대로)은 스택 예시만 둔다. 결정 로그·쉬운 글쓰기 규칙을 다시 적던 곳은 원본을 가리킨다 (GEN-26)
 - FE·BE 스펙 파이프라인 공용 단계(실행 모드·정의서 게이트·헤더·역참조·변경 전파·상향 정합·상태·재실행·완료 알림)를 `docs/refs/spec-pipeline.md` 하나로. `dt-spec-generate-spec`은 548줄 → 289줄(소스 입력·산출물 본문을 `references/`로), 동작은 그대로 (GEN-26)

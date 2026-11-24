@@ -25,8 +25,8 @@ test('backend stack loads architecture rules with no duplicate ruleIds', async (
   const archRules = rules.filter((r) => r.source === 'architecture');
   assert.ok(archRules.length >= 15, `expected >= 15 backend architecture rules, got ${archRules.length}`);
   const ids = archRules.map((r) => r.ruleId);
-  assert.ok(ids.includes('controller-no-direct-prisma'));
-  assert.ok(ids.includes('repository-only-prisma'));
+  assert.ok(ids.includes('controller-no-direct-orm'));
+  assert.ok(ids.includes('repository-only-orm'));
   assert.ok(ids.includes('redis-through-cache-service'));
   const seen = new Set();
   for (const r of rules) {

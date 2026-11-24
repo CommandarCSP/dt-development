@@ -42,7 +42,7 @@ try {
     });
   } else {
     const paths = (opts.paths || '').split(',').filter(Boolean);
-    report = await runPartialMode({ pluginRoot, projectRoot, paths, verbose, ruleLocations: stack.ruleLocations, configFileName: stack.configFileName });
+    report = await runPartialMode({ pluginRoot, projectRoot, paths, verbose, stack: stackName, ruleLocations: stack.ruleLocations, configFileName: stack.configFileName });
   }
   console.log(report);
   process.exit(/Ready to merge: No/.test(report) ? 1 : 0);

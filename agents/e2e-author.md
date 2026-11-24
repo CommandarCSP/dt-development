@@ -21,7 +21,8 @@ description: 수용 e2e 워커(stack: frontend|backend) — 스펙·interactions
 ## 소유 경로 (출력)
 - `docs/specs/pages/<page>/<page>.e2e-scenarios.md` · `docs/specs/e2e/journeys.md` (frontend)
 - `docs/specs/resources/<resource>/<resource>.e2e-scenarios.md` · `docs/specs/e2e/be-journeys.md` (backend)
-- 테스트 코드: frontend `e2e/<page>.spec.ts`·`e2e/journeys/` · backend `test/<resource>.e2e.test.ts`·`test/journeys/`
+- 테스트 코드: frontend `e2e/<page>.spec.ts`·`e2e/journeys/` · backend `test/<resource>.e2e.test.ts`·`test/journeys/` (이름·자리는 스택 설정 `testing.*`·`paths.test`가 있으면 그것 — `docs/refs/stack-config.md` §3)
+- backend DB 컨테이너: `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --json`의 `container`(예: `@testcontainers/mysql`·`MySqlContainer`). 없으면(`sqlite`·`none`) 컨테이너 없이 돈다.
 
 스펙·플랜·앱 코드는 읽기만 한다. 앱 코드에 빈틈(테스트 훅 없음 등)이 있으면 고치지 않고 `needsDecision`이나 summary로 올린다.
 

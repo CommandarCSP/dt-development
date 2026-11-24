@@ -2,8 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { loadAllRules } from '../lib/rule-loader.mjs';
-import { applyLayout, readConfig } from '../lib/layout.mjs';
+import { loadStackRules } from '../lib/stack-rules.mjs';
 import { matchAny } from '../lib/matcher.mjs';
 import { detectForbiddenImport } from '../lib/detection/forbidden-import.mjs';
 import { detectForbiddenCall } from '../lib/detection/forbidden-call.mjs';
@@ -34,7 +33,7 @@ export async function runFullMode({
   installCommand = undefined,
 }) {
   // 1. Load all rules
-  const rules = applyLayout(await loadAllRules(pluginRoot, ruleLocations), await readConfig(projectRoot, configFileName));
+  const { rules, stackInfo } = await loadStackRules({ pluginRoot, projectRoot, ruleLocations, configFileName, stack });
   const overrideKeys = await loadOverrideKeys(projectRoot, configFileName);
   const skippedRuleIds = new Set();
 
@@ -107,7 +106,7 @@ export async function runFullMode({
 
   // 5. Render report
   const overrides = { keys: [...overrideKeys], skippedRuleIds: [...skippedRuleIds] };
-  return renderReport({ findings, coverage, overrides, scope: { scanned, base: baseRef ?? null } }, { verbose });
+  return renderReport({ findings, coverage, overrides, stackInfo, scope: { scanned, base: baseRef ?? null } }, { verbose });
 }
 
 function runDetection(code, det, ctx) {

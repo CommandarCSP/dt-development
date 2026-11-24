@@ -1,16 +1,19 @@
 ---
-ruleId: controller-no-direct-prisma
-summary: "Controller는 PrismaClient/prisma 직접 호출 금지, Service→Repository 경유"
+ruleId: controller-no-direct-orm
+summary: "Controller는 ORM(기본 Prisma) 직접 호출 금지, Service→Repository 경유"
 severity: critical
 appliesTo: ["src/**/*.controller.ts"]
 detection:
   - type: forbidden-import
-    matches: ["@prisma/client", "**/prisma.service", "**/prisma/prisma.service"]
+    matches: ["$orm.access"]
     rationale: "Controller는 HTTP 경계만 담당 — 데이터 접근은 Service를 통해서만"
-relatedRules: [service-no-direct-prisma, repository-only-prisma]
+requiresStack: [orm]
+relatedRules: [service-no-direct-orm, repository-only-orm]
 ---
 
-# Controller는 Prisma 직접 호출 금지
+# Controller는 ORM 직접 호출 금지
+
+> 검사하는 import는 `stack.orm`에 따라 바뀐다(`docs/refs/stack-config.md` §4). 예시는 기본값 Prisma.
 
 ## 왜 중요한가
 Controller는 요청을 검증(DTO)하고 Service에 위임한 뒤 응답 DTO로 변환하는 책임만 가진다. Prisma가 Controller에 들어오면:
@@ -53,5 +56,5 @@ export class OrdersController {
 ```
 
 ## 관련 규칙
-- [[service-no-direct-prisma]]
-- [[repository-only-prisma]]
+- [[service-no-direct-orm]]
+- [[repository-only-orm]]

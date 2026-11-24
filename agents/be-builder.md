@@ -12,6 +12,8 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 >
 > **프로젝트 설정 우선(checklist 예시보다):** 테스트 네이밍(`*.spec.ts` vs `*.test.ts`)·모듈 구조·ORM 관계명 등은 **기존 형제 모듈(예: posts)과 프로젝트 설정을 우선**한다 — checklist 예시와 다르면 프로젝트를 따른다. **기존 라우트/엔드포인트와 충돌**하면(예: 다른 모듈이 같은 경로 소유) 조용히 덮지 말고 **needsDecision**으로. (파일럿 발견: posts가 이미 `GET /feed` 소유 → 충돌 에스컬레이션.)
 >
+> **스택 어댑터(ORM·DB):** 시작 전에 `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project <wt> --json`을 읽는다. `orm`이 `prisma`가 아니면(typeorm·drizzle) 아래 Prisma 단계(`schema.delta.prisma`·`prisma migrate`·`prisma.$transaction`·게이트 `--prisma`)는 그 ORM의 같은 역할(엔티티·마이그레이션·트랜잭션)로 바꾸고 기존 형제 모듈의 방식을 따른다. 게이트는 `--prisma false`로 돈다. 계층 규칙(ORM은 저장소에서만)은 리뷰가 그 ORM으로 검사한다. 통합 테스트 컨테이너는 결과의 `container`(DB별 Testcontainers 모듈)를 쓴다. `none`이면 그 영역을 새로 깔지 않는다.
+>
 > **통합테스트 env bootstrap:** Testcontainers 통합테스트는 별도 jest config(`transformIgnorePatterns:[]`로 testcontainers ESM 변환)이 없으면 안 돈다. Docker Desktop이 아닌 런타임이면 소켓 설정도 필요하다(`docs/refs/docker-runtime-hints.md`) → 없으면 가산적으로 bootstrap 후 실행(checklist는 존재 전제).
 
 ## 읽기 (입력)

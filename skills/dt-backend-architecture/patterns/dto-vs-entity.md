@@ -5,9 +5,9 @@ severity: important
 appliesTo: ["src/**/*.controller.ts"]
 detection:
   - type: forbidden-import
-    matches: ["@prisma/client", "**/entities/*.entity", "**/entities/**"]
+    matches: ["$orm.imports", "**/entities/*.entity", "**/entities/**"]
     rationale: "Controller가 Entity/Prisma 모델을 직접 다루면 내부 표현이 외부 계약으로 새어나감"
-relatedRules: [dto-no-prisma-import, repository-only-prisma]
+relatedRules: [dto-no-orm-import, repository-only-orm]
 ---
 
 # Controller는 DTO를 노출하고 Entity를 노출하지 않는다
@@ -45,5 +45,5 @@ findOne(@Param('id') id: string): Promise<OrderResponseDto> {
 ```
 
 ## 관련 규칙
-- [[dto-no-prisma-import]]
-- [[repository-only-prisma]]
+- [[dto-no-orm-import]]
+- [[repository-only-orm]]

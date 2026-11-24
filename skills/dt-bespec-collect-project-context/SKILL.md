@@ -17,9 +17,8 @@ description: Use within dt-bespec to collect/maintain backend project context (f
 
 ## 자동 동기화 (강제 갱신)
 - **Framework**: `@nestjs/core` → NestJS (버전)
-- **ORM**: `@prisma/client`/`prisma` → Prisma, `prisma.schema`의 `provider` → DB
-- **Cache/Queue**: `ioredis`/`@nestjs/cache-manager`/`bullmq` 존재 여부
-- **Auth**: `@nestjs/jwt`/`passport*` → 전략 추론
+- **ORM·DB·캐시·큐·인증**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project . --json`의 `orm`·`db`·`cache`·`queue`·`auth`와 `from`을 그대로 적는다. 감지표(Prisma·TypeORM·Drizzle, `schema.prisma` provider·`pg`·`mysql2`·`better-sqlite3`, `bullmq`·`@nestjs/bull`, `passport*`)는 그 스크립트가 원본이다 — 여기서 따로 추론하지 않는다. `from`이 `기본값`인 영역은 "감지 안 됨(플러그인 기본 X)"으로 적는다.
+  - Redis는 `ioredis`/`@nestjs/cache-manager` 존재 여부, 인증 전략 세부(`@nestjs/jwt`·refresh 등)는 package.json에서 보충한다
 - **테스트**: `jest`/`supertest`/`@testcontainers/*`
 - **패키지 매니저/Node**: lockfile + engines
 

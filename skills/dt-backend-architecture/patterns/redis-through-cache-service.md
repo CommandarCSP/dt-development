@@ -8,6 +8,7 @@ detection:
   - type: forbidden-import
     matches: ["ioredis", "redis", "@nestjs/cache-manager", "cache-manager"]
     rationale: "Redis 접근을 cache 모듈 한 곳에 가둔다 — 키 컨벤션/TTL/직렬화를 일관되게"
+requiresStack: [cache]
 relatedRules: [centralized-cache-keys]
 ---
 

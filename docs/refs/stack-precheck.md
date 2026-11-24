@@ -30,7 +30,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/stackPrecheck.mjs" <projectRoot> --stack fro
 | `same` | 기본과 같다 | 아무것도 안 한다 |
 | `absent` | 기본도 대안도 없다 | 묻지 않는다. 플러그인이 기본을 새로 깐다고 한 줄로 알린다(예: "MSW가 없어 새로 설치합니다") |
 | `adaptable` | 다른 기술을 쓴다. 프로젝트 방식을 따를 수 있다 | 묻는다 |
-| `blocking` | 다른 기술을 쓰는데, 플러그인 템플릿·리뷰 규칙이 기본을 전제한다(예: Prisma 대신 TypeORM, React가 아님) | 묻는다. 결과를 보장할 수 없다고 밝힌다 |
+| `blocking` | 다른 기술을 쓰는데, 플러그인 템플릿·리뷰 규칙이 기본을 전제한다(예: Prisma 대신 Sequelize·Mongoose, React가 아님). TypeORM·Drizzle은 리뷰 규칙 어댑터가 있어 `adaptable`이다(`scripts/stackAdapters.mjs`, `stack-config.md` §4) | 묻는다. 결과를 보장할 수 없다고 밝힌다 |
 
 `versions`에는 같은 기술이지만 major가 플러그인 검증 범위(`${CLAUDE_PLUGIN_ROOT}/templates/stack-versions.json`)와 다른 패키지가 나온다(예: react-router 8). 묻지 않고 한 줄로 알린다: "react-router ^8 — 플러그인은 ^7에서 검증됨. 규칙이 맞지 않는 곳이 있을 수 있다."
 

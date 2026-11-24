@@ -15,6 +15,10 @@
 | `testRunner` | package.json 감지 | `vitest` · `jest` | 명령 고르기 |
 | `commands.<이름>` | 고른 값 | 명령을 직접 적는다. 이름: `install` · `test` · `coverage` · `accept` · `acceptLive` · `dev`. 문자열은 셸, 배열은 `[명령, ...인자]` | 명령 고르기 |
 | `apiPrefix` | `"/api"` | 스펙의 API 주소 접두어(문자열 또는 배열). `""`이면 `GET /posts`처럼 메서드 뒤 주소에서 뽑는다. `/v1` 같은 버전 조각은 건너뛴다 | 도메인 뽑기(`parseSpecForScaffold.mjs`) |
+| `stack.orm` | package.json 감지, 없으면 `"prisma"` | BE만. `prisma` · `typeorm` · `drizzle` · `none`. 계층 규칙이 검사하는 ORM | 리뷰 엔진·`be-builder` |
+| `stack.db` | `schema.prisma` provider·드라이버 감지, 없으면 `"postgresql"` | BE만. `postgresql` · `mysql` · `sqlite` · `mongodb` · `sqlserver` · `none`. 테스트 컨테이너 고르기 | `be-builder`·e2e 작성 |
+| `stack.cache` · `stack.queue` | `"redis"` · 감지 또는 `"bullmq"` | BE만. `none`이면 캐시·큐 규칙을 건너뛴다. 큐: `bullmq` · `bull` · `none` | 리뷰 엔진 |
+| `stack.auth` | `"passport-jwt"` | BE만. `passport-jwt` · `other` · `none`. `other`면 아키텍처 문서의 인증 방식 대신 프로젝트 방식 | 스킬 문서 |
 | `coverage.mode` | `"full"` | `full` · `off` | 리뷰 엔진 |
 | `coverage.baselineRef` | `"HEAD"` | 비교 기준 커밋 | 리뷰 스킬 |
 | `coverage.newCodeThreshold` | 80 | 새 파일 줄 커버리지 하한(%) | 리뷰 엔진 |
@@ -91,3 +95,24 @@ NestJS 기본 관례:
 - 옆에 두면 `src/pages/*.tsx`처럼 소스를 가리키는 규칙에서 테스트 파일을 뺀다. BE 구조 규칙의 테스트 제외 목록에도 설정한 꼬리를 더한다.
 - 테스트 도구는 `testRunner`(§2)가 정한다. Docker 런타임 문제는 선택 참고 문서 [docker-runtime-hints.md](docker-runtime-hints.md)를 본다.
 - 모르는 `location`·종류는 리뷰를 멈추고 고칠 방법을 알린다(종료 코드 2).
+
+## 4. BE 스택 (`stack.*`)
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project .          # 표
+node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project . --json   # 스킬·에이전트가 읽는 형식(container 포함)
+```
+
+고르는 순서: `.dt-backend.json`의 `stack.<영역>` → package.json 의존성(DB는 `prisma/schema.prisma`의 `provider`가 먼저) → 기본값. **감지는 대안만 고른다.** 아무것도 없으면 기본값이고, `none`은 설정으로만 정한다. 그래서 설정이 없는 Prisma 프로젝트의 규칙은 예전과 같다.
+
+| ORM | 검사하는 import | 저장소 밖에서 가져와도 되는 자리 |
+|---|---|---|
+| `prisma` | `@prisma/client`, `prisma.service` | `src/prisma/**`, `prisma.service.ts` |
+| `typeorm` | `typeorm`, `@nestjs/typeorm`, `data-source` | `*.entity.ts`, `entities/`, `migrations/`, `*.subscriber.ts`, `data-source.ts`, `src/database/`, `*.module.ts` |
+| `drizzle` | `drizzle-orm`, `db`·`db/schema` | `src/db/`, `src/database/`, `schema.ts`, `*.schema.ts`, `*.module.ts` |
+
+- 규칙 파일에는 ORM 이름 대신 빈칸(`"$orm.access"`, `{{orm.mockRegex}}`)을 적는다. 엔진이 위 표로 채운다(`scripts/stackAdapters.mjs`). 통합 테스트에서 금지하는 mock(TypeORM `getRepositoryToken(…), useValue` 등)과 단위 테스트에서 금지하는 실제 연결(`new DataSource(` 등)도 ORM마다 다르다.
+- 규칙 머리말 `requiresStack: [orm]`인 규칙은 그 영역이 `none`이면 건너뛴다. 보고서에 "건너뛴 규칙"으로 적는다.
+- 보고서 끝에 `스택: orm typeorm(package.json) · …`으로 무엇을 왜 골랐는지 나온다. ORM이 둘 이상이면 기본값으로 보고 "스택 주의"를 낸다 — `stack.orm`을 적는다.
+- Sequelize·Mongoose·MikroORM 등 표에 없는 ORM은 어댑터가 없다. 스택 사전 점검이 `blocking`으로 묻는다(`stack-precheck.md`).
+- 모르는 값은 리뷰를 멈추고 고칠 방법을 알린다(종료 코드 2).

@@ -3,7 +3,7 @@
 //   verbose: when true, prints each Manual Review heuristic stub finding (one line per file/rule).
 //            Default false — manual-review hints are summarized as a single count line by rule.
 
-export function renderReport({ findings, coverage, overrides, scope = null }, { verbose = false } = {}) {
+export function renderReport({ findings, coverage, overrides, scope = null, stackInfo = null }, { verbose = false } = {}) {
   const manualReviews = findings.filter((f) => f.manualReview);
   const realFindings = findings.filter((f) => !f.manualReview);
 
@@ -76,6 +76,12 @@ export function renderReport({ findings, coverage, overrides, scope = null }, { 
 
   sections.push('### Assessment');
   if (scope != null) sections.push(`검사한 소스 파일: ${scope.scanned}개 (${scope.base ? `${scope.base} 이후 바뀐 파일` : '프로젝트 전체'})`);
+  // BE 스택 어댑터(GEN-05) — 어떤 ORM 등으로 규칙을 채웠는지, none 이라 건너뛴 규칙은 무엇인지 밝힌다.
+  if (stackInfo) {
+    sections.push(`스택: ${stackInfo.describe}`);
+    for (const n of stackInfo.notes ?? []) sections.push(`스택 주의: ${n}`);
+    if (stackInfo.skipped?.length) sections.push(`건너뛴 규칙(stack.<영역> = none): ${stackInfo.skipped.map((x) => `${x.ruleId}(${x.area})`).join(', ')}`);
+  }
   sections.push(`Ready to merge: ${verdict}`);
   if (nothingScanned) sections.push('Reasoning: 검사한 소스 파일이 0개다 — 경로(paths.src)·git 상태·--base 범위를 확인한다. 위반이 없다는 뜻이 아니다.');
   if (nothingScanned && !hasCritical) {

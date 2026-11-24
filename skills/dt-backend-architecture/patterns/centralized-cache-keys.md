@@ -8,6 +8,7 @@ detection:
   - type: forbidden-pattern
     pattern: "export const [a-zA-Z]+CacheKeys?[ ]*="
     rationale: "캐시 키는 cache-keys.ts에 중앙 정의 — 무효화 추적과 키 충돌 방지"
+requiresStack: [cache]
 relatedRules: [redis-through-cache-service]
 ---
 

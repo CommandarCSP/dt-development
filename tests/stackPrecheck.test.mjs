@@ -29,7 +29,7 @@ test('대안이 있으면 adaptable, 아무것도 없으면 absent(묻지 않음
 });
 
 test('규칙이 전제하는 기술(BE ORM·프레임워크)이 다르면 blocking', () => {
-  const r = precheck({ dependencies: { '@nestjs/core': '11', typeorm: '0.3' }, devDependencies: { jest: '29' } }, 'backend');
+  const r = precheck({ dependencies: { '@nestjs/core': '11', sequelize: '6' }, devDependencies: { jest: '29' } }, 'backend');
   assert.equal(status(r).orm, 'blocking');
   assert.equal(r.blocking, true);
   assert.equal(status(precheck({ dependencies: { vue: '3' } }, 'frontend')).framework, 'blocking');
@@ -65,4 +65,11 @@ test('package.json 이 없으면 모든 영역 absent — 던지지 않는다', 
     assert.ok(r.areas.every((a) => a.status === 'absent'));
     assert.equal(r.areas.length, AREAS.backend.length);
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+// GEN-05 — 리뷰 규칙 어댑터가 있는 ORM 은 프로젝트 방식을 따를 수 있다.
+test('typeorm·drizzle 은 adaptable, 어댑터 없는 ORM 이 섞이면 blocking', () => {
+  assert.equal(status(precheck({ dependencies: { '@nestjs/core': '11', typeorm: '0.3', '@nestjs/typeorm': '10' } }, 'backend')).orm, 'adaptable');
+  assert.equal(status(precheck({ dependencies: { '@nestjs/core': '11', 'drizzle-orm': '0.30' } }, 'backend')).orm, 'adaptable');
+  assert.equal(status(precheck({ dependencies: { '@nestjs/core': '11', typeorm: '0.3', mongoose: '8' } }, 'backend')).orm, 'blocking');
 });

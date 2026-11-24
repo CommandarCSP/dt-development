@@ -18,7 +18,7 @@ description: Use when writing or reviewing NestJS/TypeScript code in a project t
 ## 레이어 개요
 
 ```
-Controller → Service → Repository → Prisma
+Controller → Service → Repository → ORM (기본 Prisma · stack.orm)
                 ↘ Cache service (Redis) / Queue (BullMQ)
 DTO (경계 계약)  ·  Entity/Model (내부 도메인)  ·  Module (DI 와이어링)
 ```
@@ -53,14 +53,14 @@ DTO (경계 계약)  ·  Entity/Model (내부 도메인)  ·  Module (DI 와이�
 
 ## 도구/규약
 
-- **Prisma + PostgreSQL** — `schema.prisma`가 데이터 계약. `@prisma/client`는 Repository에만.
-- **Redis (+ BullMQ)** — cache service / queue 모듈 한 곳으로 접근 격리.
+- **ORM + DB(기본 Prisma + PostgreSQL)** — 데이터 계약은 ORM의 스키마(`schema.prisma`·TypeORM 엔티티·Drizzle 스키마). ORM import는 Repository와 ORM 설정 자리에만. 어떤 ORM으로 검사하는지는 스택 설정 `stack.orm`(없으면 package.json 감지) — `docs/refs/stack-config.md` §4. 지원: `prisma`·`typeorm`·`drizzle`·`none`.
+- **Redis (+ BullMQ)** — cache service / queue 모듈 한 곳으로 접근 격리. 쓰지 않으면 `stack.cache`·`stack.queue`를 `none`으로 두어 해당 규칙을 건너뛴다.
 - **class-validator + 전역 ValidationPipe**(`whitelist: true, forbidNonWhitelisted: true`) — 검증은 경계에서만.
 - **패키지 매니저/테스트** — `dt-backend-testing` 참조 (Jest + Supertest + Testcontainers).
 
-## 인증 (Passport + JWT) — 캐논
+## 인증 (Passport + JWT) — 기본값
 
-인증은 **Passport + JWT로 통일**한다(발급·검증 동일 패러다임). plain 커스텀 가드를 새로 만들지 않는다.
+스택 설정 `stack.auth`가 `passport-jwt`(기본)일 때의 방식이다. 인증은 **Passport + JWT로 통일**한다(발급·검증 동일 패러다임). plain 커스텀 가드를 새로 만들지 않는다. 프로젝트가 이미 다른 인증(세션·외부 IdP 등)을 쓰면 `stack.auth: "other"`로 적고 **프로젝트 방식을 따른다** — 아래 표는 적용하지 않는다. 인증을 검사하는 리뷰 규칙은 없다.
 
 | 관심사 | 위치 | 캐논 |
 |---|---|---|
@@ -81,11 +81,11 @@ DTO (경계 계약)  ·  Entity/Model (내부 도메인)  ·  Module (DI 와이�
 <!-- ATLAS:START — `node plugin/scripts/regen-atlas.mjs`로 자동 생성. 직접 수정하지 마세요. -->
 
 ### Architecture
-- **controller-no-direct-prisma** _(critical)_ — Controller는 PrismaClient/prisma 직접 호출 금지, Service→Repository 경유 [상세](patterns/controller-no-direct-prisma.md)
-- **dto-no-prisma-import** _(critical)_ — DTO는 Prisma/Entity import 금지 — 순수 wire 계약(class-validator)만 [상세](patterns/dto-no-prisma-import.md)
+- **controller-no-direct-orm** _(critical)_ — Controller는 ORM(기본 Prisma) 직접 호출 금지, Service→Repository 경유 [상세](patterns/controller-no-direct-orm.md)
+- **dto-no-orm-import** _(critical)_ — DTO는 ORM(기본 Prisma)/Entity import 금지 — 순수 wire 계약(class-validator)만 [상세](patterns/dto-no-orm-import.md)
 - **redis-through-cache-service** _(critical)_ — Redis 클라이언트(ioredis/redis/cache-manager) import는 src/cache/** 한정 — 외부는 cache service 경유 [상세](patterns/redis-through-cache-service.md)
-- **repository-only-prisma** _(critical)_ — @prisma/client import는 Repository와 PrismaModule에서만 — 그 외 레이어 금지 [상세](patterns/repository-only-prisma.md)
-- **service-no-direct-prisma** _(critical)_ — Service는 PrismaClient 직접 호출 금지, Repository 경유 (지속성 분리) [상세](patterns/service-no-direct-prisma.md)
+- **repository-only-orm** _(critical)_ — ORM(기본 Prisma) import는 Repository와 ORM 설정 자리에서만 — 그 외 레이어 금지 [상세](patterns/repository-only-orm.md)
+- **service-no-direct-orm** _(critical)_ — Service는 ORM(기본 Prisma) 직접 호출 금지, Repository 경유 (지속성 분리) [상세](patterns/service-no-direct-orm.md)
 - **service-no-http-context** _(critical)_ — Service는 HTTP 컨텍스트(@Req/@Res/express Request·Response) 접근 금지 — transport 무관 [상세](patterns/service-no-http-context.md)
 - **centralized-cache-keys** _(important)_ — 캐시 키 팩토리는 cache-keys.ts 단일 위치 — 다른 파일에서 별도 CacheKeys export 금지 [상세](patterns/centralized-cache-keys.md)
 - **centralized-error-handling** _(important)_ — Controller에서 수동 HTTP 응답(res.status/res.send) 빌드 금지 — 전역 ExceptionFilter 사용 [상세](patterns/centralized-error-handling.md)

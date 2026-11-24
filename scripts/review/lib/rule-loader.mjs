@@ -50,6 +50,7 @@ export async function loadAllRules(pluginRoot, ruleLocations = STACK_RULE_LOCATI
         excludePathPatterns: Array.isArray(data.excludePathPatterns) ? data.excludePathPatterns : [],
         overridable: data.overridable === true,
         overrideKey: typeof data.overrideKey === 'string' ? data.overrideKey : null,
+        requiresStack: Array.isArray(data.requiresStack) ? data.requiresStack : [],
         body,
       });
     }

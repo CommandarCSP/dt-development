@@ -6,7 +6,7 @@ appliesTo: ["src/**/__tests__/**/*.integration.test.ts", "test/**/*.e2e.test.ts"
 detection:
   - type: forbidden-call
     matches: ["jest.mock", "vi.mock"]
-    matchArguments: ["**/*.repository", "**/prisma**", "**/prisma.service", "@prisma/client"]
+    matchArguments: ["**/*.repository", "$orm.mockTargets"]
     rationale: "통합/E2E 테스트가 Repository나 Prisma를 mock하면 실제 쿼리·제약·트랜잭션 검증이 무의미해짐"
 relatedRules: [repository-integration-real-db, testcontainers-lifecycle]
 ---

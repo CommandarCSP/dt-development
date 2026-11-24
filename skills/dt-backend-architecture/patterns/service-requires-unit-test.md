@@ -3,7 +3,7 @@ ruleId: service-requires-unit-test
 summary: "모든 Service는 형제 단위 테스트(*.unit.test.ts) 필수"
 severity: important
 appliesTo: ["src/**/*.service.ts"]
-excludePathPatterns: ["src/**/prisma.service.ts", "src/**/cache.service.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+excludePathPatterns: ["$orm.allowedPaths", "src/**/cache.service.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 detection:
   - type: requires-sibling-test
     testPath: "__tests__/{basename}.unit.test.ts"

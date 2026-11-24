@@ -5,8 +5,9 @@ severity: important
 appliesTo: ["src/**/__tests__/**/*.repository.integration.test.ts", "src/**/__tests__/**/*.integration.test.ts"]
 detection:
   - type: forbidden-pattern
-    pattern: "jest\.mock\(\s*['"]@prisma\/client|mockDeep<\s*PrismaClient|createMock<\s*Prisma|PrismaService\s*,\s*useValue"
+    pattern: "{{orm.mockRegex}}"
     rationale: "통합 테스트에서 Prisma 를 mock 하면 쿼리·제약·트랜잭션을 검증하지 못한다 — Testcontainers 실 DB 를 쓴다"
+requiresStack: [orm]
 relatedRules: [integration-no-db-mocking, testcontainers-lifecycle]
 ---
 

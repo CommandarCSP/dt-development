@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadAllRules } from '../../scripts/review/lib/rule-loader.mjs';
 import { resolveStack } from '../../scripts/review/lib/stacks.mjs';
+import { applyStackAdapters, resolveBackendStack } from '../../scripts/stackAdapters.mjs';
 import { detectForbiddenPattern } from '../../scripts/review/lib/detection/forbidden-pattern.mjs';
 import { detectPatternPair } from '../../scripts/review/lib/detection/pattern-pair.mjs';
 import { detectJsxTagAttrs } from '../../scripts/review/lib/detection/jsx-tag-attrs.mjs';
@@ -15,7 +16,9 @@ import { detectRegisteredInSiblingModule } from '../../scripts/review/lib/detect
 const PLUGIN_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const FN = { 'forbidden-pattern': detectForbiddenPattern, 'pattern-pair': detectPatternPair, 'jsx-tag-attrs': detectJsxTagAttrs, 'registered-in-sibling-module': detectRegisteredInSiblingModule };
 const rules = {};
-for (const st of ['frontend', 'backend']) for (const r of await loadAllRules(PLUGIN_ROOT, resolveStack(st).ruleLocations)) rules[`${st}:${r.ruleId}`] = r;
+// BE 규칙은 ORM 빈칸이 있다 — 기본 어댑터(prisma)로 채워 엔진과 같은 정의로 돌린다(GEN-05).
+const fill = (st, list) => (st === 'backend' ? applyStackAdapters(list, resolveBackendStack('/nonexistent-dt', {})).rules : list);
+for (const st of ['frontend', 'backend']) for (const r of fill(st, await loadAllRules(PLUGIN_ROOT, resolveStack(st).ruleLocations))) rules[`${st}:${r.ruleId}`] = r;
 
 function run(key, code, ctx) {
   const rule = rules[key];

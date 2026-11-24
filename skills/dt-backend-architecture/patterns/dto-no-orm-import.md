@@ -1,16 +1,18 @@
 ---
-ruleId: dto-no-prisma-import
-summary: "DTO는 Prisma/Entity import 금지 — 순수 wire 계약(class-validator)만"
+ruleId: dto-no-orm-import
+summary: "DTO는 ORM(기본 Prisma)/Entity import 금지 — 순수 wire 계약(class-validator)만"
 severity: critical
 appliesTo: ["src/**/dto/*.ts"]
 detection:
   - type: forbidden-import
-    matches: ["@prisma/client", "**/entities/**", "**/*.entity"]
+    matches: ["$orm.imports", "**/entities/**", "**/*.entity"]
     rationale: "DTO는 외부 계약(요청/응답 형태)이며 DB 모델과 분리되어야 함"
 relatedRules: [dto-vs-entity]
 ---
 
-# DTO는 Prisma/Entity에 의존하지 않는다
+# DTO는 ORM/Entity에 의존하지 않는다
+
+> 검사하는 ORM import는 `stack.orm`에 따라 바뀐다(`docs/refs/stack-config.md` §4).
 
 ## 왜 중요한가
 DTO는 API의 입출력 계약이다. DB 엔티티나 Prisma 모델을 그대로 끌어오면:

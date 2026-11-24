@@ -8,6 +8,7 @@ detection:
   - type: forbidden-pattern
     pattern: "new[ ]+(Queue|Worker|QueueEvents)[ ]*[(]"
     rationale: "큐 인스턴스 직접 생성 금지 — @InjectQueue로 주입받아 사용 (타입 import는 허용)"
+requiresStack: [queue]
 relatedRules: [redis-through-cache-service]
 ---
 

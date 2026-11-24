@@ -11,6 +11,7 @@ import { join, basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from './review/lib/frontmatter.mjs';
 import { STACK_RULE_LOCATIONS } from './review/lib/rule-loader.mjs';
+import { slotNamesIn, KNOWN_SLOTS, ORM_ADAPTERS, slotValue } from './stackAdapters.mjs';
 
 export const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const SCHEMA = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'docs/refs/rule-frontmatter.schema.json'), 'utf8'));
@@ -45,6 +46,11 @@ export function validateRule(data, { file = '', ruleIds = null } = {}) {
   for (const k of ['excludePathPatterns', 'relatedRules']) if (data[k] != null && !isStrArr(data[k])) errors.push(`${k} 는 문자열 배열`);
   if (data.overridable != null && typeof data.overridable !== 'boolean') errors.push('overridable 은 true|false');
   if (data.overridable === true && !data.overrideKey) errors.push('overridable: true 면 overrideKey 가 있어야 한다');
+  // BE 스택 어댑터 빈칸(GEN-05) — 모르는 이름이면 엔진이 멈춘다. 여기서 먼저 막는다.
+  for (const n of slotNamesIn([data.appliesTo, data.excludePathPatterns, data.detection])) {
+    if (!KNOWN_SLOTS.includes(n)) errors.push(`모르는 빈칸 "${n}" — ${KNOWN_SLOTS.join(', ')} 중 하나 (scripts/stackAdapters.mjs)`);
+  }
+  if (data.requiresStack != null && (!isStrArr(data.requiresStack) || data.requiresStack.some((a) => !TOP.requiresStack.items.enum.includes(a)))) errors.push(`requiresStack 은 ${TOP.requiresStack.items.enum.join('|')} 배열`);
   if (ruleIds && isStrArr(data.relatedRules)) for (const r of data.relatedRules) if (!ruleIds.has(r)) errors.push(`relatedRules 의 "${r}" 가 같은 스택에 없다`);
   if (data.detection != null) {
     if (!Array.isArray(data.detection) || !data.detection.length) errors.push('detection 은 비지 않은 배열 — 기계 검출이 없으면 type: manual');
@@ -53,7 +59,15 @@ export function validateRule(data, { file = '', ruleIds = null } = {}) {
       if (!d || typeof d !== 'object' || !d.type) { errors.push(`${at}: type 이 없다`); return; }
       if (!TOP.detection.items.properties.type.enum.includes(d.type)) { errors.push(`${at}: 모르는 type "${d.type}"`); return; }
       for (const k of REQUIRED_BY_TYPE[d.type] ?? []) if (d[k] == null || d[k] === '') errors.push(`${at} (${d.type}): ${k} 가 없다 — 없으면 검출기가 빈 결과를 내 "검사하는 척"한다`);
-      if (d.type === 'forbidden-pattern' && d.pattern) {
+      for (const f of ['pattern', 'when', 'require', 'forbid']) {
+        if (typeof d[f] !== 'string' || !d[f].includes('{{')) continue;
+        for (const orm of Object.keys(ORM_ADAPTERS)) {
+          const filled = d[f].replace(/\{\{([a-z]+\.[a-zA-Z]+)\}\}/g, (_, n) => slotValue({ orm }, n) ?? '');
+          if (!filled) continue;
+          try { new RegExp(filled); } catch (e) { errors.push(`${at}: ${f} 를 ${orm} 로 채우면 정규식 오류 — ${e.message}`); }
+        }
+      }
+      if (d.type === 'forbidden-pattern' && d.pattern && !d.pattern.includes('{{')) {
         try { new RegExp(d.pattern, (d.flags ?? 'g').replace(/[^gimsuy]/g, '')); } catch (e) { errors.push(`${at}: pattern 정규식 오류 — ${e.message}`); }
       }
     });

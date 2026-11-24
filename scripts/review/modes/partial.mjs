@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { loadAllRules } from '../lib/rule-loader.mjs';
-import { applyLayout, readConfig } from '../lib/layout.mjs';
+import { loadStackRules } from '../lib/stack-rules.mjs';
 import { matchAny } from '../lib/matcher.mjs';
 import { detectForbiddenImport } from '../lib/detection/forbidden-import.mjs';
 import { detectForbiddenCall } from '../lib/detection/forbidden-call.mjs';
@@ -19,8 +18,8 @@ import { loadOverrideKeys } from '../lib/overrides.mjs';
 // Partial mode: review only a specific set of paths (no coverage).
 // Used by the scaffold workflow for per-phase mini-reviews.
 // args: { pluginRoot, projectRoot, paths: string[], ruleLocations, configFileName }
-export async function runPartialMode({ pluginRoot, projectRoot, paths, verbose = false, ruleLocations = undefined, configFileName = '.dt-frontend.json' }) {
-  const rules = applyLayout(await loadAllRules(pluginRoot, ruleLocations), await readConfig(projectRoot, configFileName));
+export async function runPartialMode({ pluginRoot, projectRoot, paths, verbose = false, ruleLocations = undefined, configFileName = '.dt-frontend.json', stack = undefined }) {
+  const { rules, stackInfo } = await loadStackRules({ pluginRoot, projectRoot, ruleLocations, configFileName, stack });
   const overrideKeys = await loadOverrideKeys(projectRoot, configFileName);
   const skippedRuleIds = new Set();
   const findings = [];
@@ -56,7 +55,7 @@ export async function runPartialMode({ pluginRoot, projectRoot, paths, verbose =
     }
   }
   const overrides = { keys: [...overrideKeys], skippedRuleIds: [...skippedRuleIds] };
-  return renderReport({ findings, coverage: { findings: [] }, overrides }, { verbose });
+  return renderReport({ findings, coverage: { findings: [] }, overrides, stackInfo }, { verbose });
 }
 
 function runDetection(code, det, ctx) {

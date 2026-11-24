@@ -33,7 +33,8 @@ export const AREAS = {
   ],
   backend: [
     { key: 'stack.be.framework', label: '프레임워크', expected: ['@nestjs/core'], alternatives: ['express', 'fastify', 'koa', 'hono', '@hapi/hapi'], onAlt: 'blocking' },
-    { key: 'stack.be.orm', label: 'ORM', expected: ['@prisma/client', 'prisma'], alternatives: ['typeorm', '@mikro-orm/core', 'sequelize', 'drizzle-orm', 'mongoose', 'knex'], onAlt: 'blocking' },
+    // typeorm·drizzle 은 리뷰 규칙 어댑터가 있다(GEN-05, scripts/stackAdapters.mjs) — 프로젝트 방식을 따를 수 있다.
+    { key: 'stack.be.orm', label: 'ORM', expected: ['@prisma/client', 'prisma'], alternatives: ['typeorm', '@nestjs/typeorm', 'drizzle-orm', '@mikro-orm/core', 'sequelize', 'mongoose', 'knex'], onAlt: 'blocking', adaptableAlternatives: ['typeorm', '@nestjs/typeorm', 'drizzle-orm'] },
     { key: 'stack.be.unitTest', label: '단위 테스트', expected: ['jest'], alternatives: ['vitest', 'mocha'], onAlt: 'adaptable' },
     { key: 'stack.be.httpTest', label: 'HTTP 통합 테스트', expected: ['supertest'], alternatives: ['pactum', 'axios'], onAlt: 'adaptable' },
     { key: 'stack.be.testDb', label: '통합 테스트 DB', expected: ['testcontainers', '@testcontainers/postgresql', '@testcontainers/mysql'], alternatives: ['pg-mem', 'sqlite3', 'better-sqlite3'], onAlt: 'adaptable' },
@@ -56,7 +57,7 @@ export function precheck(pkg, stack, decisions = []) {
     const foundAlt = a.alternatives.filter((n) => n in deps);
     let status;
     if (foundExpected.length) status = 'same';
-    else if (foundAlt.length) status = a.onAlt;
+    else if (foundAlt.length) status = foundAlt.every((n) => a.adaptableAlternatives?.includes(n)) ? 'adaptable' : a.onAlt;
     else status = 'absent';
     return { key: a.key, label: a.label, expected: a.expected[0], found: foundExpected[0] ?? foundAlt[0] ?? null, status, decidedBy: byTopic.get(a.key) ?? null };
   });

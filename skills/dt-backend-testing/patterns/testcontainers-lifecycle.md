@@ -18,6 +18,8 @@ relatedRules: [repository-integration-real-db, flaky-test-prevention]
 
 ## ✅ Correct
 
+예시는 기본값 PostgreSQL + Prisma다. DB가 다르면 모듈만 바꾼다 — `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --json`의 `container`(예: `@testcontainers/mysql`의 `MySqlContainer`). 이 규칙은 모든 `@testcontainers` 모듈에 걸린다.
+
 ```ts
 let container: StartedPostgreSqlContainer;
 beforeAll(async () => {
