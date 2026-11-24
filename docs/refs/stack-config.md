@@ -7,6 +7,9 @@
 | `$schemaVersion` | 1 | 설정 형식 버전 | `/dt-migrate` |
 | `paths.src` | `"src"` | 규칙의 표준 `src/` 자리. `"app"`, `"packages/web/src"`, `"."`(루트) | 리뷰 엔진 |
 | `paths.e2e` | `"e2e"` | 규칙의 표준 `e2e/` 자리 | 리뷰 엔진 |
+| `paths.test` | `"test"` | BE 규칙의 표준 `test/`(e2e) 자리 | 리뷰 엔진 |
+| `testing.location` | `"__tests__"` | 테스트 파일 자리. `"colocated"`면 소스 옆(`posts.service.spec.ts`) | 리뷰 엔진 |
+| `testing.suffix.<종류>` | 아래 §3 | 테스트 파일 이름 꼬리. 종류: `unit` · `integration` · `e2e` · `any` | 리뷰 엔진 |
 | `layout` | `{}` | `src` 아래 층 폴더 이름 바꾸기. 키·값 모두 `src` 기준 | 리뷰 엔진 |
 | `packageManager` | lockfile 감지 | `pnpm` · `npm` · `yarn` | 명령 고르기 |
 | `testRunner` | package.json 감지 | `vitest` · `jest` | 명령 고르기 |
@@ -58,3 +61,33 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/stackCommands.mjs" --stack frontend --json  
 - pnpm + vitest에 `test` 스크립트가 있으면 `coverage`는 지금까지처럼 `pnpm test --run --coverage --coverage.reporter=json-summary`다.
 - 두 도구 모두 `coverage/coverage-summary.json`을 내야 리뷰가 읽는다.
 - 모르는 `packageManager`·`testRunner` 값은 막고 고칠 방법을 알린다. 목록에 없는 도구(bun·mocha 등)는 `commands.*`로 적는다.
+
+## 3. 테스트 파일 이름 (`testing`)
+
+테스트 규칙은 `src/**/__tests__/**/*.unit.test.ts`, `test/**/*.e2e.test.ts` 같은 표준 이름으로 적혀 있다. 프로젝트가 다른 관례를 쓰면 리뷰 엔진이 이 설정으로 바꾼다. 바꾸지 않으면 테스트 파일을 검사하는 규칙이 하나도 걸리지 않는다.
+
+| 종류 | 기본 꼬리 | 쓰는 규칙 예 |
+|---|---|---|
+| `unit` | `.unit.test` | 서비스 단위 테스트는 저장소를 mock 한다 |
+| `integration` | `.integration.test` | 통합 테스트는 DB를 mock 하지 않는다 |
+| `e2e` | FE `.spec`(`e2e/`) · BE `.e2e.test`(`test/`) | 전체 앱을 띄운다 |
+| `any` | `.test` | 대기 금지처럼 모든 테스트에 거는 규칙(옆에 둘 때만 쓴다) |
+
+NestJS 기본 관례:
+
+```json
+{
+  "testing": {
+    "location": "colocated",
+    "suffix": { "unit": ".spec", "integration": ".integration.spec", "e2e": ".e2e-spec", "any": ".spec" }
+  }
+}
+```
+
+- `src/**/__tests__/**/*.unit.test.ts`는 `src/**/*.spec.ts`가 된다. `test/**/*.e2e.test.ts`는 `test/**/*.e2e-spec.ts`가 된다.
+- "테스트가 있어야 한다" 규칙이 찾는 이름도 바뀐다(`__tests__/posts.controller.integration.test.ts` → `posts.controller.integration.spec.ts`). 검사는 지금처럼 `.spec`·옆자리 변형도 함께 받는다.
+- 적지 않은 종류는 표준 이름 그대로다. `__tests__` 자리를 두고 꼬리만 바꿔도 된다.
+- 꼬리가 겹치면(`unit` `.spec`과 `integration` `.integration.spec`) 단위 테스트 규칙에서 통합 테스트 파일을 뺀다.
+- 옆에 두면 `src/pages/*.tsx`처럼 소스를 가리키는 규칙에서 테스트 파일을 뺀다. BE 구조 규칙의 테스트 제외 목록에도 설정한 꼬리를 더한다.
+- 테스트 도구는 `testRunner`(§2)가 정한다. Docker 런타임 문제는 선택 참고 문서 [docker-runtime-hints.md](docker-runtime-hints.md)를 본다.
+- 모르는 `location`·종류는 리뷰를 멈추고 고칠 방법을 알린다(종료 코드 2).

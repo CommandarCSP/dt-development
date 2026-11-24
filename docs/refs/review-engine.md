@@ -16,5 +16,5 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs" partial --paths a.ts,b.ts
 ## 2. 커버리지와 폴더 구조
 
 - `full --base <ref>`일 때 HEAD와 기준 커밋의 커버리지를 재서 바뀐 파일만 비교한다. 재는 명령(`commands.coverage`)과 기준 커밋 설치 명령(`commands.install`)은 `scripts/stackCommands.mjs`가 고른다. 측정이 실패하면 보고서에 쓴 명령과 고른 근거가 나온다.
-- 규칙의 표준 경로(`src/...`·`e2e/...`)는 스택 설정 `paths.src`·`paths.e2e`·`layout`으로 프로젝트 경로로 바뀐다.
+- 규칙의 표준 경로(`src/...`·`e2e/...`·`test/...`)는 스택 설정 `paths.*`·`layout`으로, 표준 테스트 이름(`__tests__/*.unit.test.ts`)은 `testing.location`·`testing.suffix`로 프로젝트에 맞게 바뀐다(`scripts/review/lib/layout.mjs`).
 - 키와 고르는 순서는 [스택 설정](stack-config.md)이 원본이다.

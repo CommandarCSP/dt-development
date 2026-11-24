@@ -40,14 +40,7 @@ afterEach(async () => { await truncateAll(prisma); });
    // 또는 allowlist (성능 우선): "/node_modules/(?!(testcontainers|@testcontainers|archiver|archiver-utils|zip-stream|compress-commons|crc32-stream|tar-stream|bare-events|streamx|b4a|fast-fifo|text-decoder|is-stream)/)"
    ```
 
-2. **Docker Desktop이 아닌 런타임(colima/podman/rancher-desktop)에선 소켓을 명시**: `DOCKER_HOST`가 비어 있으면 Testcontainers가 데몬을 못 찾는다. 활성 docker context의 엔드포인트를 넘긴다(+ Ryuk이 막히면 비활성화):
-   ```bash
-   export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"   # colima (podman은 해당 소켓)
-   export DOCKER_HOST="unix://$HOME/.rd/docker.sock"               # rancher-desktop
-   export TESTCONTAINERS_RYUK_DISABLED=true                        # Ryuk 컨테이너 기동 실패 시
-   ```
-   `docker context ls`로 활성 엔드포인트를 확인. CI(Docker Desktop/네이티브 도커)에선 불필요.
-   **증상 주의(실측)**: Ryuk 기동 실패는 자기 이름으로 죽지 않고 **postgres 컨테이너 대기전략 타임아웃으로 위장**되어 연쇄 실패한다 — "DB가 안 뜬다"로 보이면 먼저 Ryuk/소켓을 의심할 것.
+2. **Docker Desktop이 아닌 런타임(colima·podman·rancher-desktop)**: 데몬을 못 찾거나 DB 컨테이너가 대기 시간 초과로 죽으면 소켓(`DOCKER_HOST`)과 Ryuk을 먼저 본다. 런타임별 값은 선택 참고 문서 `docs/refs/docker-runtime-hints.md`에 있다. CI(Docker Desktop·기본 도커)에선 필요 없다.
 
 ## 관련 규칙
 - [[repository-integration-real-db]]

@@ -609,3 +609,25 @@ test('명령 고정 없음: 스킬·에이전트 문서에 pnpm/npm run/yarn 실
   for (const d of ['skills', 'agents', 'commands']) walk(d);
   assert.deepEqual(problems, []);
 });
+
+// GEN-06 — Docker 런타임별 값(소켓 경로·Ryuk 끄기)은 선택 참고 문서 한 곳에만 둔다. 규칙·체크리스트·에이전트는 그 문서를 가리킨다.
+test('Docker 힌트: 런타임별 소켓·Ryuk 값은 docs/refs/docker-runtime-hints.md 에만 있다', () => {
+  const HOME = 'docs/refs/docker-runtime-hints.md';
+  const RE = /\.colima\/|\.rd\/docker\.sock|TESTCONTAINERS_RYUK_DISABLED/;
+  const ALLOW = new Set([HOME, 'tests/pluginStructure.test.mjs', 'CHANGELOG.md']);
+  const problems = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(rel(dir), { withFileTypes: true })) {
+      const p = dir ? `${dir}/${e.name}` : e.name;
+      if (e.isDirectory()) { if (!['node_modules', '.git', 'results', 'specs', 'vendor', 'fonts'].includes(e.name)) walk(p); continue; }
+      if (!/\.(md|mjs|js|json|sh|yaml)$/.test(e.name) || ALLOW.has(p)) continue;
+      if (RE.test(readFileSync(rel(p), 'utf8'))) problems.push(p);
+    }
+  };
+  walk('');
+  assert.deepEqual(problems, []);
+  assert.ok(RE.test(readFileSync(rel(HOME), 'utf8')), `${HOME} 에 런타임 값이 있어야 한다`);
+  for (const f of ['skills/dt-backend-testing/patterns/testcontainers-lifecycle.md', 'skills/dt-backend-scaffold/checklist/new-project.md', 'agents/be-builder.md']) {
+    assert.ok(readFileSync(rel(f), 'utf8').includes(HOME), `${f} 가 ${HOME} 를 가리켜야 한다`);
+  }
+});

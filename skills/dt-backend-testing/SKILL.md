@@ -18,6 +18,8 @@ description: Use when writing or reviewing tests in a NestJS project that contai
 | Integration | Controller+Service+Repository+**실 Postgres/Redis** | Jest + Supertest + Testcontainers | `**/__tests__/*.integration.test.ts` | 20–30% |
 | E2E | 전체 AppModule, 실인프라, 인증 흐름 | Jest + Supertest + Testcontainers | `test/*.e2e.test.ts` | 5–10% |
 
+위치·접미사는 규칙의 표준 이름이다. 프로젝트가 NestJS 기본(`*.spec.ts`를 소스 옆, `test/*.e2e-spec.ts`)처럼 다르면 `.dt-backend.json`의 `testing.location`·`testing.suffix`로 맞춘다(`docs/refs/stack-config.md` §3). 이름을 바꾸지 말고 설정을 적는다.
+
 **도구 선택**
 - **Jest** — NestJS 기본(`@nestjs/testing` 생태계가 Jest 전제)
 - **Supertest** — HTTP 레벨 검증 (라우팅·ValidationPipe·상태코드)

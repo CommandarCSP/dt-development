@@ -59,7 +59,7 @@ FE와 동일한 스키마·detector를 사용한다 (`dt-frontend-review` SKILL.
 
 - `forbidden-import` — `@prisma/client`/`ioredis`/`express` 등 레이어별 금지 import
 - `forbidden-pattern` — `res.status(`, `new Queue(`, 중앙 키 팩토리 위반 등
-- `requires-sibling-test` — `*.service.ts`↔`*.unit.test.ts`, `*.controller.ts`↔`*.integration.test.ts`
+- `requires-sibling-test` — `*.service.ts`↔`*.unit.test.ts`, `*.controller.ts`↔`*.integration.test.ts` (`testing.*` 설정이 있으면 그 이름. `docs/refs/stack-config.md` §3)
 - `required-pattern` — 요청 DTO의 class-validator 데코레이터 강제 (validation-at-boundary)
 - `ast-rule` — controller-no-business-logic / module-registration (v1 수동 검토 stub)
 

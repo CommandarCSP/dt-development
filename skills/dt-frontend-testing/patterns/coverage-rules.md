@@ -13,7 +13,7 @@ relatedRules: [test-case-design-techniques, test-anti-patterns]
 
 ## 게이트 (전역 최소)
 
-비즈니스 코드 80% 이상.
+비즈니스 코드 80% 이상. 리뷰가 새 파일에 거는 하한은 `.dt-frontend.json`의 `coverage.newCodeThreshold`(기본 80)다.
 - include: `business/`, `store/`, `components/domain/`, `pages/`, `utils/`
 - exclude: `components/view/`, `_example/`, `legacy/`, `__tests__/`, `*.test.*`
 

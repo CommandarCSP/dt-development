@@ -8,7 +8,7 @@
 - DB(기본 PostgreSQL), 캐시/큐(Redis/BullMQ 사용 여부), 인증 전략(JWT/session/none), 패키지 매니저(npm/pnpm) 확인.
 - **Docker 프리플라이트**: dev DB(compose)와 통합/e2e(Testcontainers)가 **모두 Docker 데몬**을 요구한다. 부트스트랩 전에 `docker info`로 **설치 + 데몬 실행**을 확인하고, 안 되면 설치/기동(예: Docker Desktop 실행)을 안내한 뒤 **중단**한다 — 이후 `docker compose up`·통합테스트가 raw 에러로 죽는 것을 막는다. (Docker 없이 진행을 원하면 dev DB는 외부 Postgres `DATABASE_URL`로 대체하고 통합/e2e는 스킵으로 둔다.)
   - 데몬뿐 아니라 **`docker compose version`(v2 서브커맨드)** 도 확인한다 — 일부 설치(예: brew standalone `docker-compose`)는 데몬은 떠 있어도 `docker compose`가 없어 `unknown command`로 죽는다. 없으면 cli-plugins 심링크(`ln -sfn $(brew --prefix)/bin/docker-compose ~/.docker/cli-plugins/docker-compose`)를 안내.
-  - **Docker Desktop이 아닌 런타임(colima/podman)**: `docker context ls`로 활성 엔드포인트를 확인하고 Testcontainers용 `DOCKER_HOST`(예: `unix://$HOME/.colima/default/docker.sock`)를 안내한다 — 비어 있으면 통합/e2e가 데몬을 못 찾는다. (→ `dt-backend-testing` testcontainers-lifecycle)
+  - **Docker Desktop이 아닌 런타임**: 통합·e2e가 데몬을 못 찾으면 `docs/refs/docker-runtime-hints.md`(선택 참고)의 소켓·Ryuk 안내를 사용자에게 알린다. (→ `dt-backend-testing` testcontainers-lifecycle)
 
 ## 2. NestJS + Prisma 스캐폴드
 ```bash

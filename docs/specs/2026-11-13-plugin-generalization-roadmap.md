@@ -80,11 +80,13 @@
 - 문제: 룰이 `@prisma/client`·`ioredis`·`new Queue(`를 문자 그대로 매칭 → 다른 ORM 프로젝트는 보호 없음. Passport+JWT를 "정석"으로 고정.
 - 할 일: `.dt-backend.json`에 `stack.{orm,db,cache,queue,auth}`. 패턴 `matches`를 프리셋(prisma/typeorm/drizzle)에서 주입, 기능이 `none`이면 룰 skip. 룰 이름을 계층 기준(`repository-only-orm`)으로. `dt-bespec-collect-project-context` 감지표 확장 + 하위 스킬이 그 값을 읽게.
 - 완료 기준: TypeORM 픽스처에서 계층 위반 룰이 동작.
+- GEN-06에서 넘어옴: `testing.container` — DB별 Testcontainers 모듈 선택(Postgres·MySQL 등).
 
 ### GEN-06 BE 테스트 전략 설정화
 - 문제: 파일명 규칙(`*.unit.test.ts`), Testcontainers Postgres, colima 소켓 경로, 커버리지 80/85% 고정.
 - 할 일: `testing.{runner,unitGlob,integrationGlob,container}`, `coverage.newCodeThreshold`. DB별 컨테이너 선택. OS별 Docker 힌트는 선택 참고 문서로 분리.
 - 완료 기준: `*.spec.ts` 규칙 프로젝트에서 `requires-sibling-test` 정상 동작.
+- **완료(DEV-11, 2026-11-24).** 확인해 보니 `requires-sibling-test`는 이미 `.spec`·옆자리 파일을 받았다. 진짜 구멍은 테스트 파일을 검사하는 규칙(FE 14개·BE 9개)이 `__tests__/*.unit.test.ts`·`test/*.e2e.test.ts`에만 걸려, NestJS 관례(`*.spec.ts` 옆자리·`test/*.e2e-spec.ts`)나 FE 옆자리(`Card.test.tsx`) 프로젝트에서 위반을 하나도 못 잡던 것이다. GEN-04의 바꿔 끼우기를 넓혀 `testing.location`(`__tests__`|`colocated`)·`testing.suffix.{unit,integration,e2e,any}`·`paths.test`로 테스트 glob과 `testPath`를 바꾼다. 꼬리가 겹치면 단위 규칙에서 통합 테스트를 빼고, 옆자리면 한 층 소스 규칙(`src/pages/*.tsx`)·"테스트가 있어야 한다" 규칙에서 테스트 파일을 뺀다. BE 구조 규칙의 테스트 제외 목록에도 설정한 꼬리를 더한다. 구조 테스트가 테스트 규칙 경로가 모두 엔진이 아는 모양인지 본다. 할 일의 `testing.runner`는 GEN-04 `testRunner`로 끝났고, `unitGlob`·`integrationGlob`은 glob 대신 꼬리·자리 두 키로 했다. 커버리지 80%는 이미 `coverage.newCodeThreshold`(FE 규칙 문서에 키를 적었다), 85%는 권장 문구로 둔다. Docker 런타임별 값(colima·rancher-desktop 소켓, Ryuk 끄기)은 선택 참고 문서 `docs/refs/docker-runtime-hints.md` 한 곳으로 모았다(구조 테스트). **`testing.container`(DB별 컨테이너 선택)는 GEN-05로 넘긴다** — DB 종류를 정하는 어댑터가 거기 있고, 컨테이너 수명 규칙은 이미 `GenericContainer`·`@testcontainers` 전체를 잡는다. 완료 기준 픽스처: NestJS 관례 BE 프로젝트와 FE 옆자리 프로젝트가 `__tests__` 프로젝트와 같은 위반 목록을 낸다(`tests/review/testing-layout.test.mjs`).
 
 ### GEN-07 스캐폴드 스택 프리셋
 - 문제: FE는 Vite+Tailwind v4+shadcn+MSW, 포트 5173 고정. 토큰 출력이 Tailwind `@theme` 전용. BE는 npm·Prisma·Postgres16 compose·JWT 패키지 고정, 게이트에 `--prisma true` 리터럴.
