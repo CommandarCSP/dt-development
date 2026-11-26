@@ -15,11 +15,23 @@ export const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const START = '<!-- catalog:start -->';
 export const END = '<!-- catalog:end -->';
 
-/** 한 줄 `key: value` 머리말(스킬·에이전트·명령 형식). */
-function frontmatter(text) {
+/** `key: value` 머리말(스킬·에이전트·명령 형식). 접은 블록(`key: >-` · `|`)은 들여쓴 다음 줄들을 한 줄로 잇는다. */
+export function frontmatter(text) {
   const m = text.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
-  return Object.fromEntries(m[1].split('\n').map((l) => l.match(/^([\w-]+):\s*(.*)$/)).filter(Boolean).map((x) => [x[1], x[2].replace(/^['"]|['"]$/g, '')]));
+  const out = {}; const lines = m[1].split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const x = lines[i].match(/^([\w-]+):\s*(.*)$/);
+    if (!x) continue;
+    let v = x[2];
+    if (/^[>|][-+]?$/.test(v)) {
+      const body = [];
+      while (i + 1 < lines.length && /^\s+\S/.test(lines[i + 1])) body.push(lines[++i].trim());
+      v = body.join(' ');
+    }
+    out[x[1]] = v.replace(/^['"]|['"]$/g, '');
+  }
+  return out;
 }
 
 /** 설명의 첫 문장(— 또는 . 앞)만, 표가 넘치지 않게. 파이프는 이스케이프. */

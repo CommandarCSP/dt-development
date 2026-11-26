@@ -211,7 +211,8 @@ test('CLI setup writes the three config files into the consumer root', () => {
     assert.equal(cfg.defaultProjectKey, 'SAP');
     assert.equal(cfg.site, SITE);
     assert.equal(cfg.cloudId, 'cloud-123');
-    assert.ok(cfg.issueTypeNames, 'example의 issueTypeNames가 보존돼야 한다');
+    assert.equal(cfg.preset, 'basic', '새 위저드는 기본 프리셋 basic 으로 쓴다(TP-002)');
+    assert.ok(!('issueTypeNames' in cfg), '옛 회사 키를 복사하지 않는다 — 규칙은 프리셋이 정한다');
     const local = JSON.parse(readFileSync(join(root, '.dt-worklog.local.json'), 'utf8'));
     assert.equal(local.lastSyncSha, null);
     const giLines = readFileSync(join(root, '.gitignore'), 'utf8').split('\n').map((l) => l.trim());
@@ -267,4 +268,17 @@ test('CLI setup exits 1 for a whitespace-only key and writes no config', () => {
     assert.equal(r.status, 1);
     assert.equal(existsSync(join(root, '.dt-worklog.json')), false);
   });
+});
+
+test('CLI setup --preset org-guideline 은 그 프리셋을 적고, 모르는 프리셋은 막는다', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'dt-wl-setup-preset-'));
+  try {
+    const dump = join(dir, 'dump.json');
+    writeFileSync(dump, JSON.stringify({ values: [{ id: '1', key: 'SAP', name: 'S' }] }));
+    const ok = spawnSync('node', [CLI, 'setup', dump, 'SAP', SITE, 'cloud-123', dir, '--preset', 'org-guideline'], { encoding: 'utf8' });
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.equal(JSON.parse(readFileSync(join(dir, '.dt-worklog.json'), 'utf8')).preset, 'org-guideline');
+    const bad = spawnSync('node', [CLI, 'setup', dump, 'SAP', SITE, 'cloud-123', dir, '--preset', 'acme'], { encoding: 'utf8' });
+    assert.equal(bad.status, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

@@ -33,7 +33,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 가이드 PDF | 프로젝트를 분석해 사용자 가이드 PDF를 만든다 | `/dt-guide` |
 | 인수인계 핸드북 | 이미 있는 코드를 분석해 신규 개발자용 핸드북 PDF를 만든다. 데이터 주인·군집·경계를 먼저 세우고 시나리오 호출 사슬을 얹는다 | `/dt-handbook` |
 | 한국어 문장 검사 | 기계 검사 + 격리 리뷰로 어색한 문장을 고친다 | `/dt-ko` |
-| Jira 연동 | 개발 작업을 Jira Sub-task로 정리·동기화한다 | `/dt-worklog` |
+| Jira 연동 | 개발 작업을 Story·Task·Bug로 정리해 설명·진행·마무리 댓글로 기록한다(조직 규칙은 프리셋) | `/dt-worklog` |
 | Confluence 연동 | 작업을 Confluence 문서(회의록·요약·기술문서·릴리즈노트)로 쓴다 | `/dt-confluence` |
 | 기존 프로젝트 들이기 | 이미 만든 프로젝트에서 화면·API를 근거와 함께 뽑아 정의서·스펙·결정(PD) 초안을 만들고, 의도/버그를 확인해 확정한다 | `/dt-adopt` |
 | 결정 기록 | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고 찾는다. 규칙 끄기의 근거가 된다 | `/dt-decision` |
@@ -70,7 +70,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `/dt-review` | Run dt-frontend rule and coverage review against current project | `dt-frontend-review` |
 | `/dt-scaffold` | Generate or extend dt-frontend domain code via multi-agent scaffold workflow | `dt-frontend-scaffold` |
 | `/dt-spec` | Build SDD-format spec documents (requirements.md/design.md/tasks.md/layout-skeleton.md) for a page from multi… | `dt-spec-generate-spec` |
-| `/dt-worklog` | 개발 작업(git + 세션 + 메모)을 조직 Jira 가이드라인에 맞게 Jira Sub-task로 동기화한다. dry-run 승인 후 생성/상태전이/산출물 첨부 | `dt-worklog-sync` |
+| `/dt-worklog` | 개발 작업(git + 세션 + 메모)을 트래커(기본 Jira)에 Story·Task·Bug로 기록한다 | `dt-worklog-sync` |
 | `/dt-wrap` | 작업 마무리 루틴을 순서대로 진행한다 | `dt-wrap` |
 
 **스킬** — 명령이 부르거나, 조건이 맞으면 모델이 스스로 부른다. 같은 이름 명령이 있는 스킬은 `/` 메뉴에 나오지 않는다.
@@ -114,7 +114,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `dt-spec-ask-missing` | dt-spec needs to fill missing requirements via user askQuestion |
 | `dt-spec-collect-project-context` | dt-spec needs the project's overview, constraints, domain glossary, and tech stack |
 | `dt-spec-generate-spec` | the user runs /dt-spec to build SDD spec documents for a page |
-| `dt-worklog-sync` | >- |
+| `dt-worklog-sync` | a developer (FE/BE) wants to record their development work in the issue tracker (Jira by default) |
 | `dt-wrap` (/dt-wrap) | wrapping up a chunk of work |
 
 **에이전트** — 사용자가 부르지 않는다. 조율 스킬이 일을 맡긴다. 티어는 `.dt.json` `team.models`로 모델을 고르는 묶음이다.
@@ -122,7 +122,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 에이전트 | 티어 | 하는 일 |
 |---|---|---|
 | `adopt-extractor` | planner | /dt-adopt 역추출 워커 |
-| `auditor` | reviewer | >- |
+| `auditor` | reviewer | 구현↔스펙 정합 감사 워커(track: fe\|be\|ux\|spec) |
 | `be-builder` | builder | 한 리소스/모듈의 BE 계층(repository·dto·service·controller·module)을 스펙대로 한 컨텍스트에서 구현하는 일회성 워커 |
 | `bespec-author` | planner | 요청 범위의 BE 리소스 스펙 전체(requirements/design/tasks/api-contract)와 크로스리소스 통합(트랜잭션 경계·cascade·스키마 관계)을 한 컨텍스트에서 홀리스틱… |
 | `definition-author` | planner | 프로젝트 정의서(docs/specs/definition.md |
@@ -150,7 +150,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 
 | 파일 | 무엇 | 만들어지는 방법 |
 |---|---|---|
-| `.dt-worklog.json` / `.dt-worklog.local.json` | Jira 연동(프로젝트 키 등) | 최초 실행 위저드가 자동으로 진입해 만든다 |
+| `.dt-worklog.json` / `.dt-worklog.local.json` | 작업 기록(프로젝트 키·프리셋 `basic`/`org-guideline` 등) | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-confluence.json` / `.dt-confluence.local.json` | Confluence 연동 | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-handbook.json` | 인수인계 핸드북 설정 | 없으면 기본 템플릿으로 자동 생성 |

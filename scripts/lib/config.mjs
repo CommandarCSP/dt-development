@@ -26,6 +26,8 @@ export const LEGACY_HOOKS_FILE = '.dt-pipeline.json';
 export const EXECUTION_MODES = ['ask', 'parallel', 'sequential'];
 export const MODEL_NAMES = ['opus', 'sonnet', 'haiku', 'fable'];
 export const SUPPORTED_LOCALES = ['ko'];
+/** 작업 기록 트래커(GEN-09). jira 만 연동한다 — github·linear 는 스텁(none 처럼 요약만), none 은 아무 데도 쓰지 않는다. */
+export const TRACKERS = ['jira', 'github', 'linear', 'none'];
 
 /**
  * 에이전트 → 모델 티어. `team.models.<tier>` 가 있으면 조율자가 dispatch 때 그 모델로 덮어쓴다.
@@ -52,6 +54,8 @@ export const DEFAULTS = Object.freeze({
   },
   // 저장소가 FE·BE 로 나뉘었을 때, 정의서가 있는 저장소의 결정 폴더(이 프로젝트 루트 기준 상대 경로). null = 자기 폴더만.
   decisions: { sharedDir: null },
+  // 작업 기록 트래커(GEN-09) — dt-worklog-sync 가 읽는다(scripts/worklogConfig.mjs). 기본 jira = 지금 동작.
+  tracker: 'jira',
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -135,6 +139,12 @@ export function validate(raw, warnings = []) {
       if (d.sharedDir === null || (typeof d.sharedDir === 'string' && d.sharedDir.trim())) out.decisions.sharedDir = d.sharedDir?.trim() ?? null;
       else warnings.push('decisions.sharedDir: 경로 문자열이어야 합니다 — 자기 폴더만 읽습니다');
     }
+  }
+
+  // tracker
+  if (raw?.tracker != null) {
+    if (TRACKERS.includes(raw.tracker)) out.tracker = raw.tracker;
+    else warnings.push(`tracker: "${raw.tracker}" 은 ${TRACKERS.join('|')} 가 아니라 "jira" 를 씁니다`);
   }
   return out;
 }

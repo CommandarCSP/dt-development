@@ -8,6 +8,10 @@
 ## [미출시]
 
 ### 추가
+- 작업 기록 규칙 팀 정책 `docs/policies/TP-002-task-records.md` — 계층(Epic → Story·Task·Bug가 기본 단위 → Sub-task는 나눌 때만, 크기 한 주 안), 설명 템플릿(배경·목표·완료 조건·참고), 진행 댓글·마무리 댓글 템플릿, 마무리 규칙(Done 전 마무리 댓글에 산출물이나 결정 사항). 관련 Confluence 문서가 있으면 댓글의 "관련 문서" 줄로 링크한다 (GEN-09)
+- 작업 기록 프리셋 — `basic`(기본, TP-002)과 `org-guideline`(사내 가이드라인 v1.0: Sub-task 강제·1~3일·수행 Epic·날짜·산출물 필드·릴리즈 필수). 설정을 합치고 검사하는 `scripts/worklogConfig.mjs`(`--json`, 마무리 댓글 검사 `check-close`), 키 설명 `skills/dt-worklog-sync/references/presets/README.md` (GEN-09)
+- git 호스트별 커밋·PR 주소 `scripts/gitWebUrl.mjs` — GitHub·GitLab·Bitbucket. 이름으로 모르는 사설 호스트는 지어내지 않고 묻는다(`gitHost`) (GEN-09)
+- 공통 설정 `.dt.json`의 `tracker`(`jira` 기본 · `github` · `linear` · `none`)와 트래커 어댑터 문서 `docs/refs/tracker-adapter.md`. 연동은 Jira만, GitHub·Linear는 스텁, `none`은 정리한 작업을 마크다운으로만 보인다 (GEN-09)
 - `CONTRIBUTING.md` — 폴더 구분·이름·언어·머리말 형식, 리뷰 규칙 하나 추가 따라 하기, 올리기 전 점검 (GEN-27)
 - 리뷰 규칙 머리말 스키마 `docs/refs/rule-frontmatter.schema.json`과 검사기 `scripts/validateRules.mjs` — 필수 필드·severity·검출 type과 type별 필수 인자·relatedRules (GEN-27)
 - README 전체 목록 자동 생성 `scripts/readmeCatalog.mjs` (GEN-27)
@@ -26,6 +30,7 @@
 - 선택 참고 문서 `docs/refs/docker-runtime-hints.md` — colima·rancher-desktop·podman 소켓, Ryuk 끄기. 규칙·체크리스트·`be-builder`에 흩어져 있던 값을 모았다 (GEN-06)
 
 ### 고침
+- README 전체 목록이 접은 블록 설명(`description: >-`)을 `>-`로 적던 것(`dt-worklog-sync`·`auditor`) (GEN-09)
 - new-module Phase 2의 Prisma 게이트 인자(`migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma`)가 스키마를 자기 자신과 비교해 마이그레이션을 빠뜨려도 늘 통과하던 것 — dev DB와 비교한다(`--from-schema-datasource`) (GEN-43)
 - 대기 금지 규칙(BE·FE `flaky-test-prevention`, FE `test-anti-patterns`)이 `jest.setTimeout(…)`(테스트 시간 한도)을 대기용 `setTimeout`으로 잡던 것 — Testcontainers 통합 테스트의 기본 설정이 막혔다 (GEN-43 실설치에서 발견)
 - `docs/refs/docker-runtime-hints.md`: colima에서 `DOCKER_HOST`만으로는 Ryuk이 호스트 소켓 경로를 마운트하다 실패하던 것 — `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`을 먼저 안내한다 (GEN-43 실설치에서 발견)
@@ -44,6 +49,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **`/dt-worklog` 기본 규칙을 사내 가이드라인에서 TP-002로.** 새 프로젝트는 Story·Task·Bug에 설명·진행·마무리 댓글로 기록하고, Sub-task·날짜·"수행" Epic·산출물 커스텀 필드를 강제하지 않는다. 커밋 주소도 GitLab 고정이 아니라 호스트에 맞춘다. **이미 쓰던 설정은 그대로다** — `preset` 없이 옛 키(`issueTypeNames`·`transitionMap`·`outputFieldName`·`outputFieldId`)가 있으면 `org-guideline`으로 읽고 "`preset`을 적으라"고 경고한다. 옛 키는 0.16.x 동안 함께 받는다(새 키 `issueTypes`·`transitions`·`outputField`). 위저드는 프리셋을 묻는다(기본 `basic`). `references/jira-guideline.md`·`output-field-rules.md`는 `references/presets/org-guideline.md` 하나로 합쳤다 (GEN-09)
 - 스캐폴드 게이트(`gate.mjs --stack backend`)는 `--prisma`가 없으면 `stack.orm`이 prisma일 때만 Prisma 검사를 켠다. 문서의 `--prisma true` 고정을 지웠다 — `--prisma true|false`는 덮어쓰기로 남는다. FE 게이트는 그대로다 (GEN-07)
 - 리뷰 보고서의 건너뛴 규칙 줄: `건너뛴 규칙(stack.<영역> = none): 규칙(영역)` → `건너뛴 규칙(스택에 맞지 않음): 규칙(stack.영역 = 값)` (GEN-07)
 - `stack-versions.json` 묶음 나누기: FE `tailwindcss`·`@tailwindcss/vite`는 `tailwindDevDependencies`로, BE `@prisma/client`·`prisma`·`@testcontainers/postgresql`은 `prismaDependencies`·`prismaDevDependencies`·`postgresqlDevDependencies`로. `stackVersions.mjs --deps|--dev`만 쓰던 곳은 `scaffoldPreset.mjs`로 바꾼다. major 비교(스택 사전 점검)는 모든 묶음을 본다 (GEN-07)

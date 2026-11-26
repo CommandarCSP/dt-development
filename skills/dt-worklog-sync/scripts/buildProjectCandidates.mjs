@@ -73,10 +73,11 @@ export function validateKey(projects, input) {
   return projects.find((p) => String(p.key).toUpperCase() === key) ?? null;
 }
 
-// 설정 객체 = example 템플릿에 defaultProjectKey/site/cloudId만 주입.
-// issueTypeNames/transitionMap 등 나머지는 example 그대로 보존한다.
-export function buildConfig(example, key, site, cloudId) {
-  return { ...example, defaultProjectKey: key, site, cloudId };
+// 설정 객체 = example 템플릿에 defaultProjectKey/site/cloudId(+고른 preset)만 주입. 나머지는 example 그대로 보존한다.
+// 규칙 값(이슈 유형·전이·필드)은 preset 이 정한다 — scripts/worklogConfig.mjs.
+export const PRESET_NAMES = ['basic', 'org-guideline'];
+export function buildConfig(example, key, site, cloudId, preset) {
+  return { ...example, ...(preset ? { preset } : {}), defaultProjectKey: key, site, cloudId };
 }
 
 // .gitignore 내용에 entry 줄을 멱등하게 보장한다.
@@ -93,10 +94,13 @@ export function ensureGitignoreEntry(content, entry) {
 // CLI:
 //   node buildProjectCandidates.mjs table    <dumpFile> <site>               → 최근순 표를 stdout
 //   node buildProjectCandidates.mjs validate <dumpFile> <keyOrUrl>           → 존재 시 "KEY"+exit0, 없으면 exit1
-//   node buildProjectCandidates.mjs setup    <dumpFile> <keyOrUrl> <site> <cloudId> [root]
+//   node buildProjectCandidates.mjs setup    <dumpFile> <keyOrUrl> <site> <cloudId> [root] [--preset basic|org-guideline]
 //        → 키 검증 후 [root](기본 cwd)에 .dt-worklog.json / .dt-worklog.local.json 작성 + .gitignore 등록
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [cmd, dumpFile, ...rest] = process.argv.slice(2);
+  const argv = process.argv.slice(2);
+  const pi = argv.indexOf('--preset');
+  const presetArg = pi >= 0 ? argv.splice(pi, 2)[1] : undefined;
+  const [cmd, dumpFile, ...rest] = argv;
   try {
     if (!cmd || !dumpFile) {
       throw new Error('usage: buildProjectCandidates.mjs <table|validate|setup> <dumpFile> …');
@@ -126,12 +130,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         process.stderr.write(`키를 목록에서 찾지 못함: ${keyInput}\n`);
         process.exit(1);
       }
+      if (presetArg !== undefined && !PRESET_NAMES.includes(presetArg)) {
+        throw new Error(`--preset '${presetArg}' 는 없다 — ${PRESET_NAMES.join(' | ')}`);
+      }
       const targetRoot = root || process.cwd();
       // 쓰기 전에 읽기·계산을 모두 끝내 부분 쓰기(한 파일만 쓰이고 실패) 위험을 줄인다.
       const example = JSON.parse(
         readFileSync(new URL('../references/dt-worklog.example.json', import.meta.url), 'utf8')
       );
-      const config = buildConfig(example, match.key, site, cloudId);
+      const config = buildConfig(example, match.key, site, cloudId, presetArg);
       const localPath = join(targetRoot, '.dt-worklog.local.json');
       const localExists = existsSync(localPath);
       const giPath = join(targetRoot, '.gitignore');
@@ -145,7 +152,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         writeFileSync(localPath, JSON.stringify({ lastSyncSha: null }, null, 2) + '\n');
       }
       writeFileSync(giPath, giNext);
-      process.stdout.write(`✓ ${match.key} (${match.name}) 설정 완료 — .dt-worklog.json · .dt-worklog.local.json · .gitignore\n`);
+      process.stdout.write(`✓ ${match.key} (${match.name}) 설정 완료 — 프리셋 ${config.preset ?? 'basic'} · .dt-worklog.json · .dt-worklog.local.json · .gitignore\n`);
     } else {
       throw new Error(`알 수 없는 명령: ${cmd}`);
     }

@@ -76,12 +76,22 @@ test('decisions.sharedDir: 문자열이면 받고, 아니면 경고 후 null', (
 });
 
 test('모르는 키는 경고만 하고 버린다', () => {
-  withDir({ '.dt.json': { tracker: 'jira', team: { colour: 'red' } } }, (dir) => {
+  withDir({ '.dt.json': { wiki: 'confluence', team: { colour: 'red' } } }, (dir) => {
     const { config, warnings } = loadConfig(dir);
-    assert.ok(!('tracker' in config));
-    assert.ok(warnings.some((w) => w.includes('"tracker"')));
+    assert.ok(!('wiki' in config));
+    assert.ok(warnings.some((w) => w.includes('"wiki"')));
     assert.ok(warnings.some((w) => w.includes('"team.colour"')));
   });
+});
+
+test('tracker(GEN-09): 기본 jira, 아는 값만 받고 틀리면 경고 후 jira', () => {
+  withDir({ '.dt.json': { tracker: 'none' } }, (dir) => assert.equal(loadConfig(dir).config.tracker, 'none'));
+  withDir({ '.dt.json': { tracker: 'trello' } }, (dir) => {
+    const { config, warnings } = loadConfig(dir);
+    assert.equal(config.tracker, 'jira');
+    assert.ok(warnings.some((w) => w.startsWith('tracker:')));
+  });
+  withDir({}, (dir) => assert.equal(loadConfig(dir).config.tracker, 'jira'));
 });
 
 test('망가진 JSON 은 던지지 않고 무시한다', () => {
