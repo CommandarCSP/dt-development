@@ -31,6 +31,26 @@ afterAll(async () => { await container.stop(); });
 afterEach(async () => { await truncateAll(prisma); });
 ```
 
+TypeORM(`stack.orm: typeorm`)이면 컨테이너 URL로 `TypeOrmModule.forRoot`를 열고 마이그레이션을 적용한다 — `synchronize: true`로 스키마를 만들면 마이그레이션 누락을 테스트가 못 잡는다:
+
+```ts
+const mod = await Test.createTestingModule({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: container.getConnectionUri(),
+      autoLoadEntities: true,
+      synchronize: false,
+      migrations: [join(__dirname, '../../database/migrations/*.ts')],
+      migrationsRun: true,
+    }),
+    PostsModule,
+  ],
+}).compile();
+```
+
+컨테이너 기동이 jest 기본 5초를 넘으면 `jest.setTimeout(120_000)`(또는 훅의 timeout 인자)으로 늘린다 — 대기용 `setTimeout`과 달리 `flaky-test-prevention`에 걸리지 않는다.
+
 ## 실행 환경 설정 (그대로는 안 도는 두 함정)
 
 부트스트랩 직후 Testcontainers e2e가 **fresh 환경에서 raw 에러로 죽는** 두 지점 — new-project가 미리 깔아야 한다.

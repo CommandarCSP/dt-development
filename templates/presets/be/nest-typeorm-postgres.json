@@ -1,0 +1,30 @@
+{
+  "name": "nest-typeorm-postgres",
+  "stack": "backend",
+  "default": false,
+  "label": "NestJS + TypeORM 0.3 + PostgreSQL 16(compose) + Jest·Supertest·Testcontainers",
+  "packageManager": "npm",
+  "create": { "kind": "nest" },
+  "groups": {
+    "dependencies": ["dependencies", "typeormDependencies"],
+    "devDependencies": ["devDependencies", "typeormDevDependencies", "postgresqlDevDependencies"]
+  },
+  "typeorm": { "type": "postgres" },
+  "allowBuilds": ["@nestjs/core", "bcrypt"],
+  "config": { "stack": { "orm": "typeorm", "db": "postgresql" } },
+  "db": {
+    "image": "postgres:16",
+    "env": { "POSTGRES_USER": "app", "POSTGRES_PASSWORD": "app", "POSTGRES_DB": "app", "POSTGRES_PORT": "5432" },
+    "containerEnv": ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"],
+    "portVar": "POSTGRES_PORT",
+    "containerPort": 5432,
+    "healthcheck": "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+    "volumePath": "/var/lib/postgresql/data",
+    "url": "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}"
+  },
+  "setup": [
+    "연결: `src/database/data-source.ts`(마이그레이션 CLI용, `--file data-source`)와 AppModule의 `TypeOrmModule.forRootAsync`(ConfigService의 `DATABASE_URL`, `autoLoadEntities: true`, `synchronize: false`)가 같은 DB를 본다. 스키마는 마이그레이션으로만 바꾼다.",
+    "모듈마다 엔티티는 `src/<module>/entities/<module>.entity.ts`, 마이그레이션은 `src/database/migrations/`. 체크리스트 new-module의 TypeORM 절을 따른다.",
+    "TypeORM은 `@^0.3`으로 핀한다(`@nestjs/typeorm@11`의 짝). 1.x는 검증하지 않았다."
+  ]
+}

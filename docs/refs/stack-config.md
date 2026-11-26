@@ -135,11 +135,21 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --preset nest-pr
 | FE | `vite-css-vars` | Tailwind 없이 CSS 변수 + CSS 모듈, `cn` = clsx | `stack.styling: css-vars` |
 | BE | `nest-prisma-postgres`(기본) | NestJS + Prisma 6 + PostgreSQL 16 compose + Testcontainers Postgres | `stack.orm: prisma`, `stack.db: postgresql` |
 | BE | `nest-prisma-mysql` | NestJS + Prisma 6 + MySQL 8.4 compose + Testcontainers MySQL | `stack.orm: prisma`, `stack.db: mysql` |
+| BE | `nest-typeorm-postgres` | NestJS + TypeORM 0.3 + PostgreSQL 16 compose, `src/database/data-source.ts` + `migration:*` 스크립트 | `stack.orm: typeorm`, `stack.db: postgresql` |
 
 - 패키지 관리자는 `--pm`(없으면 프리셋 값: FE pnpm · BE npm). 생성·설치·실행 명령의 모양을 바꾼다(`pnpm add` · `npm i` · `yarn add`).
 - `--file config`는 `.dt-*.json`에 넣을 조각(`preset`·`packageManager`·`stack.*`)이다. 리뷰·게이트·토큰이 같은 값을 읽는다.
 - 선택 묶음: FE `--with sentry` · BE `--with auth`(Passport + JWT).
-- TypeORM·Drizzle 프리셋은 아직 없다. 리뷰 규칙은 그 ORM을 지원한다(§4). 스캐폴드 게이트는 `stack.orm`이 prisma가 아니면 Prisma 검사를 끈다.
+- Drizzle 프리셋은 아직 없다. 리뷰 규칙은 Drizzle을 지원한다(§4).
+- 스캐폴드 게이트의 ORM 검사(`gate.mjs --orm-check schema|migrations`)는 `stack.orm`으로 고른다(`scripts/stackAdapters.mjs`의 `ORM_GATE_CHECKS`):
+
+| ORM | `schema`(Phase 1) | `migrations`(Phase 2 — dev DB 필요) |
+|---|---|---|
+| `prisma` | `prisma validate` | `prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code` |
+| `typeorm` | 없음(tsc가 엔티티를 본다) | `typeorm-ts-node-commonjs migration:generate … --check -d src/database/data-source.ts` |
+| `drizzle` · `none` | 없음 | 없음 |
+
+  `--orm-check`가 없으면 `--stack backend`에서 prisma일 때만 `prisma validate`가 돈다. 실행 파일이 없거나 dev DB가 꺼져 있으면 게이트 실패다 — 허용을 받아 `--allow-skip <ORM 이름>`으로 넘긴다.
 
 **FE 스타일(`stack.styling`)** — 고르는 순서는 설정 → package.json(`tailwindcss`·`@tailwindcss/vite` → `tailwind`, `sass` → `scss`) → `tailwind`. `css-vars`는 설정으로만 정한다.
 

@@ -11,8 +11,9 @@
 2. 변경 대상 식별: 어떤 계약(contract/DTO/schema)·어떤 계층(controller/service/repository)이 바뀌는지 명시.
 
 ## Phase 1: 계약 델타
-- contract 인터페이스에 새 메서드/필드 추가, 새 컬럼·모델이 요구될 때 `prisma/schema.delta.prisma`에 컬럼/모델 추가.
-- 게이트: `gate.mjs --stack backend --prisma-args "validate" --test false --review false`. commit.
+- contract 인터페이스에 새 메서드/필드 추가. 새 컬럼·모델이 요구될 때 스키마 계약에 더한다: prisma → `prisma/schema.delta.prisma`, typeorm → 그 모듈의 `entities/*.entity.ts`(new-module Phase 1).
+- 게이트: `gate.mjs --stack backend --orm-check schema --test false --review false`. commit.
+- 스키마를 바꿨으면 Phase 2(Repository)에서 마이그레이션을 만들고 게이트를 `--orm-check migrations`로 돌린다(new-module Phase 2).
 
 ## Phase 2~4: 변경 계층만 구현
 바뀌는 계층만 `dt-backend-architecture` 룰대로 구현한다(계층별 prompt 없음). 예: cancel은 repository(update) + service(상태전이 검증) + controller(POST /orders/:id/cancel) + 테스트. controller/service처럼 하위 계층 의존 단위는 순차(원칙 2).

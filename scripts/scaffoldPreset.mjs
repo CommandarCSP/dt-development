@@ -7,7 +7,7 @@
  * CLI
  *   node scripts/scaffoldPreset.mjs <frontend|backend> --list
  *   node scripts/scaffoldPreset.mjs <frontend|backend> [--preset <이름>] [--pm npm|pnpm|yarn] [--root <dir>] [--with auth,sentry]
- *        [--commands | --json | --file playwright|compose|env|schema|config]
+ *        [--commands | --json | --file playwright|compose|env|schema|data-source|config]
  *   기본 출력은 --commands(셸 한 줄씩). 프리셋을 안 주면 그 스택의 기본 프리셋, --pm 을 안 주면 프리셋의 packageManager.
  */
 import { readFileSync, readdirSync } from 'node:fs';
@@ -63,6 +63,8 @@ export function presetProblems(p) {
   if (!p.groups?.dependencies?.includes('dependencies') || !p.groups?.devDependencies?.includes('devDependencies')) out.push(`${p.name}: 공통 묶음 dependencies·devDependencies 가 빠졌다`);
   if (!['create', 'nest'].includes(p.create?.kind)) out.push(`${p.name}: create.kind 는 create | nest`);
   if (p.allowBuilds != null && (!Array.isArray(p.allowBuilds) || p.allowBuilds.some((x) => typeof x !== 'string'))) out.push(`${p.name}: allowBuilds 는 패키지 이름 배열`);
+  if (p.typeorm && !['postgres', 'mysql'].includes(p.typeorm.type)) out.push(`${p.name}: typeorm.type '${p.typeorm.type}'`);
+  if (p.prisma && p.typeorm) out.push(`${p.name}: prisma 와 typeorm 을 함께 둘 수 없다`);
   if (p.prisma && !['postgresql', 'mysql', 'sqlite', 'sqlserver', 'mongodb', 'cockroachdb'].includes(p.prisma.provider)) out.push(`${p.name}: prisma.provider '${p.prisma.provider}'`);
   if (stack === 'backend' && !p.db) out.push(`${p.name}: BE 프리셋은 db(compose·env)가 있어야 한다`);
   if (stack === 'frontend' && !p.dev?.port) out.push(`${p.name}: FE 프리셋은 dev.port 가 있어야 한다`);
@@ -104,6 +106,12 @@ export function planScaffold({ stack, preset: presetName, pm, root = '<project-r
   for (const cmd of preset.init ?? []) steps.push({ id: 'init', command: join([...P.exec, ...cmd]) });
   // Prisma 스키마는 `prisma init` 대신 파일로 낸다 — 6.19+ 의 init 은 Prisma 7 모양(generator `prisma-client` +
   // output `../generated/prisma` + dotenv 를 읽는 prisma.config.ts)을 써서 `import { PrismaClient } from '@prisma/client'` 가 깨진다.
+  if (preset.typeorm) {
+    // 마이그레이션 CLI 연결 파일 + package.json 스크립트. pkg set 은 npm 으로 한다(어느 관리자 프로젝트든 package.json 만 고친다).
+    steps.push({ id: 'dataSource', command: 'mkdir -p src/database/migrations' });
+    steps.push({ id: 'dataSource', command: `node "${SELF}" backend --preset ${preset.name} --file data-source > src/database/data-source.ts` });
+    steps.push({ id: 'scripts', command: join(['npm', 'pkg', 'set', ...Object.entries(TYPEORM_SCRIPTS).map(([k, v]) => `"scripts.${k}=${v}"`)]) });
+  }
   if (preset.prisma) {
     steps.push({ id: 'prismaSchema', command: 'mkdir -p prisma' });
     steps.push({ id: 'prismaSchema', command: `node "${SELF}" backend --preset ${preset.name} --file schema > prisma/schema.prisma` });
@@ -131,6 +139,7 @@ export function planScaffold({ stack, preset: presetName, pm, root = '<project-r
     files.env = envFile(preset.db);
   }
   if (preset.prisma) files.schema = prismaSchema(preset.prisma.provider);
+  if (preset.typeorm) files['data-source'] = typeormDataSource(preset.typeorm.type);
   return { preset: preset.name, label: preset.label, packageManager: pmName, steps, files, config, devUrl, setup: preset.setup ?? [] };
 }
 
@@ -174,6 +183,30 @@ ${env}
 
 volumes:
   db-data:
+`;
+}
+
+/** TypeORM 마이그레이션 스크립트 — 게이트 --orm-check migrations 와 같은 data-source 를 쓴다(stackAdapters ORM_GATE_CHECKS). */
+export const TYPEORM_SCRIPTS = {
+  'migration:generate': 'typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts',
+  'migration:run': 'typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts',
+  'migration:revert': 'typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts',
+};
+
+/** TypeORM CLI 가 읽는 연결. 앱은 AppModule 의 TypeOrmModule.forRootAsync 가 같은 DATABASE_URL 을 쓴다. */
+export function typeormDataSource(type) {
+  return `// TypeORM 마이그레이션 CLI 연결(npm run migration:generate -- src/database/migrations/<이름>).
+// 앱 연결은 AppModule 의 TypeOrmModule.forRootAsync 가 같은 DATABASE_URL 로 한다. 스키마는 마이그레이션으로만 바꾼다.
+import 'dotenv/config';
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+
+export default new DataSource({
+  type: '${type}',
+  url: process.env.DATABASE_URL,
+  entities: ['src/**/*.entity.ts'],
+  migrations: ['src/database/migrations/*.ts'],
+});
 `;
 }
 

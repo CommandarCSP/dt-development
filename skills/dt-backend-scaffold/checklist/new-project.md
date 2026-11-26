@@ -5,15 +5,15 @@
 신규 프로젝트는 worktree 격리 없이 현재 디렉토리(또는 지정 경로)에 부트스트랩한다.
 
 ## 1. 스택 확인 (AskUserQuestion)
-- **프리셋**(`${CLAUDE_PLUGIN_ROOT}/templates/presets/be/*.json`, `docs/refs/stack-config.md` §5): `nest-prisma-postgres`(기본 — PostgreSQL 16) · `nest-prisma-mysql`(MySQL 8.4). 목록: `node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --list`.
+- **프리셋**(`${CLAUDE_PLUGIN_ROOT}/templates/presets/be/*.json`, `docs/refs/stack-config.md` §5): `nest-prisma-postgres`(기본 — PostgreSQL 16) · `nest-prisma-mysql`(MySQL 8.4) · `nest-typeorm-postgres`(TypeORM 0.3 + PostgreSQL 16). 목록: `node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --list`.
 - 캐시/큐(Redis/BullMQ 사용 여부), 인증 전략(JWT/session/none), 패키지 매니저(기본 npm · pnpm · yarn)도 같은 질문에서 확인한다. 사용자가 이미 말한 것은 묻지 않는다.
-- 다른 ORM(TypeORM·Drizzle)은 아직 프리셋이 없다. 사용자가 원하면 Prisma 대신 그 ORM을 직접 깔고 `.dt-backend.json`에 `stack.orm`을 적는다 — 리뷰 규칙은 그 ORM으로 검사한다(§4 스택 어댑터). 모듈 단계는 기존 형제 모듈의 방식을 따른다.
+- Drizzle은 아직 프리셋이 없다. 사용자가 원하면 직접 깔고 `.dt-backend.json`에 `stack.orm: "drizzle"`을 적는다 — 리뷰 규칙은 Drizzle로 검사한다(`docs/refs/stack-config.md` §4). 모듈 단계의 스키마·마이그레이션은 기존 형제 모듈의 방식을 따른다.
 - **Docker 프리플라이트**: dev DB(compose)와 통합/e2e(Testcontainers)가 **모두 Docker 데몬**을 요구한다. 부트스트랩 전에 `docker info`로 **설치 + 데몬 실행**을 확인하고, 안 되면 설치/기동(예: Docker Desktop 실행)을 안내한 뒤 **중단**한다 — 이후 `docker compose up`·통합테스트가 raw 에러로 죽는 것을 막는다. (Docker 없이 진행을 원하면 dev DB는 외부 DB `DATABASE_URL`로 대체하고 통합/e2e는 스킵으로 둔다.)
   - 데몬뿐 아니라 **`docker compose version`(v2 서브커맨드)** 도 확인한다 — 일부 설치(예: brew standalone `docker-compose`)는 데몬은 떠 있어도 `docker compose`가 없어 `unknown command`로 죽는다. 없으면 cli-plugins 심링크(`ln -sfn $(brew --prefix)/bin/docker-compose ~/.docker/cli-plugins/docker-compose`)를 안내.
   - **Docker Desktop이 아닌 런타임**: 통합·e2e가 데몬을 못 찾으면 `docs/refs/docker-runtime-hints.md`(선택 참고)의 소켓·Ryuk 안내를 사용자에게 알린다. (→ `dt-backend-testing` testcontainers-lifecycle)
 
-## 2. NestJS + Prisma 스캐폴드 (프리셋)
-아래 출력을 위에서부터 한 줄씩 실행한다(생성 → 의존성 → `prisma/schema.prisma` → 인증 묶음). 인증 JWT를 고르지 않았으면 `--with auth`를 뺀다.
+## 2. NestJS + ORM 스캐폴드 (프리셋)
+아래 출력을 위에서부터 한 줄씩 실행한다(생성 → 의존성 → ORM 파일 → 인증 묶음). ORM 파일은 prisma 프리셋이면 `prisma/schema.prisma`, typeorm 프리셋이면 `src/database/data-source.ts`(마이그레이션 CLI 연결) + package.json `migration:*` 스크립트다. 인증 JWT를 고르지 않았으면 `--with auth`를 뺀다.
 
 > **`prisma init`은 쓰지 않는다.** Prisma 6.19+의 `init`은 Prisma 7 모양(generator `prisma-client` + `output = "../generated/prisma"` + dotenv를 읽는 `prisma.config.ts`)을 써서 캐논 import가 깨진다. 프리셋이 낸 스키마(`--file schema`: `prisma-client-js`, output 없음, 프리셋의 provider)를 쓴다.
 ```bash
@@ -26,7 +26,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --preset <프리
 > 프리셋별 주의는 `--json`의 `setup`에 있다(예: MySQL은 dev DB 접속을 root로 — `prisma migrate dev`의 섀도 DB 권한).
 
 ## 3. 공통 인프라 작성
-- `src/prisma/prisma.service.ts` + `src/prisma/prisma.module.ts` (PrismaClient 래핑, 유일한 Prisma 진입점)
+- ORM 연결:
+  - **prisma**: `src/prisma/prisma.service.ts` + `src/prisma/prisma.module.ts` (PrismaClient 래핑, 유일한 Prisma 진입점)
+  - **typeorm**: AppModule `imports`에 `ConfigModule.forRoot({ isGlobal: true })` + `TypeOrmModule.forRootAsync({ inject: [ConfigService], useFactory: (c) => ({ type: 'postgres', url: c.getOrThrow('DATABASE_URL'), autoLoadEntities: true, synchronize: false }) })`. 스키마는 마이그레이션으로만 바꾼다(`synchronize: true` 금지).
 - `src/cache/cache.module.ts` + `src/cache/cache.service.ts` + `src/cache/cache-keys.ts` (Redis 사용 시)
 - `src/common/filters/all-exception.filter.ts` (전역 ExceptionFilter)
 - `src/main.ts`에 전역 `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })` + 전역 필터 등록. **FE 연동 시 `app.enableCors({ origin: true, credentials: true })`** 추가 — 없으면 브라우저가 교차출처(다른 포트의 FE dev 서버) 요청을 차단한다(운영에선 origin 화이트리스트로 좁힘).
@@ -55,9 +57,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --preset <프리
 ```bash
 docker info >/dev/null 2>&1 || { echo "Docker 데몬이 꺼져 있음 — Docker Desktop 실행 후 재시도"; exit 1; }
 docker compose up -d db        # 로컬 dev DB 기동 (healthcheck OK까지 대기)
-node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project . --stack backend --test false --review false   # tsc + prisma validate(stack.orm 이 prisma 일 때)
+node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project . --stack backend --orm-check schema --test false --review false   # tsc + ORM 스키마 검사
 ```
-> 초기 마이그레이션은 첫 모듈 scaffold(`new-module` Phase 2의 `prisma migrate dev`)에서 생성된다 — 그때 이 dev DB가 떠 있어야 한다.
+> 초기 마이그레이션은 첫 모듈 scaffold(`new-module` Phase 2 — prisma `migrate dev` · typeorm `migration:generate`)에서 생성된다 — 그때 이 dev DB가 떠 있어야 한다.
 
 ### 실행 모드 선택 (정책 원칙 1)
 병렬 dispatch 전, 작업 단위 의존성을 보고 `orchestration-policy.md` 원칙 1의 AskUserQuestion으로 병렬/순차를 1회 확인한다(기본 병렬). 순차 선택 시 원칙 2대로 단위를 직렬 dispatch한다.

@@ -37,8 +37,8 @@ new-project가 아니면(이미 있는 프로젝트에 더할 때) Phase 0 전�
 
 ```
 Phase 0: task-id 생성 + Phase 0 commit (rollback 기준점)
-Phase 1: contract.ts + schema.delta.prisma + cache-keys + owners → tsc + prisma validate 게이트
-Phase 2: repository + dto 계층 (be-builder) → gate.mjs(tsc + prisma + jest + 규칙 검사)
+Phase 1: contract.ts + 스키마 계약(prisma: schema.delta.prisma · typeorm: entities/*.entity.ts) + cache-keys + owners → tsc + --orm-check schema
+Phase 2: repository + dto 계층 (be-builder) + 마이그레이션 → gate.mjs(tsc + --orm-check migrations + jest + 규칙 검사)
 Phase 3: service + unit test → gate.mjs(tsc + jest + 규칙 검사)
 Phase 4: controller + integration test(Supertest+Testcontainers) → 게이트
 Phase 5: module 와이어링 + AppModule 등록 → 게이트 → 빌더 반환  # E2E 자동생성 없음 — 수용 e2e는 /dt-be-e2e 소유
@@ -49,13 +49,13 @@ Phase 5: module 와이어링 + AppModule 등록 → 게이트 → 빌더 반환 
 각 phase 끝마다 commit. 실패 시 사용자가 직접 수정 결정.
 
 ## Phase 2 계층 (be-builder가 한 컨텍스트에서; 리소스 간 병렬 시 경로 분리)
-- **Repository 계층**: `*.repository.ts`, `prisma/schema.prisma`, `migrations/**` (유일하게 `@prisma/client` 허용)
+- **Repository 계층**: `*.repository.ts` + 스키마·마이그레이션(prisma: `prisma/schema.prisma`·`prisma/migrations/**` · typeorm: `entities/`·`src/database/migrations/**`). ORM을 가져와도 되는 유일한 계층(`repository-only-orm`)
 - **DTO 계층**: `dto/**`, `entities/**`, `mappers/**` (class-validator DTO, Prisma import 금지)
 
 controller/service는 두 계층에 의존하므로 Phase 3/4에서 순차 진행. **리소스 간 병렬 시 `prisma/schema.prisma` 공유 머지 구간은 순차화**.
 
 ## 사용 도구
-- `skills/dt-frontend-scaffold/scripts/gate.mjs` (`--test-runner jest`, `--stack backend` — Prisma 검사는 `stack.orm`이 prisma일 때 자동)
+- `skills/dt-frontend-scaffold/scripts/gate.mjs` (`--test-runner jest`, `--stack backend`, `--orm-check schema|migrations` — ORM별 검사는 `stack.orm`에서)
 - `scripts/scaffoldPreset.mjs` (새 프로젝트 프리셋 — 명령·compose·env·설정 조각)
 - `${CLAUDE_PLUGIN_ROOT}/agents/be-builder.md`: 계층 구현 워커(Task dispatch). 계층 룰은 `dt-backend-architecture`/`-testing`(계층별 prompt 없음 — 통합됨).
 - `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`: 격리 리뷰 워커(`stack:backend`, verdict만 반환)

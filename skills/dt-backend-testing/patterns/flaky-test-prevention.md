@@ -5,7 +5,7 @@ severity: important
 appliesTo: ["src/**/__tests__/**/*.ts", "test/**/*.e2e.test.ts"]
 detection:
   - type: forbidden-pattern
-    pattern: "\bsetTimeout\s*\(|\bsleep\s*\("
+    pattern: "(?<!(?:jest|vi)[.])\bsetTimeout\s*\(|\bsleep\s*\("
     rationale: "고정 sleep 대신 컨테이너·앱 readiness 를 await 한다"
 relatedRules: [testcontainers-lifecycle, integration-no-db-mocking]
 ---

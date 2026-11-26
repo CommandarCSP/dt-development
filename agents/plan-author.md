@@ -29,7 +29,7 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
    - Phase마다 gate.mjs 호출 지점 표시(reviewer는 빌더가 아니라 조율자가 구현 끝에 부른다 — 플랜에 넣지 않는다).
 3. **크로스유닛 배선을 각 유닛 plan에 코드-레벨로 박는다**(홀리스틱의 핵심 — interaction-integrity §C): interactions.md의 액션→리액션마다
    - FE: mutation 성공 훅에 의존 쿼리 무효화/캐시갱신을 명시 — 예: `[ ] usePostEdit onSuccess: queryClient.invalidateQueries(['feed']) + (['post', id])` (공유 queryKey는 `store/queries/keys.ts` 참조). 낙관적 업데이트는 onError 롤백 체크박스. 재진입 신선도(staleTime) 체크박스.
-   - BE: 여러 리소스를 걸치는 쓰기는 한 트랜잭션(`prisma.$transaction`) 체크박스 + 스키마 머지 순서. 생성/수정 응답에 갱신 표현 포함.
+   - BE: 여러 리소스를 걸치는 쓰기는 한 트랜잭션(Repository 메서드 안 — prisma `$transaction` · typeorm `dataSource.transaction`) 체크박스 + 스키마·마이그레이션 머지 순서. 생성/수정 응답에 갱신 표현 포함.
    - 유닛 간 **실행 순서/공유 의존**(FK 참조·강결합)을 plan 상단 노트로 명시해 조율자 dispatch 순서 근거 제공.
 4. **정밀도는 위험도 비례**: 단순 CRUD는 가벼운 체크박스, 크로스컷·계약면·상태전이·**크로스유닛 정합**은 코드까지 박는다.
 5. project-context의 채택 라이브러리를 코드에 반영(전역 기본보다 우선).

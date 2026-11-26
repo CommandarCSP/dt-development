@@ -56,6 +56,28 @@ export const ORM_ADAPTERS = {
   none: { label: '없음', packages: [], imports: [], access: [], allowedPaths: [], mockTargets: [], mockRegex: '', connectRegex: '' },
 };
 
+/**
+ * 스캐폴드 게이트의 ORM 검사(GEN-43) — `gate.mjs --orm-check schema|migrations`.
+ * [실행 파일(node_modules/.bin), 인자]. null 이면 그 단계에 ORM 검사가 없다(tsc·테스트·리뷰가 맡는다).
+ *   schema     — 계약 단계(Phase 1). 스키마·엔티티 자체가 맞는가.
+ *   migrations — 저장소 단계(Phase 2). 모델을 바꾸고 마이그레이션을 빠뜨리지 않았는가. dev DB 가 떠 있어야 한다.
+ * TypeORM 경로는 프리셋 nest-typeorm-postgres 의 자리(src/database/data-source.ts·migrations/)다.
+ */
+export const ORM_GATE_CHECKS = {
+  prisma: {
+    schema: ['prisma', ['validate']],
+    // dev DB(스키마의 datasource)와 스키마를 비교한다. 다르면 종료 코드 2 — migrate dev 를 빠뜨린 것.
+    migrations: ['prisma', ['migrate', 'diff', '--from-schema-datasource', 'prisma/schema.prisma', '--to-schema-datamodel', 'prisma/schema.prisma', '--exit-code']],
+  },
+  typeorm: {
+    schema: null,
+    // 엔티티와 dev DB 가 다르면(마이그레이션이 더 필요하면) 종료 코드 1. 파일은 만들지 않는다.
+    migrations: ['typeorm-ts-node-commonjs', ['migration:generate', 'src/database/migrations/PendingCheck', '--check', '-d', 'src/database/data-source.ts']],
+  },
+  drizzle: { schema: null, migrations: null },
+  none: { schema: null, migrations: null },
+};
+
 /** FE 스타일 어댑터(GEN-07). `tokenEmit` 은 materialize-tokens.mjs 의 출력 방식이다. */
 export const STYLING_ADAPTERS = {
   tailwind: { label: 'Tailwind', tokenEmit: 'tailwind', forbiddenStyleImports: ['**/*.scss', '**/*.sass', '**/*.css'] },

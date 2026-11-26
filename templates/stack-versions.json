@@ -81,6 +81,15 @@
     "prismaDevDependencies": {
       "prisma": "^6"
     },
+    "typeormDependencies": {
+      "@nestjs/typeorm": "^11",
+      "typeorm": "^0.3",
+      "pg": "^8",
+      "dotenv": "^16"
+    },
+    "typeormDevDependencies": {
+      "ts-node": "^10"
+    },
     "postgresqlDevDependencies": {
       "@testcontainers/postgresql": "^10"
     },
@@ -100,5 +109,5 @@
     }
   },
   "_unverified": "규칙이 API에 깊게 기대지 않는 보조 패키지(react-error-boundary·jsdom·Sentry)는 확인 시점의 최신 major로 고정했다. 규칙 검증 대상은 아니다.",
-  "_groups": "설치 묶음. dependencies·devDependencies 는 모든 프리셋이 깐다. 나머지(tailwind·cssVars·prisma·postgresql·mysql·auth·sentry)는 스캐폴드 프리셋(presets/<fe|be>/*.json)이나 선택(--with auth|sentry)이 고른다 — scripts/scaffoldPreset.mjs."
+  "_groups": "설치 묶음. dependencies·devDependencies 는 모든 프리셋이 깐다. 나머지(tailwind·cssVars·prisma·typeorm·postgresql·mysql·auth·sentry)는 스캐폴드 프리셋(presets/<fe|be>/*.json)이나 선택(--with auth|sentry)이 고른다 — scripts/scaffoldPreset.mjs."
 }

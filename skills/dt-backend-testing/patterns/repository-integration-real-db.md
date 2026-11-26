@@ -6,7 +6,7 @@ appliesTo: ["src/**/__tests__/**/*.repository.integration.test.ts", "src/**/__te
 detection:
   - type: forbidden-pattern
     pattern: "{{orm.mockRegex}}"
-    rationale: "통합 테스트에서 Prisma 를 mock 하면 쿼리·제약·트랜잭션을 검증하지 못한다 — Testcontainers 실 DB 를 쓴다"
+    rationale: "통합 테스트에서 ORM 을 mock 하면 쿼리·제약·트랜잭션을 검증하지 못한다 — Testcontainers 실 DB 를 쓴다"
 requiresStack: [orm]
 relatedRules: [integration-no-db-mocking, testcontainers-lifecycle]
 ---
@@ -14,7 +14,7 @@ relatedRules: [integration-no-db-mocking, testcontainers-lifecycle]
 # Repository는 실제 DB에서 검증한다
 
 ## 왜 중요한가
-Repository는 Prisma 쿼리·유니크 제약·FK·트랜잭션을 다룬다. 이를 mock하면 정작 검증해야 할 것(실제 SQL 동작)을 검증하지 못한다. Testcontainers로 실제 Postgres를 띄우고 `prisma migrate deploy` 후 쿼리를 검증한다.
+Repository는 Prisma 쿼리·유니크 제약·FK·트랜잭션을 다룬다. 이를 mock하면 정작 검증해야 할 것(실제 SQL 동작)을 검증하지 못한다. Testcontainers로 실제 DB를 띄우고 마이그레이션을 적용한 뒤(prisma `migrate deploy` · typeorm `migrationsRun: true` — `testcontainers-lifecycle`) 쿼리를 검증한다.
 
 ## ✅ Correct
 

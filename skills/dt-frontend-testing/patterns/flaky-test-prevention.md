@@ -5,7 +5,7 @@ severity: important
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}", "e2e/**/*.spec.ts"]
 detection:
   - type: forbidden-pattern
-    pattern: "\bsetTimeout\s*\(|\bwaitForTimeout\s*\(|\bsleep\s*\("
+    pattern: "(?<!(?:jest|vi)[.])\bsetTimeout\s*\(|\bwaitForTimeout\s*\(|\bsleep\s*\("
     rationale: "고정 시간 대기는 느린 환경에서 깨진다 — waitFor·findBy·expect.poll·Playwright 자동 대기를 쓴다(가짜 타이머는 vi.advanceTimersByTime)"
 relatedRules: [test-anti-patterns, msw-handler-design, integration-no-hook-mocking]
 ---

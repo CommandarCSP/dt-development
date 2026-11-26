@@ -22,7 +22,7 @@ dt-bespec 산출물을 읽어 `dt-backend-scaffold` 엔진에 위임해 NestJS �
 ### [1] 매핑 (api-contract.md → ScaffoldSeed)
 `api-contract.md`를 읽어 다음을 만든다:
 - **엔드포인트 표** → Controller 라우트 + 요청/응답 DTO 목록 → Phase 1 `contract.ts`의 DTO 인터페이스 + `XxxService`/`XxxController` 계약.
-- **Prisma 스케치** → Phase 1 `prisma/schema.delta.prisma` 블록.
+- **Prisma 스케치**(모델 표기) → Phase 1 스키마 계약: prisma면 `prisma/schema.delta.prisma` 블록, typeorm이면 `src/<module>/entities/*.entity.ts`(`stack.orm` — checklist new-module).
 - **요청/응답 스키마** → DTO 필드 + class-validator 후보.
 - design.md `## 시퀀스` → Service 비즈니스 로직/트랜잭션 경계.
 - requirements FR + tasks 완료기준 → 계층별 테스트 기준(unit/integration/e2e).

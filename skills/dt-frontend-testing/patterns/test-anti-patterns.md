@@ -5,7 +5,7 @@ severity: important
 appliesTo: ["src/**/__tests__/**/*.{ts,tsx}", "e2e/**/*.spec.ts"]
 detection:
   - type: forbidden-pattern
-    pattern: "setTimeout[ ]*[(]"
+    pattern: "(?<!(?:jest|vi)[.])setTimeout[ ]*[(]"
     rationale: "테스트 내 raw setTimeout은 flaky 원인. vi.useFakeTimers() + advanceTimersByTime, 또는 waitFor 사용"
   - type: forbidden-pattern
     pattern: "await new Promise[ ]*[(][ ]*[(]?r"

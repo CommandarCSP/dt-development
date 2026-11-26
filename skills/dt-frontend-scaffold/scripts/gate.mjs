@@ -3,11 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { resolveStackCommands } from '../../../scripts/stackCommands.mjs';
-import { resolveBackendStack } from '../../../scripts/stackAdapters.mjs';
+import { resolveBackendStack, ORM_GATE_CHECKS } from '../../../scripts/stackAdapters.mjs';
 
 // Run a phase gate. Each subgate can be enabled/disabled.
 // Returns: { ok, failures: [{ gate, message }], skipped: [...], allowedSkips: [...] }
-// 실행하지 못한 검사(도구 없음 등)는 실패다(GEN-23). allowSkip 에 그 이름(tsc|prisma|vitest|test|review)이 있을 때만
+// 실행하지 못한 검사(도구 없음 등)는 실패다(GEN-23). allowSkip 에 그 이름(tsc|prisma|typeorm|vitest|test|review)이 있을 때만
 // 건너뜀으로 인정한다 — 조율자가 그 실행에 대해 사용자 허용을 받았을 때만 넘긴다.
 export function runGate({
   projectRoot,
@@ -22,6 +22,7 @@ export function runGate({
   vitestArgs = ['run'],
   testCommand = null,               // [cmd, argsArray] — overrides vitest invocation (e.g. BE jest)
   prismaArgs = ['validate'],        // args for the prisma subgate
+  ormCheck = null,                  // { gate, tool, args } — --orm-check 로 고른 ORM 검사(GEN-43). 있으면 prisma 하위 게이트 대신
   allowSkip = [],                   // 건너뛰어도 되는 검사 이름 — 사용자 허용이 있을 때만
 }) {
   const failures = [];
@@ -40,7 +41,15 @@ export function runGate({
     }
   }
 
-  if (runPrisma) {
+  if (ormCheck) {
+    const [cmd, cargs] = binCmd(projectRoot, ormCheck.tool, ormCheck.args);
+    const result = spawnSync(cmd, cargs, { cwd: projectRoot, encoding: 'utf8' });
+    if (result.error || result.status == null) {
+      skipped.push(ormCheck.gate);
+    } else if (result.status !== 0) {
+      failures.push({ gate: ormCheck.gate, message: result.stdout + result.stderr });
+    }
+  } else if (runPrisma) {
     const [cmd, cargs] = binCmd(projectRoot, 'prisma', prismaArgs);
     const result = spawnSync(cmd, cargs, {
       cwd: projectRoot,
@@ -138,6 +147,18 @@ export function pickPrismaGate(projectRoot, stackName, prismaFlag) {
   return { run: st.orm === 'prisma', from: `stack.orm ${st.orm}(${st.from.orm})` };
 }
 
+// --orm-check schema|migrations|off (GEN-43): stack.orm 의 검사표(ORM_GATE_CHECKS)에서 고른다.
+// 그 단계에 검사가 없는 ORM 이면 null(실행할 것 없음 — 실패 아님). 게이트 이름은 ORM 이름(prisma|typeorm) — --allow-skip 이름과 같다.
+export function pickOrmCheck(projectRoot, stackName, phase) {
+  if (phase === 'off') return { check: null, from: '--orm-check off' };
+  if (!['schema', 'migrations'].includes(phase)) throw new Error(`--orm-check '${phase}' 는 모른다 — schema | migrations | off`);
+  if (stackName !== 'backend') throw new Error('--orm-check 는 --stack backend 에서만 쓴다');
+  const st = resolveBackendStack(projectRoot);
+  const c = ORM_GATE_CHECKS[st.orm]?.[phase] ?? null;
+  const from = `stack.orm ${st.orm}(${st.from.orm}) · ${phase}`;
+  return { check: c ? { gate: st.orm, tool: c[0], args: c[1] } : null, from };
+}
+
 function autoDetectReviewScript() {
   // Primary: the shared review engine lives at <pluginRoot>/scripts/review/review.mjs,
   // two folders up from this file (skills/dt-frontend-scaffold/scripts/).
@@ -163,14 +184,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // (스택 설정 commands.test → testRunner → package.json → 스택 기본값). 로컬 바이너리를 npx 보다 먼저 쓴다.
   const stackName = typeof opts.stack === 'string' ? opts.stack : 'frontend';
   const { testCommand, testGate } = pickTestCommand(projectRoot, stackName, opts['test-runner']);
-  let prismaGate;
-  try { prismaGate = pickPrismaGate(projectRoot, stackName, opts.prisma); } catch (e) { console.error(`[gate] ${e.message}`); process.exit(2); }
+  let prismaGate; let orm = null;
+  try {
+    if (typeof opts['orm-check'] === 'string') orm = pickOrmCheck(projectRoot, stackName, opts['orm-check']);
+    prismaGate = orm ? { run: false, from: orm.from } : pickPrismaGate(projectRoot, stackName, opts.prisma);
+  } catch (e) { console.error(`[gate] ${e.message}`); process.exit(2); }
+  if (orm && !orm.check) console.log(`[gate] ORM 검사 없음 (${orm.from}) — tsc·테스트·리뷰가 맡는다`);
   const result = runGate({
     projectRoot,
     runTsc: opts.tsc !== 'false',
     runVitest: opts.test !== 'false' && opts.vitest !== 'false',
     runReview: opts.review !== 'false',
     runPrisma: prismaGate.run,
+    ormCheck: orm?.check ?? null,
     reviewPaths: typeof opts.paths === 'string' ? opts.paths.split(',').filter(Boolean) : [],
     reviewMode: typeof opts.mode === 'string' ? opts.mode : 'partial',
     reviewScript: typeof opts['review-script'] === 'string' ? opts['review-script'] : null,
@@ -191,6 +217,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const enabled = [
       opts.tsc !== 'false' && 'tsc',
       prismaGate.run && 'prisma',
+      orm?.check && orm.check.gate,
       (opts.test !== 'false' && opts.vitest !== 'false') && testGate,
       opts.review !== 'false' && 'review',
     ].filter(Boolean);

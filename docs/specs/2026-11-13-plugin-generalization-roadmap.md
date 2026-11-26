@@ -11,7 +11,7 @@
 | 에픽 | 피처 → 이슈 |
 |---|---|
 | DEV-1 [M0] | GEN-01 DEV-6 · GEN-02 DEV-7 · GEN-03 DEV-8 |
-| DEV-2 [M1] | GEN-04 DEV-9 · GEN-05 DEV-10 · GEN-06 DEV-11 · GEN-07 DEV-12 · GEN-08 DEV-13 |
+| DEV-2 [M1] | GEN-04 DEV-9 · GEN-05 DEV-10 · GEN-06 DEV-11 · GEN-07 DEV-12 · GEN-08 DEV-13 · GEN-43 DEV-52 |
 | DEV-3 [M2] | GEN-09 DEV-14 · GEN-10 DEV-15 · GEN-11 DEV-16 · GEN-12 DEV-17 · GEN-13 DEV-18 |
 | DEV-4 [M3] | GEN-14 DEV-19 |
 | DEV-5 [M4] | GEN-15 DEV-20 · GEN-16 DEV-21 · GEN-17 DEV-22 |
@@ -94,6 +94,12 @@
 - 할 일: `presets/fe/*`, `presets/be/*` 스니펫(설치·init·compose·env). 기본 프리셋 = 현재 조합. 토큰 emitter 어댑터(tailwind|css-vars|scss). 게이트 플래그를 설정에서 전달.
 - 완료 기준: 기본 프리셋으로 현재와 같은 결과, 대체 프리셋 1개 이상 동작.
 - **완료(DEV-12, 2026-11-26).** 프리셋은 `templates/presets/{fe,be}/<이름>.json`(로드맵의 `presets/`를 스캐폴드 입력이 이미 있는 `templates/` 아래에 뒀다)이고, `scripts/scaffoldPreset.mjs`가 프리셋 + 패키지 관리자로 생성·설치 명령과 `playwright.config.ts`·compose·`.env`·`prisma/schema.prisma`·설정 조각을 낸다. 설치 버전은 `stack-versions.json` 묶음 이름으로만 고른다. 두 체크리스트의 고정 명령을 이것으로 바꿨고, 구조 테스트의 "명령 고정 없음" 예외를 지웠다. 기본 프리셋(`vite-tailwind`·`nest-prisma-postgres`)은 예전 체크리스트의 명령·playwright 설정과 같다(테스트로 고정). 다른 점은 고친 것들이다: 규칙이 쓰는데 깔지 않던 `@ebay/nice-modal-react`·`react-router-dom`, pnpm 10+의 설치 스크립트 차단(`--allow-build`), 6.19+ `prisma init`이 Prisma 7 모양을 쓰던 것(고정 스키마 파일). 뒤의 둘은 실설치에서 찾았다. 대체 프리셋 `vite-css-vars`·`nest-prisma-mysql`은 scratchpad에서 실제로 만들고 돌렸다: FE는 tsc·토큰(`:root`)·리뷰 통과, BE는 MySQL compose 기동·`prisma migrate dev`·게이트(tsc + prisma) 통과. 토큰 emitter는 `materialize-tokens.mjs --emit tailwind|css-vars|scss`이고, 없으면 새 FE 키 `stack.styling`을 따른다. 그 값이 `view-styling` 빈칸(`$styling.forbiddenStyleImports`)도 채워, CSS 변수 프로젝트가 CSS 모듈 import로 막히지 않는다(GEN-05 어댑터를 FE로 넓힘). 게이트 플래그는 `--stack backend`이면 `stack.orm`에서 Prisma 검사를 고른다. 할 일과 다르게 한 것: TypeORM 프리셋과 `be-builder`의 ORM별 단계(엔티티·마이그레이션·트랜잭션)는 범위가 두 배라 후속 티켓으로 넘긴다 — 지금은 "형제 모듈을 따른다" 안내와 리뷰 어댑터가 받친다. 조사 중 `pure-view-component`·`view-test-props-only`가 `react-router`를 놓치던 것도 고쳤다.
+
+### GEN-43 TypeORM 스캐폴드 프리셋과 be-builder ORM별 단계
+- 문제: GEN-07의 BE 프리셋은 Prisma만, 모듈 체크리스트·`be-builder`의 Phase 1·2(스키마 델타 → migrate → `$transaction`)가 Prisma 전제. TypeORM 프로젝트는 "형제 모듈을 따른다" 안내와 리뷰 어댑터(GEN-05)에만 기댔다.
+- 할 일: `nest-typeorm-postgres` 프리셋, 체크리스트 Phase 1·2 ORM별 절, 게이트 ORM 검사 슬롯.
+- 완료 기준: TypeORM 프리셋으로 만든 프로젝트에 모듈 하나를 스캐폴드하면 게이트·리뷰 통과(실설치).
+- **완료(DEV-52, 2026-11-26).** 프리셋 `nest-typeorm-postgres`(TypeORM 0.3·`@nestjs/typeorm@11` — Nest 11의 짝, 1.x는 검증 안 함)가 `src/database/data-source.ts`와 `migration:*` 스크립트를 낸다. new-module·extend-module의 Phase 1·2를 ORM별 절로 나눴다(스키마 계약 · 마이그레이션 · 트랜잭션은 Repository 메서드 안). 게이트는 `--orm-check schema|migrations`로 `ORM_GATE_CHECKS`에서 고른다 — typeorm `migrations`는 `migration:generate --check`. 같은 김에 Prisma `migrations` 인자를 고쳤다: 예전 인자는 스키마를 자기 자신과 비교해 늘 통과했다. 실설치(scratchpad)로 `posts` 모듈을 Phase 1~5까지 만들었다: Phase 1 게이트 통과 → 마이그레이션 없이 `migrations` 검사가 실패하는 것을 확인 → 생성·적용 뒤 Phase 2 게이트(tsc·typeorm·jest 단위+Testcontainers 통합·리뷰) 통과 → 풀 리뷰(기준 커밋 커버리지 포함) Ready to merge: Yes. 실설치에서 둘을 더 고쳤다: 대기 금지 규칙이 `jest.setTimeout`을 잡던 것, colima에서 Ryuk 소켓 마운트 실패(힌트 문서에 `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`). 할 일과 다르게 한 것: 스펙의 "Prisma 스케치"는 산출물 형식이라 그대로 두고 모델 표기로 본다(TypeORM이면 빌더가 엔티티로 옮긴다). Drizzle 프리셋은 하지 않았다 — 체크리스트 표에 열 하나를 더하면 된다.
 
 ### GEN-08 리뷰 엔진 공용화
 - 문제: BE 리뷰가 `skills/dt-frontend-review/scripts/review.mjs`를 직접 호출. 커버리지 러너가 jest/vitest로 고정.

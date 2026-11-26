@@ -11,7 +11,8 @@ import { listPresets, loadPreset, planScaffold, presetProblems } from '../script
 import { resolveBackendStack, resolveFrontendStack, applyStackAdapters } from '../scripts/stackAdapters.mjs';
 import { loadAllRules, STACK_RULE_LOCATIONS } from '../scripts/review/lib/rule-loader.mjs';
 import { renderThemeBlock, mergeIntoGlobals, materialize } from '../skills/dt-frontend-scaffold/scripts/materialize-tokens.mjs';
-import { pickPrismaGate } from '../skills/dt-frontend-scaffold/scripts/gate.mjs';
+import { pickPrismaGate, pickOrmCheck, runGate } from '../skills/dt-frontend-scaffold/scripts/gate.mjs';
+import { chmodSync } from 'node:fs';
 
 const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const CLI = fileURLToPath(new URL('../scripts/scaffoldPreset.mjs', import.meta.url));
@@ -266,4 +267,70 @@ test('게이트: Prisma 검사는 --prisma 가 없으면 BE stack.orm 이 prisma
     assert.equal(pickPrismaGate(prisma, 'backend', 'false').run, false);
     assert.equal(pickPrismaGate(prisma, 'frontend', undefined).run, false);
   } finally { rmSync(prisma, { recursive: true, force: true }); rmSync(typeorm, { recursive: true, force: true }); }
+});
+
+// --- GEN-43 TypeORM 프리셋·ORM별 게이트 검사 ---
+test('TypeORM 프리셋(nest-typeorm-postgres): Prisma 없이 TypeORM 묶음·data-source·migration 스크립트', () => {
+  const plan = planScaffold({ stack: 'backend', preset: 'nest-typeorm-postgres', root: 'api' });
+  const deps = pkgSet(cmd(plan, 'deps')[0], 'npm i '); const dev = pkgSet(cmd(plan, 'devDeps')[0], 'npm i -D ');
+  for (const p of ['@nestjs/typeorm@^11', 'typeorm@^0.3', 'pg@^8', 'dotenv@^16']) assert.ok(deps.has(p), p);
+  assert.ok(dev.has('ts-node@^10') && dev.has('@testcontainers/postgresql@^10'));
+  assert.ok(![...deps, ...dev].some((p) => p.includes('prisma')), 'Prisma 를 깔지 않는다');
+  assert.deepEqual(cmd(plan, 'prismaSchema'), []);
+  assert.equal(plan.files.schema, undefined);
+  assert.deepEqual(cmd(plan, 'dataSource')[0], 'mkdir -p src/database/migrations');
+  assert.match(cmd(plan, 'dataSource')[1], /--preset nest-typeorm-postgres --file data-source > src\/database\/data-source\.ts$/);
+  assert.match(cmd(plan, 'scripts')[0], /^npm pkg set "scripts\.migration:generate=typeorm-ts-node-commonjs migration:generate -d src\/database\/data-source\.ts"/);
+  assert.match(plan.files['data-source'], /type: 'postgres',\n  url: process\.env\.DATABASE_URL,/);
+  assert.match(plan.files['data-source'], /migrations: \['src\/database\/migrations\/\*\.ts'\]/);
+  assert.match(plan.files.compose, /image: postgres:16/);
+  assert.deepEqual(plan.config.stack, { orm: 'typeorm', db: 'postgresql' });
+});
+
+test('게이트 --orm-check: stack.orm 의 검사표에서 고른다', () => {
+  const prisma = project({ 'package.json': { dependencies: { '@prisma/client': '^6' } } });
+  const typeorm = project({ '.dt-backend.json': { stack: { orm: 'typeorm' } } });
+  const drizzle = project({ 'package.json': { dependencies: { 'drizzle-orm': '^0.30' } } });
+  try {
+    assert.deepEqual(pickOrmCheck(prisma, 'backend', 'schema').check, { gate: 'prisma', tool: 'prisma', args: ['validate'] });
+    const pm = pickOrmCheck(prisma, 'backend', 'migrations').check;
+    assert.deepEqual(pm.args, ['migrate', 'diff', '--from-schema-datasource', 'prisma/schema.prisma', '--to-schema-datamodel', 'prisma/schema.prisma', '--exit-code']);
+    assert.ok(!pm.args.includes('--from-schema-datamodel'), '고침: 예전 인자는 스키마를 자기 자신과 비교해 늘 통과했다');
+    assert.equal(pickOrmCheck(typeorm, 'backend', 'schema').check, null, 'TypeORM 엔티티는 tsc 가 본다');
+    assert.deepEqual(pickOrmCheck(typeorm, 'backend', 'migrations').check, { gate: 'typeorm', tool: 'typeorm-ts-node-commonjs', args: ['migration:generate', 'src/database/migrations/PendingCheck', '--check', '-d', 'src/database/data-source.ts'] });
+    assert.equal(pickOrmCheck(drizzle, 'backend', 'migrations').check, null);
+    assert.equal(pickOrmCheck(typeorm, 'backend', 'off').check, null);
+    assert.throws(() => pickOrmCheck(typeorm, 'backend', 'deploy'), /schema \| migrations \| off/);
+    assert.throws(() => pickOrmCheck(typeorm, 'frontend', 'schema'), /--stack backend/);
+  } finally { for (const d of [prisma, typeorm, drizzle]) rmSync(d, { recursive: true, force: true }); }
+});
+
+test('게이트: ORM 검사가 실패하면 그 ORM 이름으로, 실행 못 하면 건너뜀 허용이 있을 때만 통과', () => {
+  const dir = project({ 'package.json': {} });
+  try {
+    mkdirSync(join(dir, 'node_modules/.bin'), { recursive: true });
+    const bin = join(dir, 'node_modules/.bin/typeorm-ts-node-commonjs');
+    writeFileSync(bin, '#!/bin/sh\necho "Unexpected changes in database schema were found in check mode"\nexit 1\n');
+    chmodSync(bin, 0o755);
+    const check = { gate: 'typeorm', tool: 'typeorm-ts-node-commonjs', args: ['migration:generate', 'x', '--check'] };
+    const r = runGate({ projectRoot: dir, runTsc: false, runVitest: false, runReview: false, ormCheck: check });
+    assert.equal(r.ok, false);
+    assert.equal(r.failures[0].gate, 'typeorm');
+    assert.match(r.failures[0].message, /Unexpected changes/);
+    writeFileSync(bin, '#!/bin/sh\nexit 0\n');
+    assert.equal(runGate({ projectRoot: dir, runTsc: false, runVitest: false, runReview: false, ormCheck: check }).ok, true);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('대기 금지 규칙: jest.setTimeout(테스트 시간 한도)은 걸리지 않고, 대기용 setTimeout 은 걸린다', async () => {
+  const rules = [...await loadAllRules(PLUGIN_ROOT, STACK_RULE_LOCATIONS.backend), ...await loadAllRules(PLUGIN_ROOT, STACK_RULE_LOCATIONS.frontend)];
+  const picked = rules.filter((r) => ['flaky-test-prevention', 'test-anti-patterns'].includes(r.ruleId));
+  assert.equal(picked.length, 3);
+  for (const r of picked) {
+    const re = new RegExp(r.detection.find((d) => d.pattern?.includes('setTimeout')).pattern);
+    assert.equal(re.test('jest.setTimeout(120_000);'), false, r.ruleId);
+    assert.equal(re.test('vi.setTimeout(10_000);'), false, r.ruleId);
+    assert.equal(re.test('await new Promise((r) => setTimeout(r, 100));'), true, r.ruleId);
+    assert.equal(re.test('window.setTimeout(done, 50);'), true, r.ruleId);
+  }
 });

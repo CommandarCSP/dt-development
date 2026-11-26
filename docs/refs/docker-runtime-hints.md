@@ -13,7 +13,15 @@ export DOCKER_HOST="unix://$HOME/.rd/docker.sock"               # rancher-deskto
 # podman: `podman machine inspect` 가 알려 주는 소켓
 ```
 
-## 2. Ryuk 끄기
+## 2. Ryuk 소켓 맞추기, 안 되면 끄기
+
+colima는 `DOCKER_HOST`만 맞추면 Ryuk이 호스트 소켓 경로(`~/.colima/default/docker.sock`)를 컨테이너에 마운트하려다 실패한다. 오류는 `error while creating mount source path … operation not supported`다(실측). VM 안의 소켓 경로를 알려 주면 Ryuk을 켠 채로 돈다:
+
+```bash
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock   # colima — Ryuk 이 마운트할 VM 안 소켓
+```
+
+그래도 Ryuk이 못 뜨면 끈다:
 
 ```bash
 export TESTCONTAINERS_RYUK_DISABLED=true   # Ryuk 컨테이너가 못 뜰 때만
