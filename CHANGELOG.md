@@ -66,6 +66,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- 스크립트가 글자 그대로 찾는 산출물 제목·상태 라벨(정의서 절·상태, 스펙 필수 절, interactions 소유 절, project-context 절, 결정 문서 절, 마무리 댓글 줄 이름)을 `scripts/lib/headings.mjs` 한곳으로 모았다. 값은 그대로라 산출물은 바뀌지 않는다. 두 곳에 복사돼 있던 interactions 소유 절 목록도 하나가 됐다 (GEN-15 일부)
 - **가이드·핸드북의 티켓 키 검사는 키 형식을 알 때만 막는다.** 예전에는 아무 `대문자-숫자`나 사내 티켓으로 막아 `ES-2015`·`PEP-8`이 걸렸고, 핸드북 `audience: external`은 `UTF-8`·`ISO-8601`까지 막았다. 이제 `ticketKeyPattern` → 트래커 설정의 `defaultProjectKey`(`SHOP`이면 `SHOP-123`만) → `issueKeyPattern` 순으로 찾고, 없으면 보지 않는다. 예전처럼 다 막으려면 `"ticketKeyPattern": "[A-Z][A-Z0-9]+-\\d+"`를 적는다 (GEN-17)
 - **`/dt-devspec`은 Figma 없이도 시작한다.** 기획 문서(Notion·Confluence·PDF·Markdown)에서 목차 → 화면·기능 후보 → 인터페이스 후보 → 규칙 문장을 뽑는 절차를 두었고(`skills/dt-devspec/references/source-discovery.md`), Figma는 있으면 함께 쓴다. 충돌 정리의 "원본(Figma) 우선"은 "주 소스 우선"이 됐다. Figma 사전 점검도 새로 들어갔다 (GEN-14)
 - **Figma 화면의 오른쪽 주석 틀만 읽는 판별은 opt-in이 됐다.** 기본은 데이터가 오가는 화면을 통째로 한 번 읽는다. 화면을 [왼쪽 UI]+[오른쪽 주석]으로 그리는 팀은 `.dt.json`에 `"uxSources": { "figma": { "annotationLayout": "right-panel" } }`을 넣으면 예전과 같다 (GEN-14)

@@ -157,11 +157,13 @@
 - 문제: `project-context.md`를 한글 제목으로 파싱, `[제안]` 라벨 카운트, 템플릿 제목·상태 라벨(확정/협의중) 한글 고정.
 - 할 일: 섹션 앵커(`<!-- section:overview -->`) 기반 파싱으로 전환(한글 제목은 하위 호환으로 계속 인식). 템플릿 `*.ko.tmpl`/`*.en.tmpl`. 상태 라벨을 locale 키로.
 - 완료 기준: `locale: en`으로 스펙 생성→스캐폴드 파이프라인 통과.
+- **일부 완료·나머지 보류(DEV-20, 2026-11-26).** 했다: 스크립트 10곳에 흩어진 한글 제목·상태 라벨을 `scripts/lib/headings.mjs` 레지스트리 한곳으로 모았다(언어 묶음 구조, 지금은 `ko` 하나). 값은 그대로라 동작은 같다. 템플릿 제목과 레지스트리가 같은지, 레지스트리 밖 스크립트에 제목 문자열이 다시 생기지 않는지 `tests/headings.test.mjs`가 본다. 보류했다: 영어 템플릿(`*.en.tmpl`)·`en` 묶음·`team.locale` 읽기. 글쓰기 규칙·리뷰어·템플릿이 모두 한국어 독자 기준이고 영어 팀이 쓴다는 신호가 없어, 지금 만들면 쓰는 사람 없는 템플릿 12벌을 유지해야 한다. 영어 사용자가 생기면 레지스트리에 `en` 묶음을 더하고 읽는 쪽이 `headingsFor(locale)`로 고르게 하면 된다. 섹션 앵커(`<!-- section:… -->`) 전환도 그때 함께 본다.
 
 ### GEN-16 글쓰기 리뷰의 locale화
 - 문제: 한국어 문장 검사가 spec-author·plan-author·e2e·worklog·confluence·explain에서 무조건 실행. docType이 벤더 이름(jira/confluence) 기준.
 - 할 일: `locale=ko`일 때만 실행. docType을 독자 기준(internal-terse|internal-prose|external-user|dev-handbook)으로 개명(구 이름은 별칭 유지). `writingReviewers[locale]` 레지스트리.
 - 완료 기준: `locale: en`에서 ko 검사 미실행, `ko`에서 기존과 동일.
+- **보류(DEV-21, 2026-11-26).** GEN-15의 영어 템플릿 없이 `locale: en`은 동작하지 않는다. 그 상태에서 한글 검사만 끄면 검사받지 않은 한글 본문이 나간다. 영어 산출물을 만들 때 함께 한다.
 
 ### GEN-17 가이드·핸드북 산출물 일반화
 - 문제: `dt-guide` 게이트가 `[A-Z]+-\d+`를 전부 사내 티켓으로 차단(`ES-2015`·`PEP-8` 오탐). `language` 설정이 있으나 미사용. 버전은 `package.json`만, PDF A4·강조색·Pretendard 고정. 핸드북 진입점 감지가 JS/Node 전용.

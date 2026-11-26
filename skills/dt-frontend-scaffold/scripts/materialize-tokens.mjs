@@ -21,6 +21,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { resolveFrontendStack } from '../../../scripts/stackAdapters.mjs';
+import { H } from '../../../scripts/lib/headings.mjs';
 
 export const EMITS = ['tailwind', 'css-vars', 'scss'];
 export const DEFAULT_OUT = { tailwind: 'src/styles/globals.css', 'css-vars': 'src/styles/globals.css', scss: 'src/styles/_tokens.scss' };
@@ -56,7 +57,9 @@ export function parseDesignTokens(contextMd) {
 
   // ## 디자인 토큰 … (다음 ## 전 또는 입력 끝까지) 잘라내기.
   // (?![\s\S]) = 입력의 진짜 끝. JS 정규식엔 \Z가 없다.
-  const secMatch = contextMd.match(/^##\s+디자인\s*토큰\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m);
+  // 제목은 scripts/lib/headings.mjs 레지스트리. 낱말 사이 공백은 몇 칸이든 받는다(예전 정규식과 같게).
+  const title = H.projectContext.designTokens.split(/\s+/).join('\\s*');
+  const secMatch = contextMd.match(new RegExp(`^##\\s+${title}\\s*$([\\s\\S]*?)(?=^##\\s|(?![\\s\\S]))`, 'm'));
   if (!secMatch) return out;
   const body = secMatch[1];
 
@@ -74,7 +77,7 @@ export function parseDesignTokens(contextMd) {
       .filter(Boolean);
 
   // 색: "name: #hex" 또는 "name: value"
-  for (const b of bullets(subFor('색'))) {
+  for (const b of bullets(subFor(H.projectContext.tokenGroups.colors))) {
     const idx = b.indexOf(':');
     if (idx === -1) continue;
     const name = b.slice(0, idx).trim();
@@ -83,7 +86,7 @@ export function parseDesignTokens(contextMd) {
   }
 
   // 타이포그래피: "Name: Family Weight Size"
-  for (const b of bullets(subFor('타이포그래피'))) {
+  for (const b of bullets(subFor(H.projectContext.tokenGroups.typography))) {
     const idx = b.indexOf(':');
     if (idx === -1) continue;
     const name = b.slice(0, idx).trim();
@@ -104,7 +107,7 @@ export function parseDesignTokens(contextMd) {
   }
 
   // 간격: "4, 8, 12, 16, 24"
-  for (const b of bullets(subFor('간격'))) {
+  for (const b of bullets(subFor(H.projectContext.tokenGroups.spacing))) {
     for (const n of b.split(',').map((s) => s.trim()).filter(Boolean)) {
       const v = Number(n.replace(/px$/i, ''));
       if (Number.isFinite(v)) out.spacing.push(v);
@@ -112,7 +115,7 @@ export function parseDesignTokens(contextMd) {
   }
 
   // radius: "4, 8"
-  for (const b of bullets(subFor('radius'))) {
+  for (const b of bullets(subFor(H.projectContext.tokenGroups.radius))) {
     for (const n of b.split(',').map((s) => s.trim()).filter(Boolean)) {
       const v = Number(n.replace(/px$/i, ''));
       if (Number.isFinite(v)) out.radius.push(v);

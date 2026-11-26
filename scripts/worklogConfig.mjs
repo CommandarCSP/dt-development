@@ -19,6 +19,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './lib/config.mjs';
 import { resolveGitWeb, originRemote, GIT_HOSTS } from './gitWebUrl.mjs';
+import { H } from './lib/headings.mjs';
 
 export const TEAM_FILE = '.dt-worklog.json';
 export const LOCAL_FILE = '.dt-worklog.local.json';
@@ -182,13 +183,14 @@ const filled = (v) => {
  */
 export function checkCloseComment(md, rules) {
   const val = (label) => (String(md ?? '').match(FIELD(label)) ?? [])[1];
-  const has = { result: filled(val('결과')), output: filled(val('산출물')), decision: filled(val('결정 사항')) };
+  const L = H.closeComment; // scripts/lib/headings.mjs
+  const has = { result: filled(val(L.result)), output: filled(val(L.output)), decision: filled(val(L.decision)) };
   const missing = [];
   const need = rules?.close?.need ?? 'outputOrDecision';
-  if (rules?.templates !== 'org-guideline' && !has.result) missing.push('결과');
-  if (need === 'output' && !has.output) missing.push('산출물');
-  if (need === 'decision' && !has.decision) missing.push('결정 사항');
-  if (need === 'outputOrDecision' && !has.output && !has.decision) missing.push('산출물 또는 결정 사항');
+  if (rules?.templates !== 'org-guideline' && !has.result) missing.push(L.result);
+  if (need === 'output' && !has.output) missing.push(L.output);
+  if (need === 'decision' && !has.decision) missing.push(L.decision);
+  if (need === 'outputOrDecision' && !has.output && !has.decision) missing.push(`${L.output} 또는 ${L.decision}`);
   return { ok: missing.length === 0, missing, has };
 }
 

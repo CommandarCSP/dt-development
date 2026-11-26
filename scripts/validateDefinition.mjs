@@ -1,13 +1,11 @@
 import { parseDefinitionHeader, SPEC_VERSION } from './buildDefinitionHeader.mjs';
+import { H } from './lib/headings.mjs';
 
-const REQUIRED_SECTIONS = [
-  '## 전역 규약',
-  '## 범위 분담',
-  '## 인터페이스 합의',
-  '## 변경 추적'
-];
-const STATE_LABEL_CELL = /^(확정|컨벤션|협의중|미해소)$/; // 칸 정확 일치(부분문자열 오탐 방지)
-const STATE_LABEL_ANY = /미해소/;                          // status 산출용 IF 셀 스캔(부분매치 — '미해소(질문완료)' 포함)
+// 제목·상태 라벨은 scripts/lib/headings.mjs 레지스트리에서 온다.
+const REQUIRED_SECTIONS = Object.values(H.definition.sections).map((t) => `## ${t}`);
+const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const STATE_LABEL_CELL = new RegExp(`^(${Object.values(H.definition.states).map(reEsc).join('|')})$`); // 칸 정확 일치(부분문자열 오탐 방지)
+const STATE_LABEL_ANY = new RegExp(reEsc(H.definition.states.unresolved)); // status 산출용 IF 셀 스캔(부분매치 — '미해소(질문완료)' 포함)
 const STRUCTURE_THRESHOLD = 50; // 식별 IF 중 wellFormed 비율 하한(%)
 
 // WHY: '1.0' < '1.1' 점-구분 버전 비교. 반환 -1/0/1.

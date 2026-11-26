@@ -29,6 +29,7 @@
 - 스킬·명령은 `dt-` 접두어 + kebab-case. **스킬 `name` = 폴더 이름, 에이전트 `name` = 파일 이름.** 리뷰 규칙 `ruleId` = 파일 이름(확장자 뺀 것).
 - **머리말 `description`은 영어 발동 문구**("Use when …")가 기본이다 — 모델이 언제 부를지 판단하는 데 쓴다. 명령의 `description`은 사용자가 읽으니 한국어로 써도 된다.
 - **본문은 한국어.** 사용자에게 보이거나 산출물에 들어가는 문장은 [쉬운 글쓰기](docs/refs/readable-writing.md)를 따르고 `node scripts/koWritingLint.mjs <파일>`로 점검한다.
+- **스크립트가 읽는 산출물 제목·상태 라벨은 [`scripts/lib/headings.mjs`](scripts/lib/headings.mjs) 한곳에 둔다.** 템플릿의 `## 제목`이나 정의서 상태 라벨(확정·컨벤션·협의중·미해소)을 바꾸면 레지스트리도 같이 고친다. 스크립트에 제목 문자열을 새로 적지 않는다 — 둘이 어긋나면 `tests/headings.test.mjs`가 잡는다.
 - "필요시·적절히·적당히" 같은 조건 없는 표현을 쓰지 않는다 — "언제"를 조건으로 적는다(구조 테스트가 잡는다).
 - 공개 저장소다. 회사·고객사 이름, 사내 주소, 개인 이메일, cloudId를 넣지 않는다(`npm run scan`).
 

@@ -2,6 +2,7 @@ import { readFileSync as _read, writeFileSync as _write, existsSync as _exists, 
 import { dirname as _dirname, resolve as _resolve } from 'node:path';
 import { fileURLToPath as _f2p } from 'node:url';
 import { parseSections, mergeOwnedSections, renderSections } from './lib/sections.mjs';
+import { H } from './lib/headings.mjs';
 const META_REGEX = /<!-- lastSyncedAt: ([^,]+), packageJsonMtime: ([^ ]+) -->/;
 
 export function parseMetaHeader(markdown) {
@@ -24,12 +25,13 @@ export function needsSync({ currentPkgMtime, storedPkgMtime }) {
 // 각 스택은 자기 절만 바꾸고, 공통 절은 없을 때만 채운다. 나머지는 글자 그대로 둔다.
 // 절 제목은 2단계(##)로 둔다 — materialize-tokens.mjs 가 `## 디자인 토큰` 아래 `###` 를 읽는다.
 
+const PC = H.projectContext; // scripts/lib/headings.mjs
 export const SECTION_OWNERS = {
-  common: ['개요', '제약사항', '도메인 용어'],
-  frontend: ['FE 기술 스택', 'FE 프로젝트 기술/라이브러리', '디자인 토큰'],
-  backend: ['BE 기술 스택', 'BE 프로젝트 기술/라이브러리', '공유 규약'],
+  common: [PC.overview, PC.constraints, PC.glossary],
+  frontend: [PC.feStack, PC.feLibs, PC.designTokens],
+  backend: [PC.beStack, PC.beLibs, PC.sharedConventions],
 };
-const ORDER = ['개요', ...SECTION_OWNERS.frontend, ...SECTION_OWNERS.backend, '제약사항', '도메인 용어'];
+const ORDER = [PC.overview, ...SECTION_OWNERS.frontend, ...SECTION_OWNERS.backend, PC.constraints, PC.glossary];
 
 export { sectionKey, parseSections } from './lib/sections.mjs';
 
@@ -53,7 +55,7 @@ function guessStack(md) {
   // 절·제목이 가장 강한 신호다(플러그인 템플릿의 스택 전용 절). 그다음이 본문의 기술 이름.
   const keys = parseSections(md).sections.map((x) => x.key);
   if (keys.includes('공유 규약') || /# Project Context \(Backend\)/.test(md)) return 'backend';
-  if (keys.includes('디자인 토큰')) return 'frontend';
+  if (keys.includes(PC.designTokens)) return 'frontend';
   const be = /nest(js)?\b|prisma|typeorm|express|fastify/i.test(md);
   const fe = /\breact\b|\bvue\b|svelte|angular|vite|tailwind|디자인 토큰/i.test(md);
   return be && !fe ? 'backend' : fe && !be ? 'frontend' : null;

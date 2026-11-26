@@ -21,10 +21,11 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './lib/config.mjs';
+import { H } from './lib/headings.mjs';
 
 export const STATUSES = ['proposed', 'accepted', 'superseded', 'deprecated'];
 export const REQUIRED_META = ['id', 'title', 'status', 'scope', 'date'];
-export const REQUIRED_SECTIONS = ['맥락', '결정', '이유', '버린 대안', '출처'];
+export const REQUIRED_SECTIONS = H.decision; // scripts/lib/headings.mjs
 export const PROJECT_DIR = 'docs/decisions';
 export const POLICY_DIR = 'docs/policies';
 const ID_RE = /^(PD|TP)-(\d{3,})$/;

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { H } from './lib/headings.mjs';
 
 export function parseStatus(requirementsText) {
   const m = requirementsText.match(/<!-- status: (finalized|draft) -->/);
@@ -40,7 +41,7 @@ export function deriveDomains(segs) {
 export function countProposedApis(requirementsText) {
   return requirementsText
     .split('\n')
-    .filter((l) => /^### \d+\)/.test(l) && l.includes('[제안]'))
+    .filter((l) => /^### \d+\)/.test(l) && l.includes(H.proposedMark))
     .length;
 }
 

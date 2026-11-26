@@ -14,13 +14,14 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { parseDefinitionHeader } from './buildDefinitionHeader.mjs';
 import { parseSections } from './lib/sections.mjs';
+import { H } from './lib/headings.mjs';
 
 const norm = (s) => s.replace(/<!--[\s\S]*?-->/g, '').replace(/\s+/g, ' ').trim();
 
 export function contractLines(md) {
   const body = md.replace(/<!--[\s\S]*?-->/g, '');
   const rows = (body.match(/^\s*\|\s*(SP|IF|DM)-\d+\s*\|.*$/gm) ?? []).map((r) => r.split('|').map(norm).filter(Boolean).join(' | '));
-  const conv = parseSections(body).sections.find((s) => s.key === '전역 규약');
+  const conv = parseSections(body).sections.find((s) => s.key === H.definition.sections.conventions);
   const convLines = conv ? conv.text.split('\n').slice(1).map(norm).filter((l) => l && !/^#/.test(l)) : [];
   return [...convLines.map((l) => `conv: ${l}`), ...rows.sort()];
 }

@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { parseSpecHeader } from './buildSpecHeader.mjs';
 import { parseSections } from './lib/sections.mjs';
 import { detectLegacy as interactionsLegacy, OWNERS as INTERACTION_OWNERS } from './interactionsSync.mjs';
+import { H } from './lib/headings.mjs';
 
 export const SOURCE_LABELS = ['ai-confirmed', 'ai-edited', 'user-added', 'inferred', 'user-resolved', 'precedence-resolved'];
 export const PATTERN_LABELS = ['Ubiquitous', 'Event-driven', 'State-driven', 'Optional', 'Complex', 'Unwanted'];
@@ -27,16 +28,10 @@ const LEDGER_STATUSES = ['proposed', 'approved', 'automated', 'verified', 'faile
 // 열 이름 — 옛 템플릿(dt-bespec 0.8 무렵)은 'Request'·'Response' 였다. 같은 뜻이라 둘 다 받는다(실제 프로젝트 검증에서 발견, GEN-29).
 const ENDPOINT_COLUMNS = [['Method'], ['Path'], ['Auth'], ['Request DTO', 'Request'], ['Response DTO', 'Response'], ['Status']];
 
-const REQUIRED_SECTIONS = {
-  'requirements:frontend': ['사용자 스토리', '기능 요구사항', '라우팅 / 네비게이션', '비기능 요구사항', '접근 권한'],
-  'requirements:backend': ['사용자 스토리 / 시나리오', '기능 요구사항', '비기능 요구사항', '접근 권한 / 인증·인가', '데이터 명세'],
-  'design:frontend': ['아키텍처', '데이터 모델 / API 계약', '컴포넌트 구조', '시퀀스', '요구사항 매핑'],
-  'design:backend': ['아키텍처', '데이터 모델 / API 계약', '인덱스 & 페이지네이션 전략', '시퀀스', '요구사항 매핑'],
-  'layout-skeleton:frontend': ['코딩 에이전트 변환 지침', '스켈레톤'],
-  'api-contract:backend': ['엔드포인트'],
-};
+// 필수 절 목록은 scripts/lib/headings.mjs 레지스트리에서 온다.
+const REQUIRED_SECTIONS = H.specSections;
 // 있으면 좋은 절 — 없으면 경고만(뒤 단계 스크립트가 읽지 않는 안내·보조 절. 옛 템플릿엔 없었다).
-const RECOMMENDED_SECTIONS = { 'api-contract:backend': ['스캐폴드 변환 지침', '요청/응답 스키마'] };
+const RECOMMENDED_SECTIONS = H.specRecommended;
 
 /** 파일 경로로 종류·스택을 가린다. 모르면 null. */
 export function detectKind(path) {

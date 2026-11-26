@@ -12,8 +12,9 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseSections, renderSections, mergeOwnedSections } from './lib/sections.mjs';
+import { H } from './lib/headings.mjs';
 
-export const OWNERS = { frontend: 'FE 크로스페이지', backend: 'BE 크로스리소스' };
+export const OWNERS = H.interactions; // scripts/lib/headings.mjs
 const ORDER = [OWNERS.frontend, OWNERS.backend];
 export const PREAMBLE = '# Interactions\n\n<!-- dt-schema: interactions@2 -->\n<!-- 크로스유닛 상호작용 맵(docs/refs/interaction-integrity.md). FE 절은 FE 스펙(spec-author), BE 절은 BE 스펙(bespec-author)이 쓴다 — 각자 자기 절만 scripts/interactionsSync.mjs merge 로 바꾼다. -->\n\n';
 

@@ -17,9 +17,10 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { specContentHash } from './specContentHash.mjs';
 import { parseSections } from './lib/sections.mjs';
+import { H } from './lib/headings.mjs';
 
 const FILES = { pages: ['requirements', 'design', 'tasks', 'layout-skeleton'], resources: ['requirements', 'design', 'tasks', 'api-contract'] };
-const OWN = { pages: 'FE 크로스페이지', resources: 'BE 크로스리소스' };
+const OWN = { pages: H.interactions.frontend, resources: H.interactions.backend }; // scripts/lib/headings.mjs
 
 export function unitSpecHash(unitDir) {
   const kind = basename(dirname(unitDir));
