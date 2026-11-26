@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import {
   loadPipelineConfig,
   currentBranch,
+  loadGitFlow,
   decideStartReminder,
   decideSchemaNotice,
 } from './lib/pipeline-state.mjs';
@@ -23,7 +24,7 @@ const prompt = event.prompt || '';
 const config = loadPipelineConfig(repoRoot);
 const branch = currentBranch(repoRoot);
 
-const decision = decideStartReminder({ config, branch, prompt });
+const decision = decideStartReminder({ config, branch, prompt, baseBranch: loadGitFlow(repoRoot).baseBranch });
 const notice = decideSchemaNotice({ config, prompt, scanFn: (root) => scan(root), repoRoot });
 const contexts = [decision, notice].filter((d) => d.inject).map((d) => d.context);
 if (contexts.length) {

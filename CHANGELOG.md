@@ -8,6 +8,7 @@
 ## [미출시]
 
 ### 추가
+- 공통 설정 `.dt.json`의 `gitFlow`(`baseBranch`·`mergeStrategy`·`branchPrefix`·`pushPolicy`)와 `scripts/gitFlow.mjs` — `/dt-git`의 기준 브랜치(예: `develop`)와 합치는 방식(`no-ff` 기본 · `squash` · `rebase` · `pr`)을 팀이 정한다. 명령 순서는 스크립트가 내고, 스킬은 미리보기·승인 뒤 한 단계씩 실행한다. `pr` 방식은 피처 브랜치를 push하고 `gh`·`glab`으로 PR을 열거나, 없으면 PR 만들기 주소(`gitWebUrl.mjs compare`)를 보인다. 설정이 없으면 예전과 같은 main · `--no-ff` · 머지 뒤 push다 (GEN-12)
 - 공통 설정 `.dt.json`의 `wrap.steps`(기본 `commit` → `wiki` → `tracker`)와 `scripts/wrapState.mjs` — `/dt-wrap`의 단계와 순서를 팀이 정한다. `wiki`·`tracker`가 꺼진 단계는 한 줄로 알리고 건너뛰며, Stop 훅 알림 문구도 실제 단계로 만든다 (GEN-11)
 - 위키 문서 규칙 팀 정책 `docs/policies/TP-003-wiki-docs.md` — 문서 7종(회의록·작업 보고·설계 문서·운영 가이드·회고·릴리즈 노트·장애 회고), 공통 머리(상태·담당자·검토일·관련 이슈·관련 결정·요약, 검토일은 설계·가이드만 6개월), 구역 6개 페이지 트리·제목 규칙·`doc-*` 라벨, 트래커 양방향 연결 (GEN-10)
 - `scripts/wikiConfig.mjs` — 위키 설정 합치기(`sections`·`labelsByType`·`reviewMonths`), 제목·공통 머리(HTML·markdown)·markdown 경로. `/dt-confluence`의 템플릿 7종 (GEN-10)
@@ -55,6 +56,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- 훅이 `gitFlow.baseBranch`를 따른다 — 시작 알림은 기준 브랜치 위에서 뜨고, 마무리 알림의 통합 문구는 기준 브랜치·`pr`·`pushPolicy: none`을 반영한다. `dt-git-flow`의 상태 스크립트는 `isBase`·`baseBranch`를 낸다(`isMain`은 0.16.x 동안 남긴다) (GEN-12)
 - **Stop 훅 기준점을 마무리 루틴으로.** `/dt-wrap`을 마치면 `.dt-pipeline.local.json`의 `lastWrapSha`에 HEAD를 남기고(단계를 건너뛰어도), 훅은 이 값과 옛 `lastSyncSha` 중 더 최근 것부터 정리 안 된 커밋을 센다. 트래커를 안 쓰거나 기록을 건너뛰어도 마무리 뒤에는 알림이 조용하다. `/dt-wrap --init`은 이 파일을 `.gitignore`에 더하고, 트래커·위키를 쓰는지 묻는다. 설정이 없는 프로젝트의 단계와 알림 문구는 예전과 같다 (GEN-11)
 - `/dt-wrap` 단계 설명을 TP-002·TP-003 기준으로 고쳤다 — 기록 단위는 Story·Task·Bug(Sub-task는 나눌 때만), 완료 조건은 HTML 체크박스, 문서 종류는 7종 중에서 권한다 (GEN-11)
 - **`/dt-confluence` 문서 종류를 4종에서 7종으로.** `worklog`는 `report`(작업 보고)로 이름이 바뀌고, `techdoc`은 설계 문서(`design`)와 운영 가이드(`guide`)로 나뉘고, 회고의 릴리즈노트 모드는 `release`로 따로 섰다. 옛 이름은 0.16.x 동안 받는다(`worklog`는 경고 후 `report`, `techdoc`은 어느 쪽인지 묻는다). 모든 문서 맨 위에 공통 머리가 붙고, 종류별 구역 페이지 아래에 들어간다(없으면 묻고 만든다). 옛 `parentPageId`는 구역 페이지가 없는 종류의 부모로 쓰고 경고한다 (GEN-10)

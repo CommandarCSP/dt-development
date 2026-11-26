@@ -61,7 +61,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `/dt-e2e` | Author and verify scenario-based acceptance e2e (Playwright) for implemented pages, driven by page specs and… | `dt-e2e` |
 | `/dt-explain` | Explain a discovered problem (Jira ticket, bug, issue) in structured plain language | `dt-explain` |
 | `/dt-fullstack` | 요구사항·UX 소스에서 풀스택 웹앱을 이름 있는 단계(definition → be-spec → be-build → fe-spec → fe-build, 선택 e2e·audit·guide·handbo… | `dt-fullstack` |
-| `/dt-git` | 피처 브랜치를 표준 절차로 main에 통합한다. start=origin 최신 main에서 분기, finish=리베이스→--no-ff 머지→main push→피처 브랜치 정리 | `dt-git-flow` |
+| `/dt-git` | 피처 브랜치를 팀 절차로 기준 브랜치에 통합한다(기본 main · --no-ff, .dt.json gitFlow로 develop·squash·rebase·PR 선택). start=origin 최신… | `dt-git-flow` |
 | `/dt-guide` | Generate an end-user guide PDF for a web-frontend or Electron project | `dt-guide` |
 | `/dt-handbook` | Generate a developer handbook PDF for an existing codebase | `dt-handbook` |
 | `/dt-implement` | Turn dt-spec page artifacts into code by delegating to the dt-frontend-scaffold engine | `dt-implement` |
@@ -103,7 +103,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `dt-frontend-scaffold` | the user requests creating a new React project following dt-frontend architecture, adding a new domain (e.g.… |
 | `dt-frontend-testing` | writing or reviewing tests in a project that contains .dt-frontend.json |
 | `dt-fullstack` (/dt-fullstack) | the user wants to build a full web app end-to-end from requirements/UX sources |
-| `dt-git-flow` | integrating a feature branch into main following the team's git workflow |
+| `dt-git-flow` | integrating a feature branch into the base branch following the team's git workflow |
 | `dt-guide` (/dt-guide) | the user wants an end-user guide (사용자 가이드·사용 설명서·매뉴얼 PDF) for a web-frontend or Electron project |
 | `dt-handbook` (/dt-handbook) | the user wants a developer handbook for an existing codebase (인수인계서·코드 설명서·아키텍처 문서·핸드북 PDF) |
 | `dt-implement` (/dt-implement) | the user wants to turn dt-spec page artifacts (requirements/design/tasks/layout-skeleton in docs/specs/pages/… |

@@ -32,6 +32,12 @@ export const TRACKERS = ['jira', 'github', 'linear', 'none'];
 export const WIKIS = ['confluence', 'markdown', 'notion', 'none'];
 /** 마무리 루틴 단계(GEN-11). 이름과 뜻은 scripts/wrapState.mjs 가 정한다. */
 export const WRAP_STEP_NAMES = ['commit', 'wiki', 'tracker'];
+/** git 흐름(GEN-12). 뜻은 scripts/gitFlow.mjs 가 정한다. */
+export const MERGE_STRATEGIES = ['no-ff', 'squash', 'rebase', 'pr'];
+export const PUSH_POLICIES = ['push', 'none'];
+// git check-ref-format 의 주요 규칙: 공백·제어문자·~^:?*[\\ 금지, .. 와 @{ 금지, - 나 / 나 . 로 시작 금지, .lock·/ 로 끝 금지.
+const BAD_REF = /[\s~^:?*[\\\x00-\x1f\x7f]|\.\.|@\{|^[-/.]|\.lock$|\/\/|\/\./;
+export const isBranchName = (v) => typeof v === 'string' && v.length > 0 && !BAD_REF.test(v) && !v.endsWith('/') && !v.endsWith('.');
 
 /**
  * 에이전트 → 모델 티어. `team.models.<tier>` 가 있으면 조율자가 dispatch 때 그 모델로 덮어쓴다.
@@ -64,6 +70,8 @@ export const DEFAULTS = Object.freeze({
   wiki: 'confluence',
   // 마무리 루틴(GEN-11) — dt-wrap·Stop 훅이 읽는다(scripts/wrapState.mjs). 기본 순서 = 지금 동작.
   wrap: { steps: ['commit', 'wiki', 'tracker'] },
+  // git 흐름(GEN-12) — dt-git-flow·훅이 읽는다(scripts/gitFlow.mjs). 기본 = 지금 정책(main · --no-ff · feat/ · push).
+  gitFlow: { baseBranch: 'main', mergeStrategy: 'no-ff', branchPrefix: 'feat/', pushPolicy: 'push' },
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -176,6 +184,29 @@ export function validate(raw, warnings = []) {
         if (steps.length) out.wrap.steps = steps;
         else warnings.push('wrap.steps: 쓸 단계가 없어 기본 순서를 씁니다');
       }
+    }
+  }
+  // gitFlow
+  const g = raw?.gitFlow;
+  if (g != null && !isObj(g)) warnings.push('gitFlow: 객체여야 합니다 — 무시했습니다');
+  else if (g) {
+    for (const k of Object.keys(g)) if (!(k in DEFAULTS.gitFlow)) warnings.push(`알 수 없는 키 "gitFlow.${k}" — 무시했습니다`);
+    if ('baseBranch' in g) {
+      if (isBranchName(g.baseBranch)) out.gitFlow.baseBranch = g.baseBranch;
+      else warnings.push(`gitFlow.baseBranch: ${JSON.stringify(g.baseBranch)} 은 브랜치 이름으로 쓸 수 없어 "main" 을 씁니다`);
+    }
+    if ('mergeStrategy' in g) {
+      if (MERGE_STRATEGIES.includes(g.mergeStrategy)) out.gitFlow.mergeStrategy = g.mergeStrategy;
+      else warnings.push(`gitFlow.mergeStrategy: "${g.mergeStrategy}" 은 ${MERGE_STRATEGIES.join('|')} 가 아니라 "no-ff" 를 씁니다`);
+    }
+    if ('branchPrefix' in g) {
+      // 접두어는 / 로 끝나도 된다(feat/). 끝의 / 를 떼고 검사한다.
+      if (g.branchPrefix === null || (typeof g.branchPrefix === 'string' && isBranchName(g.branchPrefix.replace(/\/$/, '')))) out.gitFlow.branchPrefix = g.branchPrefix;
+      else warnings.push(`gitFlow.branchPrefix: ${JSON.stringify(g.branchPrefix)} 은 접두어로 쓸 수 없어 "feat/" 를 씁니다`);
+    }
+    if ('pushPolicy' in g) {
+      if (PUSH_POLICIES.includes(g.pushPolicy)) out.gitFlow.pushPolicy = g.pushPolicy;
+      else warnings.push(`gitFlow.pushPolicy: "${g.pushPolicy}" 은 ${PUSH_POLICIES.join('|')} 가 아니라 "push" 를 씁니다`);
     }
   }
   return out;

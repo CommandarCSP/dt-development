@@ -9,6 +9,7 @@
  *   node scripts/gitWebUrl.mjs [--project <dir>] [--remote <url>] [--host github|gitlab|bitbucket] [--base <웹 베이스>] base
  *   node scripts/gitWebUrl.mjs … commit <sha>
  *   node scripts/gitWebUrl.mjs … pr <번호>
+ *   node scripts/gitWebUrl.mjs … compare <base> <head>   (PR 만들기 화면)
  *   종류를 모르면 종료 코드 3(사람에게 물어 --host 또는 gitHost 로 다시).
  */
 import { execFileSync } from 'node:child_process';
@@ -17,10 +18,13 @@ import { fileURLToPath } from 'node:url';
 
 export const GIT_HOSTS = ['github', 'gitlab', 'bitbucket'];
 
+// 브랜치 이름의 / 는 GitHub compare 경로에서 그대로 둔다.
+const enc = (b) => encodeURIComponent(b).replace(/%2F/g, '/');
+
 const PATHS = {
-  github: { commit: (sha) => `/commit/${sha}`, pr: (n) => `/pull/${n}` },
-  gitlab: { commit: (sha) => `/-/commit/${sha}`, pr: (n) => `/-/merge_requests/${n}` },
-  bitbucket: { commit: (sha) => `/commits/${sha}`, pr: (n) => `/pull-requests/${n}` },
+  github: { commit: (sha) => `/commit/${sha}`, pr: (n) => `/pull/${n}`, compare: (b, h) => `/compare/${enc(b)}...${enc(h)}?expand=1` },
+  gitlab: { commit: (sha) => `/-/commit/${sha}`, pr: (n) => `/-/merge_requests/${n}`, compare: (b, h) => `/-/merge_requests/new?merge_request%5Bsource_branch%5D=${encodeURIComponent(h)}&merge_request%5Btarget_branch%5D=${encodeURIComponent(b)}` },
+  bitbucket: { commit: (sha) => `/commits/${sha}`, pr: (n) => `/pull-requests/${n}`, compare: (b, h) => `/pull-requests/new?source=${encodeURIComponent(h)}&dest=${encodeURIComponent(b)}` },
 };
 
 /**
@@ -70,6 +74,12 @@ export function prUrl(web, n) {
   return web.webBase + PATHS[web.kind].pr(n);
 }
 
+/** PR(머지 요청) 만들기 화면 — head 를 base 로 합치는 요청(GEN-12 pr 모드). */
+export function compareUrl(web, base, head) {
+  if (!web.kind || !web.webBase) return null;
+  return web.webBase + PATHS[web.kind].compare(base, head);
+}
+
 export function originRemote(projectRoot) {
   try { return execFileSync('git', ['-C', projectRoot, 'remote', 'get-url', 'origin'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return null; }
 }
@@ -86,6 +96,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (!web.kind) { process.stderr.write(`호스트 종류를 모른다(${web.webBase}) — ${GIT_HOSTS.join('|')} 중 무엇인지 물어 --host(설정 gitHost)로 준다\n`); process.exit(3); }
     if (what === 'commit' && arg) process.stdout.write(commitUrl(web, arg) + '\n');
     else if (what === 'pr' && arg) process.stdout.write(prUrl(web, arg) + '\n');
+    else if (what === 'compare' && arg && args[2]) process.stdout.write(compareUrl(web, arg, args[2]) + '\n');
     else process.stdout.write(JSON.stringify(web) + '\n');
   } catch (e) {
     process.stderr.write(`${e.message}\n`);

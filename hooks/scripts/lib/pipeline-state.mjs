@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadConfig } from '../../../scripts/lib/config.mjs';
 import { resolveWrapSteps, loadWrapBaselines } from '../../../scripts/wrapState.mjs';
+import { resolveGitFlow } from '../../../scripts/gitFlow.mjs';
 
 // 한글은 부분문자열(공백 토큰화가 약함), 영문은 단어 경계로 매칭한다.
 // 영문을 부분문자열로 보면 add∈address, fix∈prefix, bug∈debug 같은 오탐이 난다.
@@ -21,27 +22,35 @@ const DEFAULT_WRAP_LABELS = ['커밋 정리', 'Confluence 문서 판단', 'Jira 
 
 // config: 공통 설정의 hooks(.dt.json 또는 옛 .dt-pipeline.json — loadPipelineConfig) 또는 null. 판정은 IO 없이 주어진 값으로만.
 // labels: 실제로 돌 마무리 단계 이름(scripts/wrapState.mjs resolveWrapSteps). 꺼진 어댑터 단계는 이미 빠져 있다.
-export function decideWrapReminder({ config, unsynced, head, snooze, labels = DEFAULT_WRAP_LABELS }) {
+// gitFlow: scripts/gitFlow.mjs resolveGitFlow 결과. 없으면 기본(main · no-ff · push) — 문구가 예전과 같다.
+export function integrateText(gitFlow = resolveGitFlow(null)) {
+  const base = gitFlow.baseBranch;
+  if (gitFlow.mergeStrategy === 'pr') return `① PR 올리기 여부 (/dt-git finish — 피처 브랜치 push 후 ${base} 대상 PR, 자동 금지, 매번 사용자 승인). `;
+  if (gitFlow.pushPolicy === 'none') return `① ${base} 머지 여부 (/dt-git finish — push는 직접, 자동 금지, 매번 사용자 승인). `;
+  return `① ${base} 머지 + origin push 여부 (/dt-git finish — 자동 금지, 매번 사용자 승인). `;
+}
+
+export function decideWrapReminder({ config, unsynced, head, snooze, labels = DEFAULT_WRAP_LABELS, gitFlow }) {
   if (!config || config.enabled === false) return { block: false };
   const threshold = config.commitThreshold ?? 1;
   if (unsynced < threshold) return { block: false };
   if (head && snooze === head) return { block: false };
   const reason =
     `작업 마무리 게이트 — 정리 안 된 작업 ${unsynced}커밋 감지. 사용자에게 다음을 확인하세요: ` +
-    `① main 머지 + origin push 여부 (/dt-git finish — 자동 금지, 매번 사용자 승인). ` +
+    integrateText(gitFlow) +
     `② 마무리 루틴 /dt-wrap (${labels.join(' → ')}). ` +
     `둘 다 사용자가 선택하게 하고, 건너뛰려면 "넘어가"라고 하세요.`;
   return { block: true, reason };
 }
 
-export function decideStartReminder({ config, branch, prompt }) {
+export function decideStartReminder({ config, branch, prompt, baseBranch = 'main' }) {
   if (!config || config.enabled === false || config.startReminder === false) {
     return { inject: false };
   }
-  if (branch !== 'main') return { inject: false };
+  if (branch !== baseBranch) return { inject: false };
   if (!isImplementationPrompt(prompt)) return { inject: false };
   const context =
-    '현재 main 브랜치입니다. 새 구현 작업이면 /dt-git start <이름>로 ' +
+    `현재 ${baseBranch} 브랜치입니다. 새 구현 작업이면 /dt-git start <이름>로 ` +
     '피처 브랜치를 먼저 분기하는 걸 권장합니다.';
   return { inject: true, context };
 }
@@ -81,6 +90,15 @@ export function loadBaselines(repoRoot) {
   return [b.lastWrapSha, b.lastSyncSha].filter(Boolean);
 }
 
+/** git 흐름 설정(GEN-12). 못 읽으면 기본값. */
+export function loadGitFlow(repoRoot) {
+  try {
+    return resolveGitFlow(loadConfig(repoRoot).config);
+  } catch {
+    return resolveGitFlow(null);
+  }
+}
+
 /** 알림 문구에 넣을 단계 이름. 설정을 못 읽으면 기본 단계. */
 export function loadWrapLabels(repoRoot) {
   try {
@@ -110,14 +128,17 @@ function countRange(repoRoot, range) {
   return Number.isFinite(n) ? n : null;
 }
 
+// 마지막 인자가 { baseRef } 이면 대체 기준을 그 ref 로(GEN-12, 기본 origin/main).
 export function unsyncedCommitCount(repoRoot, ...baselines) {
+  const last = baselines[baselines.length - 1];
+  const baseRef = last && typeof last === 'object' && !Array.isArray(last) ? (baselines.pop(), last.baseRef) : 'origin/main';
   const counts = baselines.flat()
     .filter(Boolean)
     .map((sha) => countRange(repoRoot, `${sha}..HEAD`))
     .filter((n) => n !== null);
   if (counts.length) return Math.min(...counts);
-  // 기준점이 없거나 모두 조회 실패 → origin/main 기준으로 폴백
-  return countRange(repoRoot, 'origin/main..HEAD') ?? 0;
+  // 기준점이 없거나 모두 조회 실패 → origin/<기준 브랜치> 로 폴백
+  return countRange(repoRoot, `${baseRef}..HEAD`) ?? 0;
 }
 
 function snoozePath(repoRoot) {

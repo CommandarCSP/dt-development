@@ -135,6 +135,7 @@
 - 문제: `main` + rebase + `--no-ff` 팀 정책을 "표준 절차"로 고정.
 - 할 일: `gitFlow.{baseBranch, mergeStrategy(no-ff|squash|rebase|pr), branchPrefix, pushPolicy}`. 기본값 = 현재 정책. PR 기반 팀을 위한 `pr` 모드(머지는 호스트에 위임).
 - 완료 기준: `develop` 베이스·squash 설정으로 start/finish 동작.
+- **완료(DEV-17, 2026-11-26).** `.dt.json` `gitFlow`의 네 키를 그대로 넣었다. `pushPolicy`는 `push`(머지 뒤 기준 브랜치 push, 기본)·`none`(사람이 push) 두 값으로 정했고, 원격은 origin 고정이다. `scripts/gitFlow.mjs`가 start·finish 명령 순서를 낸다 — 실행은 하지 않고 스킬이 미리보기·승인 뒤 한 단계씩 실행한다. 네 방식 모두 먼저 `origin/<base>` 위로 리베이스해 충돌을 피처 브랜치에서 잡고 재개 규칙을 같게 했다. squash는 git이 머지로 보지 않아 `branch -D`가 필요해 그 단계만 따로 승인받는다. `pr`은 피처 브랜치만 `--force-with-lease`로 push하고 `gh`·`glab`이 있으면 그것으로, 없으면 `gitWebUrl.mjs`의 새 `compareUrl`로 PR 만들기 주소를 보인다. 훅(시작 알림 브랜치, 마무리 통합 문구, 기준점 없을 때 `origin/<base>`)도 같은 설정을 읽는다. 기본값의 명령 순서와 훅 문구는 예전과 같음을 테스트로 고정했다. 확인: 임시 저장소에서 develop·squash 설정으로 start(origin/develop에서 분기) → 커밋 2개 → finish 계획을 실제 git으로 실행 — develop에 커밋 하나, push, 피처 브랜치 정리, main 그대로. pr 모드는 GitHub 모양 리모트에서 `gh` 없이 PR 만들기 주소로 끝나는 것을 봤다.
 
 ### GEN-13 기타 스킬의 트래커·위키 참조 정리
 - 대상: `dt-explain`(티켓 읽기 Atlassian 고정, 사내 티켓 키 예시), `dt-audit`(후속 조치를 Jira로), `dt-handbook`(`sources.atlassian`만, `atlassian.net`만 위키 링크로 판정).

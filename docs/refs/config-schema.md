@@ -35,6 +35,10 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 | `tracker` | 작업 기록 트래커. `jira` · `github` · `linear` · `none`. 연동은 `jira`만 한다 — `github`·`linear`는 아직 "지원하지 않는다"고 알리고 `none`처럼 요약만 낸다. `none`은 아무 데도 쓰지 않고 정리한 작업을 마크다운으로만 보인다(`docs/refs/tracker-adapter.md`) | `"jira"` | `scripts/worklogConfig.mjs` |
 | `wiki` | 위키. `confluence` · `markdown` · `notion` · `none`. 연동은 `confluence`만 한다 — `markdown`은 같은 템플릿으로 저장소 `docs/wiki/`에 쓰고, `notion`은 아직 "지원하지 않는다"고 알리며 `none`처럼, `none`은 본문을 대화에 마크다운으로만 보인다(`docs/refs/wiki-adapter.md`) | `"confluence"` | `scripts/wikiConfig.mjs` |
 | `wrap.steps` | 마무리 루틴(`/dt-wrap`)의 단계와 순서. `commit`·`wiki`·`tracker` 중에서 고른다. 어댑터가 꺼진 단계(`wiki`가 `none`·`notion`, `tracker`가 `none`·`github`·`linear`)는 넣어 두어도 건너뛴다. Stop 훅 알림 문구도 이 단계로 만든다. 모르는 이름·중복은 경고하고 빼며, 남는 단계가 없으면 기본 순서를 쓴다 | `["commit", "wiki", "tracker"]` | `scripts/wrapState.mjs` |
+| `gitFlow.baseBranch` | 피처 브랜치를 따고 합치는 기준 브랜치(예: `"develop"`). 훅의 시작 알림도 이 브랜치에서 뜬다 | `"main"` | `scripts/gitFlow.mjs` |
+| `gitFlow.mergeStrategy` | `/dt-git finish`가 합치는 방식. `no-ff`=머지 커밋으로 모든 커밋 보존 · `squash`=커밋 하나로 합침 · `rebase`=리베이스 뒤 일직선(`--ff-only`) · `pr`=피처 브랜치를 push하고 PR을 연다(머지는 호스트에서) | `"no-ff"` | `scripts/gitFlow.mjs` |
+| `gitFlow.branchPrefix` | `/dt-git start`에서 이름에 슬래시가 없을 때 한 번 제안할 접두어. `null`이면 제안하지 않는다 | `"feat/"` | `scripts/gitFlow.mjs` |
+| `gitFlow.pushPolicy` | `push`=머지 뒤 기준 브랜치를 push(승인한 계획 안에서, fast-forward만) · `none`=push는 사람이 직접. `pr` 방식에서는 피처 브랜치만 push한다 | `"push"` | `scripts/gitFlow.mjs` |
 | `team.requiredMcp` | 팀이 꼭 쓰는 MCP 서버 이름 목록(예: `"figma"`, `"atlassian"`). 그 MCP를 쓰는 스킬이 시작할 때 연결을 점검한다 | `[]` | `docs/orchestration-policy.md` |
 
 에이전트가 어느 티어(`planner`·`builder`·`reviewer`)에 속하는지는 `scripts/lib/config.mjs`의 `AGENT_TIERS`가 정한다.
@@ -59,7 +63,6 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 다음 키는 **그 값을 읽는 기능을 범용화할 때** 읽는 곳과 함께 넣는다. 읽는 곳 없이 먼저 적어 두면, 적혀 있는데 아무도 안 읽는 키가 생긴다.
 
 - `uxSources` — M3
-- `gitFlow`(기본 브랜치 등) — GEN-12
 
 새 키를 넣을 때는 세 곳을 같이 바꾼다. 로더의 `DEFAULTS`와 검증, 위 표, 그리고 그 키를 실제로 읽는 코드나 스킬이다. 구조 테스트가 표와 로더가 어긋나거나 읽는 곳이 없는 키를 잡는다.
 

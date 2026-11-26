@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { loadConfig } from '../../../scripts/lib/config.mjs';
+import { resolveGitFlow } from '../../../scripts/gitFlow.mjs';
 
 // 내부: git 실행 후 stdout 반환. 실패 시 throw.
 function git(repoRoot, args) {
@@ -54,11 +56,14 @@ function safeAheadBehind(repoRoot, base) {
   }
 }
 
-export function gitState(repoRoot, base = 'origin/main') {
+// base 는 원격 기준 ref(예: origin/develop). baseBranch 는 그 브랜치 이름 — 기준 브랜치 위에 있는지(isBase) 판단에 쓴다.
+export function gitState(repoRoot, base = 'origin/main', baseBranch = base.replace(/^[^/]+\//, '')) {
   const branch = currentBranch(repoRoot);
   return {
     currentBranch: branch,
-    isMain: branch === 'main',
+    baseBranch,
+    isBase: branch === baseBranch,
+    isMain: branch === 'main', // 옛 이름 — 0.16.x 동안 남긴다. 스킬은 isBase 를 본다.
     detached: branch === 'HEAD',
     dirty: isDirty(repoRoot),
     rebaseInProgress: rebaseInProgress(repoRoot),
@@ -66,12 +71,18 @@ export function gitState(repoRoot, base = 'origin/main') {
   };
 }
 
-// CLI: node state.mjs [base] → JSON 출력
+// CLI: node state.mjs [base] → JSON 출력. base 를 안 주면 .dt.json 의 gitFlow.baseBranch(기본 main)로 origin/<base>.
 // pathToFileURL로 비교해 공백/비ASCII 경로에서도 가드가 정확히 매치되게 한다.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const base = process.argv[2] || 'origin/main';
   try {
-    process.stdout.write(JSON.stringify(gitState(process.cwd(), base), null, 2) + '\n');
+    let base = process.argv[2];
+    let baseBranch;
+    if (!base) {
+      const flow = resolveGitFlow(loadConfig(process.cwd()).config);
+      base = flow.baseRef;
+      baseBranch = flow.baseBranch;
+    }
+    process.stdout.write(JSON.stringify(gitState(process.cwd(), base, baseBranch), null, 2) + '\n');
   } catch (err) {
     process.stderr.write(`${err.message}\n`);
     process.exit(1);
