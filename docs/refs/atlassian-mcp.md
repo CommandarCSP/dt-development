@@ -37,7 +37,7 @@ v2에서 "직접 도구"가 없는 일은 범용 실행기로 부른다: 읽기 
 | `jira.versions` (릴리즈 목록) | 없음 — `jira.fieldMeta`의 `fixVersions.allowedValues` | `executeRead` → `getJiraProjectVersions` | v2는 전용 연산이 있다. v1 경로(`allowedValues`)도 v2에서 그대로 된다. 릴리즈를 **만드는 것**(`manageJiraProjectVersion`)은 스킬이 하지 않는다 — 사람이 만든다(`release-matching.md`) |
 | `jira.transitions` (지금 가능한 전이) | `getTransitionsForJiraIssue` | `executeRead` → `listJiraIssueTransitions` | 응답의 전이 id를 `jira.transition`에 넘긴다. 전이 이름과 도착 상태는 다른 필드다 — 도착 상태로 고른다 |
 | `jira.transition` | `transitionJiraIssue` | `transitionJiraIssue` | **v1 `transition: { id }` → v2 `transitionId: "<id>"`.** v2는 도착한 상태를 돌려준다(다시 읽을 필요 없음) |
-| `jira.comment` | `addCommentToJiraIssue` | `addOrEditJiraIssueComment` | 본문 `commentBody`·`contentFormat: "markdown"`은 같다. v2는 `commentId`를 주면 수정 |
+| `jira.comment` | `addCommentToJiraIssue` | `addOrEditJiraIssueComment` | 본문 `commentBody`·`contentFormat: "markdown"`은 같다. v2는 `commentId`를 주면 수정. **markdown의 `- [ ]`는 체크박스가 되지 않는다** — 체크박스는 `contentFormat: "html"`의 task list(`<ul data-type="task-list">`)로 쓴다(설명·댓글 같음) |
 | `jira.worklog` | `addWorklogToJiraIssue` | `executeWrite` → `addOrEditJiraIssueWorklog` | `timeSpent`(예 `2h 30m`)·`started`(ISO 8601)·`comment` |
 
 ### Confluence

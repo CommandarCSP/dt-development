@@ -99,13 +99,13 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/worklogConfig.mjs" --project . --json
 
 ### 5. 실행 (Apply)
 - 모든 호출에 `cloudId`를, 생성·검색에는 `projectKey`(`project.defaultProjectKey`)를 전달한다.
-- **본문은 `references/worklog-templates.md`의 프리셋 절을 채워 쓴다.** `jira.issue.create`의 `description`·`jira.comment`의 `commentBody` 모두 `contentFormat: "markdown"`.
+- **본문은 `references/worklog-templates.md`의 프리셋 절을 채워 쓴다.** 댓글(`jira.comment`의 `commentBody`)은 `contentFormat: "markdown"`. **완료 조건 체크박스는 HTML로 쓴다.** Jira의 markdown 변환은 `- [ ]`·`- [x]`를 체크박스로 만들지 않고 `[x]` 글자로 저장한다(2026-11-26 DEV-14 기록에서 확인). 체크박스가 든 설명은 `contentFormat: "html"`로 쓰고, 완료 조건은 task list(`<ul data-type="task-list"><li data-type="task-item"><input type="checkbox" checked> …</li></ul>`)로 둔다. 기존 설명을 고칠 때는 `responseContentFormat: "html"`로 읽어 나머지 노드를 그대로 두고 그 부분만 바꾼다(형식 안내: `executeRead` → `getContentFormatGuide({ toolName: "editJiraIssue" })`). 댓글은 markdown 그대로 된다.
 - **생성** — `jira.issue.create`. 이슈 유형은 `rules.issueTypes.<종류>` 후보 중 프로젝트에 있는 이름(인자 이름 v1 `issueTypeName` · v2 `issueType`), 담당자 = 나. Epic 아래면 `parent`=Epic 키(인스턴스마다 parent vs Epic Link 필드가 다르니 `jira.fieldMeta`로 확인). Sub-task면 `parent`=부모 이슈 키. 필수 날짜는 종료일 `duedate`, 시작일은 `jira.fieldMeta`로 찾은 필드.
 - **산출물 필드 (`rules.outputField`가 있을 때만)** — 필드 id는 설정 `outputField.id`, 없으면 `jira.fieldMeta`로 `outputField.name` 매칭 `customfield_*`. 값은 **ADF** — URL 한 줄 = paragraph 하나(형식은 `references/presets/org-guideline.md`). 못 찾으면 댓글에만 남기고 보고한다(침묵 실패 금지). 필드가 없는 프리셋이면 산출물은 댓글 본문이 자리다.
 - **수정 버전(fixVersions) 기재 ([3.5])** — `additional_fields`에 `{ "fixVersions": [ { "id": "<versionId>" } ] }`(기존 이슈면 `jira.issue.edit.fields`). **이름보다 id 우선**(allowedValues에서). **부모와 하위 양쪽에 같은 값** — 부모가 비어 있었으면 부모도 `jira.issue.edit`로 채운다(승인받은 건만). 사람이 "릴리즈 없이 진행"을 골랐거나 프로젝트에 릴리즈가 없으면 넣지 않는다.
 - **진행 댓글** — 진행·막힘·검토 대기로 상태를 바꿀 때마다 진행 댓글을 단다(`jira.comment`). 산출물이 아직 없으면 그 줄은 뺀다.
 - **완료 (Done 전이)** — 순서를 지킨다:
-  1. 설명을 읽어 이번 작업으로 충족된 **완료 조건 체크박스를 `- [ ]` → `- [x]`로 갱신**한다(`jira.issue.edit`). 설명에 완료 조건이 없으면 템플릿으로 보강한 뒤 체크한다.
+  1. 설명을 HTML로 읽어 이번 작업으로 충족된 **완료 조건 task item에 `checked`를 단다**(`jira.issue.edit`, `contentFormat: "html"`). 설명에 완료 조건이 없거나 `[x]` 글자로만 있으면 task list로 보강한 뒤 체크한다.
   2. **마무리 댓글**을 단다. `check-close`가 통과한 본문만.
   3. 전이: `jira.transitions` → `rules.transitions`의 완료 이름 후보와 맞는 transitionId로 `jira.transition`.
   - **우산 이슈**(하위가 여러 단계로 나뉜 경우)는 Done 대신 진행 중을 유지하고, 충족된 완료 조건만 체크한 뒤 진행 댓글을 단다.

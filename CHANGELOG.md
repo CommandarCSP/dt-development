@@ -30,6 +30,7 @@
 - 선택 참고 문서 `docs/refs/docker-runtime-hints.md` — colima·rancher-desktop·podman 소켓, Ryuk 끄기. 규칙·체크리스트·`be-builder`에 흩어져 있던 값을 모았다 (GEN-06)
 
 ### 고침
+- `/dt-worklog`가 완료 조건 체크박스를 markdown(`- [x]`)으로 써서 Jira에 체크박스가 아닌 `[x]` 글자로 저장되던 것 — 체크박스가 든 설명은 HTML task list로 쓴다(예전 규칙의 DoD 체크도 같은 문제였다) (GEN-09 DEV-14 기록에서 발견)
 - README 전체 목록이 접은 블록 설명(`description: >-`)을 `>-`로 적던 것(`dt-worklog-sync`·`auditor`) (GEN-09)
 - new-module Phase 2의 Prisma 게이트 인자(`migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma`)가 스키마를 자기 자신과 비교해 마이그레이션을 빠뜨려도 늘 통과하던 것 — dev DB와 비교한다(`--from-schema-datasource`) (GEN-43)
 - 대기 금지 규칙(BE·FE `flaky-test-prevention`, FE `test-anti-patterns`)이 `jest.setTimeout(…)`(테스트 시간 한도)을 대기용 `setTimeout`으로 잡던 것 — Testcontainers 통합 테스트의 기본 설정이 막혔다 (GEN-43 실설치에서 발견)

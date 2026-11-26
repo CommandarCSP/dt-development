@@ -2,7 +2,7 @@
 
 스킬은 이 템플릿의 `{슬롯}`을 커밋·세션·수동 메모에서 채워 트래커에 쓴다. 어느 절을 쓸지는 설정의 `templates`(프리셋)다 — `basic`은 TP-002(`docs/policies/TP-002-task-records.md`), `org-guideline`은 아래 마지막 절이다.
 
-- 모든 쓰기 호출에 `contentFormat: "markdown"`을 전달한다.
+- 댓글은 `contentFormat: "markdown"`으로 쓴다. 아래 설명 템플릿은 읽기 좋게 markdown으로 적었지만, **완료 조건 체크박스가 있는 설명은 HTML task list로 바꿔 쓴다** — Jira의 markdown 변환은 `- [ ]`를 체크박스로 만들지 않는다(SKILL 흐름 5).
 - 슬롯을 맥락에서 채울 수 없으면 지어내지 말고 `{확인 필요}`로 두고 dry-run에서 묻는다.
 - `← 있을 때만` 줄은 값이 없으면 줄째 뺀다.
 - 문장은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/readable-writing.md`를 따른다 — 약어 첫 등장 풀어쓰기, 내부 용어 설명, 한 문장 한 개념.
