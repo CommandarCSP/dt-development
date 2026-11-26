@@ -18,9 +18,17 @@
 - 스택 설정 키 전체의 원본 `docs/refs/stack-config.md` (GEN-04)
 - 테스트 파일 이름·자리 바꿔 끼우기 — 스택 설정 `testing.location`(`__tests__`·`colocated`)·`testing.suffix.{unit,integration,e2e,any}`·`paths.test`로 리뷰 엔진이 테스트 규칙의 경로와 "테스트가 있어야 한다" 규칙이 찾는 이름을 바꾼다. NestJS 관례(`posts.service.spec.ts`·`test/app.e2e-spec.ts`) 예시는 `docs/refs/stack-config.md` §3. 설정이 없으면 그대로다 (GEN-06)
 - BE 스택 어댑터 `scripts/stackAdapters.mjs` — 스택 설정 `stack.orm`(`prisma`·`typeorm`·`drizzle`·`none`)·`stack.db`·`stack.cache`·`stack.queue`·`stack.auth`. 적지 않으면 package.json(DB는 `schema.prisma` provider)에서 대안만 감지하고, 없으면 기본값(prisma·postgresql·redis·bullmq·passport-jwt)이다. 리뷰 엔진이 ORM 규칙의 빈칸(`"$orm.access"`·`{{orm.mockRegex}}`)을 그 ORM으로 채우고, `none`인 영역의 규칙(머리말 `requiresStack`)은 건너뛴다. 보고서 끝에 고른 스택과 근거가 나온다. `--json`의 `container`로 `be-builder`·e2e 작성이 DB별 Testcontainers 모듈을 고른다. 설정 없는 Prisma 프로젝트의 규칙은 그대로다 (GEN-05)
+- 스캐폴드 스택 프리셋 `templates/presets/{fe,be}/*.json`과 `scripts/scaffoldPreset.mjs` — 새 프로젝트의 생성·설치 명령, `playwright.config.ts`·`docker-compose.yml`·`.env`·`prisma/schema.prisma`, 스택 설정 조각을 프리셋 + 패키지 관리자(`--pm npm|pnpm|yarn`)로 낸다. FE `vite-tailwind`(기본)·`vite-css-vars`, BE `nest-prisma-postgres`(기본)·`nest-prisma-mysql`. 선택 묶음 `--with auth|sentry`. 두 체크리스트의 고정 명령(`pnpm add`·`npm i`·5173·Postgres compose)을 이것으로 바꿨다. 설치 버전은 `stack-versions.json` 묶음 이름으로만 고른다(묶음을 tailwind·cssVars·prisma·postgresql·mysql로 나눴다. `stackVersions.mjs --group`) (GEN-07)
+- FE 스택 설정 `stack.styling`(`tailwind`·`css-vars`·`scss`, 없으면 `tailwindcss`·`sass` 감지 → `tailwind`) — 토큰 출력 방식과 `view-styling` 검사를 맞춘다. 빈칸(`"$styling.forbiddenStyleImports"`)이 비어 검출이 안 남은 규칙은 건너뛰고 보고서에 `규칙(stack.styling = scss)`로 적는다. 설정이 없는 Tailwind 프로젝트의 규칙은 그대로다 (GEN-07)
+- 토큰 출력 방식 `materialize-tokens.mjs --emit tailwind|css-vars|scss` — `@theme` · `:root` · `src/styles/_tokens.scss`의 `$변수`. 변수 이름은 같고, 없으면 `stack.styling`을 따른다. Tailwind 출력은 그대로다 (GEN-07)
 - 선택 참고 문서 `docs/refs/docker-runtime-hints.md` — colima·rancher-desktop·podman 소켓, Ryuk 끄기. 규칙·체크리스트·`be-builder`에 흩어져 있던 값을 모았다 (GEN-06)
 
 ### 고침
+- 스캐폴드가 규칙·키트가 쓰는 패키지를 깔지 않던 것 — `@ebay/nice-modal-react`(`modal-management`), `react-router-dom`(에러 키트·테스트 예시) (GEN-07)
+- View·View 테스트 규칙(`pure-view-component`·`view-test-props-only`)이 `react-router-dom`만 보고, 스캐폴드가 까는 `react-router`에서 가져오면 걸리지 않던 것 (GEN-07)
+- BE 새 프로젝트의 `prisma init`(Prisma 6.19+)이 Prisma 7 모양 스키마(generator `prisma-client` + `output` + dotenv를 읽는 `prisma.config.ts`)를 써서 캐논 `import { PrismaClient } from '@prisma/client'`가 깨지던 것 — 프리셋이 고정 스키마 파일을 쓴다 (GEN-07 실설치에서 발견)
+- pnpm 10+에서 FE 새 프로젝트의 `pnpm add`가 설치 스크립트 패키지(esbuild·msw)를 막고 실패로 끝나던 것 — 프리셋 `allowBuilds`를 `--allow-build`로 넘긴다 (GEN-07 실설치에서 발견)
+- BE 새 프로젝트가 패키지 관리자를 묻고도 명령은 `npm`으로 고정돼 있던 것, FE가 `npm create`와 `pnpm add`를 섞어 쓰던 것 (GEN-07)
 - TypeORM·Drizzle 프로젝트에서 계층 규칙(서비스·컨트롤러·DTO의 ORM 직접 사용, 통합 테스트의 DB mock)이 하나도 걸리지 않던 것 — 위 `stack.orm`으로 (GEN-05)
 - 테스트를 `__tests__` 밖에 두거나 `*.spec.ts`로 짓는 프로젝트에서 테스트 파일 규칙(mock·대기 금지·전체 앱 부팅 등)이 하나도 걸리지 않던 것 — 위 `testing` 설정으로 (GEN-06)
 - FE 테스트 규칙 `integration-no-hook-mocking`·`unit-business-hook`이 `vi.mock`만 보고 jest의 `jest.mock`을 놓치던 것 (GEN-04)
@@ -31,6 +39,9 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- 스캐폴드 게이트(`gate.mjs --stack backend`)는 `--prisma`가 없으면 `stack.orm`이 prisma일 때만 Prisma 검사를 켠다. 문서의 `--prisma true` 고정을 지웠다 — `--prisma true|false`는 덮어쓰기로 남는다. FE 게이트는 그대로다 (GEN-07)
+- 리뷰 보고서의 건너뛴 규칙 줄: `건너뛴 규칙(stack.<영역> = none): 규칙(영역)` → `건너뛴 규칙(스택에 맞지 않음): 규칙(stack.영역 = 값)` (GEN-07)
+- `stack-versions.json` 묶음 나누기: FE `tailwindcss`·`@tailwindcss/vite`는 `tailwindDevDependencies`로, BE `@prisma/client`·`prisma`·`@testcontainers/postgresql`은 `prismaDependencies`·`prismaDevDependencies`·`postgresqlDevDependencies`로. `stackVersions.mjs --deps|--dev`만 쓰던 곳은 `scaffoldPreset.mjs`로 바꾼다. major 비교(스택 사전 점검)는 모든 묶음을 본다 (GEN-07)
 - BE 규칙 이름을 계층 기준으로: `repository-only-prisma` → `repository-only-orm`, `controller-no-direct-prisma` → `controller-no-direct-orm`, `service-no-direct-prisma` → `service-no-direct-orm`, `dto-no-prisma-import` → `dto-no-orm-import`. 규칙 끄기(`overrides`)는 규칙 이름을 쓰지 않아 설정은 그대로 둔다 — 보고서·CI에서 옛 이름을 찾고 있었다면 바꾼다. `service-requires-unit-test`는 `src/prisma/**`의 서비스에도 단위 테스트를 요구하지 않는다 (GEN-05)
 - 스택 사전 점검: TypeORM·Drizzle은 `blocking`이 아니라 `adaptable`(리뷰 규칙 어댑터가 있다). 아키텍처 문서의 인증 "캐논"은 `stack.auth: passport-jwt`일 때의 기본값으로 — `other`면 프로젝트 방식을 따른다 (GEN-05)
 - 리뷰 엔진을 `skills/dt-frontend-review/scripts/`에서 공용 자리 `scripts/review/`로(테스트는 `tests/review/`). **옛 경로 `skills/dt-frontend-review/scripts/review.mjs`는 경고를 내고 새 엔진을 부른다 — 0.17.0에서 지운다** (GEN-08)

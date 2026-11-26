@@ -1,0 +1,20 @@
+{
+  "name": "vite-css-vars",
+  "stack": "frontend",
+  "default": false,
+  "label": "Vite + React + CSS 변수(+ CSS 모듈) + MSW — Tailwind 없음",
+  "packageManager": "pnpm",
+  "create": { "kind": "create", "args": ["--template", "react-ts"] },
+  "groups": {
+    "dependencies": ["dependencies", "cssVarsDependencies"],
+    "devDependencies": ["devDependencies"]
+  },
+  "allowBuilds": ["esbuild", "msw"],
+  "config": { "stack": { "styling": "css-vars" } },
+  "dev": { "port": 5173 },
+  "setup": [
+    "스타일: 전역 `src/styles/globals.css`(리셋 + 토큰 마커 블록)를 `main.tsx`에서 한 번 import한다. 컴포넌트 스타일은 옆자리 CSS 모듈(`Card.module.css`)로 쓰고, 값은 `var(--color-primary)` 같은 토큰 변수만 쓴다(raw hex 금지 — `no-hardcoded-design-values`). `src/lib/utils.ts`의 `cn`은 `clsx`만 감싼다. shadcn/ui는 Tailwind 전제라 쓰지 않는다 — `src/components/ui/`에는 직접 만든 프리미티브를 둔다. `@` alias를 `vite.config.ts`·`tsconfig`에 추가.",
+    "토큰: `materialize-tokens.mjs`가 `globals.css`에 `:root { --color-x: … }`를 쓴다. 변수 이름은 Tailwind 프리셋과 같다.",
+    "리뷰: `view-styling`은 SCSS import만 막고 CSS 모듈은 허용한다(`stack.styling: css-vars`)."
+  ]
+}

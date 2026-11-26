@@ -17,5 +17,5 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs" partial --paths a.ts,b.ts
 
 - `full --base <ref>`일 때 HEAD와 기준 커밋의 커버리지를 재서 바뀐 파일만 비교한다. 재는 명령(`commands.coverage`)과 기준 커밋 설치 명령(`commands.install`)은 `scripts/stackCommands.mjs`가 고른다. 측정이 실패하면 보고서에 쓴 명령과 고른 근거가 나온다.
 - 규칙의 표준 경로(`src/...`·`e2e/...`·`test/...`)는 스택 설정 `paths.*`·`layout`으로, 표준 테스트 이름(`__tests__/*.unit.test.ts`)은 `testing.location`·`testing.suffix`로 프로젝트에 맞게 바뀐다(`scripts/review/lib/layout.mjs`).
-- BE는 규칙의 ORM 빈칸을 `stack.orm`(없으면 package.json 감지)으로 채우고, `stack.<영역> = none`인 규칙을 건너뛴다(`scripts/stackAdapters.mjs` → `scripts/review/lib/stack-rules.mjs`).
+- BE는 규칙의 ORM 빈칸을 `stack.orm`(없으면 package.json 감지)으로 채우고, `stack.<영역> = none`인 규칙을 건너뛴다. FE는 스타일 빈칸을 `stack.styling`(없으면 `tailwindcss`·`sass` 감지)으로 채운다. 빈칸이 비어 검출이 하나도 안 남은 규칙도 건너뛰고 보고서에 적는다(`scripts/stackAdapters.mjs` → `scripts/review/lib/stack-rules.mjs`).
 - 키와 고르는 순서는 [스택 설정](stack-config.md)이 원본이다.

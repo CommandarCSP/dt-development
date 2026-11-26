@@ -12,7 +12,7 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 >
 > **프로젝트 설정 우선(checklist 예시보다):** 테스트 네이밍(`*.spec.ts` vs `*.test.ts`)·모듈 구조·ORM 관계명 등은 **기존 형제 모듈(예: posts)과 프로젝트 설정을 우선**한다 — checklist 예시와 다르면 프로젝트를 따른다. **기존 라우트/엔드포인트와 충돌**하면(예: 다른 모듈이 같은 경로 소유) 조용히 덮지 말고 **needsDecision**으로. (파일럿 발견: posts가 이미 `GET /feed` 소유 → 충돌 에스컬레이션.)
 >
-> **스택 어댑터(ORM·DB):** 시작 전에 `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project <wt> --json`을 읽는다. `orm`이 `prisma`가 아니면(typeorm·drizzle) 아래 Prisma 단계(`schema.delta.prisma`·`prisma migrate`·`prisma.$transaction`·게이트 `--prisma`)는 그 ORM의 같은 역할(엔티티·마이그레이션·트랜잭션)로 바꾸고 기존 형제 모듈의 방식을 따른다. 게이트는 `--prisma false`로 돈다. 계층 규칙(ORM은 저장소에서만)은 리뷰가 그 ORM으로 검사한다. 통합 테스트 컨테이너는 결과의 `container`(DB별 Testcontainers 모듈)를 쓴다. `none`이면 그 영역을 새로 깔지 않는다.
+> **스택 어댑터(ORM·DB):** 시작 전에 `node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project <wt> --json`을 읽는다. `orm`이 `prisma`가 아니면(typeorm·drizzle) 아래 Prisma 단계(`schema.delta.prisma`·`prisma migrate`·`prisma.$transaction`)는 그 ORM의 같은 역할(엔티티·마이그레이션·트랜잭션)로 바꾸고 기존 형제 모듈의 방식을 따른다. 게이트는 `--stack backend`이면 `stack.orm`을 읽어 Prisma 검사를 스스로 끈다. 계층 규칙(ORM은 저장소에서만)은 리뷰가 그 ORM으로 검사한다. 통합 테스트 컨테이너는 결과의 `container`(DB별 Testcontainers 모듈)를 쓴다. `none`이면 그 영역을 새로 깔지 않는다.
 >
 > **통합테스트 env bootstrap:** Testcontainers 통합테스트는 별도 jest config(`transformIgnorePatterns:[]`로 testcontainers ESM 변환)이 없으면 안 돈다. Docker Desktop이 아닌 런타임이면 소켓 설정도 필요하다(`docs/refs/docker-runtime-hints.md`) → 없으면 가산적으로 bootstrap 후 실행(checklist는 존재 전제).
 
@@ -39,7 +39,7 @@ dt-backend 스캐폴드의 일꾼. 리소스(모듈) 1개의 NestJS 계층을 **
 - **크로스리소스 정합 배선(interactions.md/plan `[X]`)**: 여러 리소스를 걸치는 쓰기는 **한 트랜잭션 경계**(`prisma.$transaction`)로 구현 + cascade/일관성은 스키마 관계·서비스 계층으로. 생성/수정 응답에 **갱신된 표현 포함**(FE 목록 반영 계약). plan에 배선이 없는데 크로스리소스 쓰기가 필요하면 임의로 안 묶고 needsDecision. 트랜잭션 경계 통합 테스트 동반.
 
 ## 게이트 (계층마다 — 빌더 몫)
-- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --prisma true --test-runner jest --stack backend --paths <changed>`로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.
+- `node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project <wt> --test-runner jest --stack backend --paths <changed>`(Prisma 검사는 `stack.orm`이 prisma일 때 자동으로 켜진다)로 tsc·테스트·규칙 검사(review.mjs partial)를 한 번에 돈다. 걸린 것은 그 Phase 안에서 고치고 다시 돌린다(최대 3회). 그래도 남으면 `status: draft`로 반환한다.
 - **도구를 실행하지 못하면(tsc·테스트 러너·prisma 없음)** 게이트는 실패다(건너뜀으로 통과하지 않는다). 고치려 하지 말고 `status: blocked` + needsDecision으로 올린다 — 선택지 "지금 설치(어느 패키지) / 이번 실행만 건너뛰기 허용 / 중단"(`docs/orchestration-policy.md` 원칙 10). 조율자가 허용을 받아 `allowSkip`을 넘겨 재dispatch하면 그때만 `--allow-skip <이름>`을 붙인다.
 - **reviewer를 dispatch하지 않는다.** 서브에이전트는 다른 서브에이전트를 부를 수 없다. 격리 리뷰(`mode:full`)와 수리 루프는 조율자가 이 봉투를 받은 뒤 한다(`docs/orchestration-policy.md` 원칙 3).
 - **수리 재dispatch로 불렸을 때**(입력에 `repairTargets`가 있음): `.dt-impl/<unit>/progress.md`로 상태를 복원하고, `repairTargets`에 적힌 파일·룰만 고친다. 범위 밖은 건드리지 않는다. 게이트·커밋 후 같은 봉투로 반환한다.

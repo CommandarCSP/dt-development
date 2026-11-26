@@ -19,6 +19,8 @@
 | `stack.db` | `schema.prisma` provider·드라이버 감지, 없으면 `"postgresql"` | BE만. `postgresql` · `mysql` · `sqlite` · `mongodb` · `sqlserver` · `none`. 테스트 컨테이너 고르기 | `be-builder`·e2e 작성 |
 | `stack.cache` · `stack.queue` | `"redis"` · 감지 또는 `"bullmq"` | BE만. `none`이면 캐시·큐 규칙을 건너뛴다. 큐: `bullmq` · `bull` · `none` | 리뷰 엔진 |
 | `stack.auth` | `"passport-jwt"` | BE만. `passport-jwt` · `other` · `none`. `other`면 아키텍처 문서의 인증 방식 대신 프로젝트 방식 | 스킬 문서 |
+| `stack.styling` | package.json 감지(`tailwindcss`·`sass`), 없으면 `"tailwind"` | FE만. `tailwind` · `css-vars` · `scss`. 스타일 규칙·토큰 출력 방식 | 리뷰 엔진·`materialize-tokens.mjs` |
+| `preset` | 없음 | 새 프로젝트를 만든 스캐폴드 프리셋 이름. 기록용이라 아무 동작도 바꾸지 않는다. 아래 §5 | 사람 |
 | `coverage.mode` | `"full"` | `full` · `off` | 리뷰 엔진 |
 | `coverage.baselineRef` | `"HEAD"` | 비교 기준 커밋 | 리뷰 스킬 |
 | `coverage.newCodeThreshold` | 80 | 새 파일 줄 커버리지 하한(%) | 리뷰 엔진 |
@@ -116,3 +118,37 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/stackAdapters.mjs" --project . --json   # �
 - 보고서 끝에 `스택: orm typeorm(package.json) · …`으로 무엇을 왜 골랐는지 나온다. ORM이 둘 이상이면 기본값으로 보고 "스택 주의"를 낸다 — `stack.orm`을 적는다.
 - Sequelize·Mongoose·MikroORM 등 표에 없는 ORM은 어댑터가 없다. 스택 사전 점검이 `blocking`으로 묻는다(`stack-precheck.md`).
 - 모르는 값은 리뷰를 멈추고 고칠 방법을 알린다(종료 코드 2).
+
+## 5. 스캐폴드 프리셋과 FE 스타일 (`preset`·`stack.styling`)
+
+새 프로젝트를 만들 때 무엇을 깔지는 프리셋이 정한다. 프리셋은 `templates/presets/<fe|be>/<이름>.json` 하나이고, 설치 버전은 `templates/stack-versions.json`의 묶음 이름으로만 고른다.
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" frontend --list
+node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --preset nest-prisma-mysql --pm pnpm --root api --with auth   # 실행할 명령
+node "${CLAUDE_PLUGIN_ROOT}/scripts/scaffoldPreset.mjs" backend --preset nest-prisma-mysql --file compose                    # playwright · compose · env · config
+```
+
+| 스택 | 프리셋 | 내용 | 설정 조각 |
+|---|---|---|---|
+| FE | `vite-tailwind`(기본) | Vite + React + Tailwind v4 + shadcn/ui + MSW, dev 5173 | `stack.styling: tailwind` |
+| FE | `vite-css-vars` | Tailwind 없이 CSS 변수 + CSS 모듈, `cn` = clsx | `stack.styling: css-vars` |
+| BE | `nest-prisma-postgres`(기본) | NestJS + Prisma 6 + PostgreSQL 16 compose + Testcontainers Postgres | `stack.orm: prisma`, `stack.db: postgresql` |
+| BE | `nest-prisma-mysql` | NestJS + Prisma 6 + MySQL 8.4 compose + Testcontainers MySQL | `stack.orm: prisma`, `stack.db: mysql` |
+
+- 패키지 관리자는 `--pm`(없으면 프리셋 값: FE pnpm · BE npm). 생성·설치·실행 명령의 모양을 바꾼다(`pnpm add` · `npm i` · `yarn add`).
+- `--file config`는 `.dt-*.json`에 넣을 조각(`preset`·`packageManager`·`stack.*`)이다. 리뷰·게이트·토큰이 같은 값을 읽는다.
+- 선택 묶음: FE `--with sentry` · BE `--with auth`(Passport + JWT).
+- TypeORM·Drizzle 프리셋은 아직 없다. 리뷰 규칙은 그 ORM을 지원한다(§4). 스캐폴드 게이트는 `stack.orm`이 prisma가 아니면 Prisma 검사를 끈다.
+
+**FE 스타일(`stack.styling`)** — 고르는 순서는 설정 → package.json(`tailwindcss`·`@tailwindcss/vite` → `tailwind`, `sass` → `scss`) → `tailwind`. `css-vars`는 설정으로만 정한다.
+
+| 값 | 토큰 출력(`materialize-tokens.mjs`) | `view-styling` 규칙 |
+|---|---|---|
+| `tailwind` | `src/styles/globals.css`의 `@theme { --color-x: … }` | CSS·SCSS import 금지(`globals.css`만 예외) |
+| `css-vars` | `src/styles/globals.css`의 `:root { --color-x: … }` | SCSS import만 금지 — CSS 모듈은 된다 |
+| `scss` | `src/styles/_tokens.scss`의 `$color-x: …;` | 검사하지 않는다(보고서에 "건너뛴 규칙") |
+
+- 변수 이름은 세 방식 모두 같다(`--color-primary` · `$color-primary`). 마커 블록 밖은 건드리지 않는다.
+- 규칙 파일은 빈칸 `"$styling.forbiddenStyleImports"`를 쓴다. 빈칸이 비어 검출이 하나도 안 남으면 엔진이 그 규칙을 건너뛰고 보고서에 `규칙(stack.styling = scss)`로 적는다.
+

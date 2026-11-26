@@ -1,0 +1,28 @@
+{
+  "name": "nest-prisma-postgres",
+  "stack": "backend",
+  "default": true,
+  "label": "NestJS + Prisma 6 + PostgreSQL 16(compose) + Jest·Supertest·Testcontainers",
+  "packageManager": "npm",
+  "create": { "kind": "nest" },
+  "groups": {
+    "dependencies": ["dependencies", "prismaDependencies"],
+    "devDependencies": ["devDependencies", "prismaDevDependencies", "postgresqlDevDependencies"]
+  },
+  "prisma": { "provider": "postgresql" },
+  "allowBuilds": ["@nestjs/core", "@prisma/client", "@prisma/engines", "prisma", "bcrypt"],
+  "config": { "stack": { "orm": "prisma", "db": "postgresql" } },
+  "db": {
+    "image": "postgres:16",
+    "env": { "POSTGRES_USER": "app", "POSTGRES_PASSWORD": "app", "POSTGRES_DB": "app", "POSTGRES_PORT": "5432" },
+    "containerEnv": ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"],
+    "portVar": "POSTGRES_PORT",
+    "containerPort": 5432,
+    "healthcheck": "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+    "volumePath": "/var/lib/postgresql/data",
+    "url": "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
+  },
+  "setup": [
+    "Prisma는 `@^6`로 핀한다. 7은 generator(`prisma-client`)·클라이언트 출력(`../generated/prisma`)·datasource 설정(`prisma.config.ts`)이 달라 `import { PrismaClient } from '@prisma/client'`가 깨진다."
+  ]
+}

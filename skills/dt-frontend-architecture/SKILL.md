@@ -50,7 +50,7 @@ Page → Domain Component → Business Hook → Store (Query | UI) → Utils
 | 라우팅 (navigate) | Domain Component |
 
 ## 스타일링/도구
-- **스타일 언어**: Tailwind CSS (v4, CSS-first `@theme`). SCSS 미사용.
+- **스타일 언어**: Tailwind CSS (v4, CSS-first `@theme`). SCSS 미사용. 이것이 기본 프리셋이다 — Tailwind 없이 CSS 변수(`css-vars`)·SCSS(`scss`)로 만든 프로젝트는 `.dt-frontend.json`의 `stack.styling`으로 알린다. 그러면 토큰 출력과 `view-styling` 검사가 그 방식에 맞춰진다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/stack-config.md` §5).
 - **컴포넌트**: shadcn/ui(코드 소유) on Radix Primitives → `src/components/ui/`.
 - **테마**: semantic CSS변수 토큰(`globals.css`) + Tailwind 매핑. 다크/브랜드는 변수 세트 스왑. [토큰 브리지 규약](references/token-css-var-bridge.md)
 - **클래스 병합**: `cn()`(clsx + tailwind-merge), 변형은 `cva`.

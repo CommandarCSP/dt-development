@@ -1,0 +1,19 @@
+{
+  "name": "vite-tailwind",
+  "stack": "frontend",
+  "default": true,
+  "label": "Vite + React + Tailwind v4 + shadcn/ui + MSW",
+  "packageManager": "pnpm",
+  "create": { "kind": "create", "args": ["--template", "react-ts"] },
+  "groups": {
+    "dependencies": ["dependencies"],
+    "devDependencies": ["devDependencies", "tailwindDevDependencies"]
+  },
+  "allowBuilds": ["esbuild", "msw", "@tailwindcss/oxide"],
+  "config": { "stack": { "styling": "tailwind" } },
+  "dev": { "port": 5173 },
+  "setup": [
+    "스타일: Tailwind CSS v4(`@tailwindcss/vite`를 `vite.config.ts` plugins에) + shadcn/ui(Radix) 초기화 + `src/styles/globals.css`(`@import \"tailwindcss\";` + 토큰 마커 블록) + `src/lib/utils.ts`(`cn` = clsx + tailwind-merge). `@` alias를 `vite.config.ts`·`tsconfig`에 추가.",
+    "토큰: `materialize-tokens.mjs`가 `globals.css`에 `@theme { … }`를 쓴다. 컴포넌트는 semantic 토큰 클래스(`bg-background`·`text-foreground`)만 쓴다."
+  ]
+}

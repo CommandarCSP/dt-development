@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { resolveStackCommands } from '../../../scripts/stackCommands.mjs';
+import { resolveBackendStack } from '../../../scripts/stackAdapters.mjs';
 
 // Run a phase gate. Each subgate can be enabled/disabled.
 // Returns: { ok, failures: [{ gate, message }], skipped: [...], allowedSkips: [...] }
@@ -127,6 +128,16 @@ function pickTestCommand(projectRoot, stackName, runnerFlag) {
   return { testCommand: null, testGate: 'vitest' };
 }
 
+// ORM 검사(GEN-07): --prisma true|false 가 있으면 그것. 없으면 BE 는 stack.orm(설정 → package.json → prisma)이 prisma 일 때만 켠다.
+// FE 는 끈다. 다른 ORM 의 스키마 검사는 아직 없다 — tsc·테스트·리뷰가 맡는다.
+export function pickPrismaGate(projectRoot, stackName, prismaFlag) {
+  if (prismaFlag === 'true' || prismaFlag === true) return { run: true, from: '--prisma' };
+  if (prismaFlag === 'false') return { run: false, from: '--prisma' };
+  if (stackName !== 'backend') return { run: false, from: 'FE' };
+  const st = resolveBackendStack(projectRoot);
+  return { run: st.orm === 'prisma', from: `stack.orm ${st.orm}(${st.from.orm})` };
+}
+
 function autoDetectReviewScript() {
   // Primary: the shared review engine lives at <pluginRoot>/scripts/review/review.mjs,
   // two folders up from this file (skills/dt-frontend-scaffold/scripts/).
@@ -152,12 +163,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // (스택 설정 commands.test → testRunner → package.json → 스택 기본값). 로컬 바이너리를 npx 보다 먼저 쓴다.
   const stackName = typeof opts.stack === 'string' ? opts.stack : 'frontend';
   const { testCommand, testGate } = pickTestCommand(projectRoot, stackName, opts['test-runner']);
+  let prismaGate;
+  try { prismaGate = pickPrismaGate(projectRoot, stackName, opts.prisma); } catch (e) { console.error(`[gate] ${e.message}`); process.exit(2); }
   const result = runGate({
     projectRoot,
     runTsc: opts.tsc !== 'false',
     runVitest: opts.test !== 'false' && opts.vitest !== 'false',
     runReview: opts.review !== 'false',
-    runPrisma: opts.prisma === 'true' || opts.prisma === true,
+    runPrisma: prismaGate.run,
     reviewPaths: typeof opts.paths === 'string' ? opts.paths.split(',').filter(Boolean) : [],
     reviewMode: typeof opts.mode === 'string' ? opts.mode : 'partial',
     reviewScript: typeof opts['review-script'] === 'string' ? opts['review-script'] : null,
@@ -177,7 +190,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (result.ok) {
     const enabled = [
       opts.tsc !== 'false' && 'tsc',
-      (opts.prisma === 'true' || opts.prisma === true) && 'prisma',
+      prismaGate.run && 'prisma',
       (opts.test !== 'false' && opts.vitest !== 'false') && testGate,
       opts.review !== 'false' && 'review',
     ].filter(Boolean);

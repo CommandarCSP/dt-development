@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-// materialize-tokens.mjs — project-context.md ## 디자인 토큰 → globals.css @theme
+// materialize-tokens.mjs — project-context.md ## 디자인 토큰 → 프로젝트 테마 파일
 //
 // Figma에서 뽑아 project-context.md에 누적된 디자인 토큰(색/타이포/간격/radius)을
-// 프로젝트의 런타임 테마(src/styles/globals.css의 Tailwind v4 `@theme`)로 물질화한다.
+// 프로젝트의 런타임 테마로 물질화한다. 출력 방식(GEN-07)은 세 가지다:
+//   tailwind  → src/styles/globals.css 의 Tailwind v4 `@theme { --color-x: … }` (기본)
+//   css-vars  → src/styles/globals.css 의 `:root { --color-x: … }`
+//   scss      → src/styles/_tokens.scss 의 `$color-x: …;`
+// 방식은 --emit 이 없으면 스택 설정 stack.styling → package.json(tailwindcss·sass) → tailwind 순으로 고른다
+// (scripts/stackAdapters.mjs). 변수 이름은 세 방식 모두 같다.
 // 매핑 규약: skills/dt-frontend-architecture/references/token-css-var-bridge.md.
 //
 // 머지 안전: 생성 블록은 마커(/* dt:tokens:start */ … /* dt:tokens:end */) 안에만 쓴다.
@@ -10,11 +15,15 @@
 // @import "tailwindcss" 직후(없으면 파일 선두)에 삽입한다.
 //
 // 사용:
-//   node materialize-tokens.mjs [--project <root>] [--context <path>] [--out <globals.css>] [--dry-run]
-// 기본: project=cwd, context=<project>/docs/project-context.md, out=<project>/src/styles/globals.css
+//   node materialize-tokens.mjs [--project <root>] [--emit tailwind|css-vars|scss] [--context <path>] [--out <file>] [--dry-run]
+// 기본: project=cwd, context=<project>/docs/project-context.md, out=방식별 위 파일
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
+import { resolveFrontendStack } from '../../../scripts/stackAdapters.mjs';
+
+export const EMITS = ['tailwind', 'css-vars', 'scss'];
+export const DEFAULT_OUT = { tailwind: 'src/styles/globals.css', 'css-vars': 'src/styles/globals.css', scss: 'src/styles/_tokens.scss' };
 
 // 감지는 안정적인 태그 접두사로 한다(설명 문구가 바뀌어도 재감지 가능 — 중복 삽입 방지).
 const START_TAG = '/* dt:tokens:start';
@@ -113,9 +122,11 @@ export function parseDesignTokens(contextMd) {
   return out;
 }
 
-// --- Generator: 토큰 → @theme 블록 ---
-export function renderThemeBlock(tokens) {
-  const lines = ['@theme {'];
+// --- Generator: 토큰 → 테마 블록(방식별) ---
+// 선언은 `--이름: 값;` 한 벌로 만들고, 방식이 감싸기만 바꾼다(tailwind=@theme, css-vars=:root, scss=$이름).
+export function renderThemeBlock(tokens, emit = 'tailwind') {
+  if (!EMITS.includes(emit)) throw new Error(`모르는 토큰 출력 방식 '${emit}' — ${EMITS.join(' | ')} 중 하나`);
+  const lines = [emit === 'tailwind' ? '@theme {' : emit === 'css-vars' ? ':root {' : ''];
 
   if (tokens.colors.length) {
     lines.push('  /* 색 — semantic 우선(bg-background, text-foreground …) */');
@@ -155,14 +166,22 @@ export function renderThemeBlock(tokens) {
     }
   }
 
+  if (emit !== 'tailwind') {
+    // Tailwind 클래스 예시는 Tailwind 에서만 뜻이 있다.
+    for (let i = 1; i < lines.length; i++) lines[i] = lines[i].replace(/^(\s*\/\* [^(*]+?) ?\([^)]*\) \*\/$/, '$1 */');
+  }
+  if (emit === 'scss') {
+    const body = lines.slice(1).map((l) => l.replace(/^  --([\w-]+):/, '$$$1:').replace(/^  /, ''));
+    return `${START}\n${body.join('\n')}\n${END}`;
+  }
   lines.push('}');
   return `${START}\n${lines.join('\n')}\n${END}`;
 }
 
 // --- Merge: 마커 블록 안만 교체, 밖은 보존 ---
-export function mergeIntoGlobals(existing, themeBlock) {
+export function mergeIntoGlobals(existing, themeBlock, emit = 'tailwind') {
   if (existing == null || existing === '') {
-    return `@import "tailwindcss";\n\n${themeBlock}\n`;
+    return emit === 'tailwind' ? `@import "tailwindcss";\n\n${themeBlock}\n` : `${themeBlock}\n`;
   }
   const startIdx = existing.indexOf(START_TAG);
   const endIdx = existing.indexOf(END_TAG);
@@ -179,51 +198,57 @@ export function mergeIntoGlobals(existing, themeBlock) {
   return `${themeBlock}\n\n${existing}`;
 }
 
-export function materialize({ contextPath, outPath, dryRun = false }) {
+export function materialize({ contextPath, outPath, emit = 'tailwind', dryRun = false }) {
   const contextMd = existsSync(contextPath) ? readFileSync(contextPath, 'utf8') : '';
   const tokens = parseDesignTokens(contextMd);
   const total =
     tokens.colors.length + tokens.typography.length + tokens.spacing.length + tokens.radius.length;
-  const themeBlock = renderThemeBlock(tokens);
+  const themeBlock = renderThemeBlock(tokens, emit);
   const existing = existsSync(outPath) ? readFileSync(outPath, 'utf8') : '';
-  const next = mergeIntoGlobals(existing, themeBlock);
+  const next = mergeIntoGlobals(existing, themeBlock, emit);
   const changed = next !== existing;
   if (!dryRun && changed) {
     if (!existsSync(dirname(outPath))) mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, next, 'utf8');
   }
-  return { tokens, total, changed, themeBlock, output: next };
+  return { tokens, total, changed, themeBlock, output: next, emit };
 }
 
 // --- CLI ---
 function parseArgs(argv) {
-  const a = { project: process.cwd(), context: null, out: null, dryRun: false };
+  const a = { project: process.cwd(), context: null, out: null, emit: null, dryRun: false };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === '--project') a.project = resolve(argv[++i]);
     else if (k === '--context') a.context = resolve(argv[++i]);
     else if (k === '--out') a.out = resolve(argv[++i]);
+    else if (k === '--emit') a.emit = argv[++i];
     else if (k === '--dry-run') a.dryRun = true;
   }
+  a.emitFrom = a.emit ? '--emit' : null;
+  if (!a.emit) { const st = resolveFrontendStack(a.project); a.emit = st.tokenEmit; a.emitFrom = `stack.styling ${st.styling}(${st.from.styling})`; }
   a.context ||= join(a.project, 'docs', 'project-context.md');
-  a.out ||= join(a.project, 'src', 'styles', 'globals.css');
+  a.out ||= join(a.project, DEFAULT_OUT[a.emit] ?? DEFAULT_OUT.tailwind);
   return a;
 }
 
 const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  const args = parseArgs(process.argv.slice(2));
+  let args;
+  try { args = parseArgs(process.argv.slice(2)); } catch (e) { console.error(`[materialize-tokens] ${e.message}`); process.exit(2); }
+  if (!EMITS.includes(args.emit)) { console.error(`[materialize-tokens] 모르는 --emit '${args.emit}' — ${EMITS.join(' | ')}`); process.exit(2); }
+  console.error(`[materialize-tokens] 출력 방식 ${args.emit} [${args.emitFrom}]`);
   if (!existsSync(args.context)) {
-    console.error(`[materialize-tokens] project-context 없음: ${args.context} — 빈 @theme 유지, skip.`);
+    console.error(`[materialize-tokens] project-context 없음: ${args.context} — 빈 테마 블록 유지, skip.`);
     process.exit(0);
   }
-  const r = materialize({ contextPath: args.context, outPath: args.out, dryRun: args.dryRun });
+  const r = materialize({ contextPath: args.context, outPath: args.out, emit: args.emit, dryRun: args.dryRun });
   const n = r.tokens;
   console.error(
     `[materialize-tokens] 색 ${n.colors.length} · 타이포 ${n.typography.length} · 간격 ${n.spacing.length} · radius ${n.radius.length} (총 ${r.total})`,
   );
   if (r.total === 0) {
-    console.error('[materialize-tokens] 토큰 0개 — @theme 비움. (페이지 분석 누적 전이거나 Figma 미소스)');
+    console.error('[materialize-tokens] 토큰 0개 — 테마 블록 비움. (페이지 분석 누적 전이거나 Figma 미소스)');
   }
   console.error(`[materialize-tokens] ${args.dryRun ? '(dry-run) ' : ''}${r.changed ? '갱신됨' : '변경 없음'}: ${args.out}`);
   if (args.dryRun) process.stdout.write(r.themeBlock + '\n');

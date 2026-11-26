@@ -5,7 +5,7 @@ severity: critical
 appliesTo: ["src/components/view/**/__tests__/**/*.{ts,tsx}"]
 detection:
   - type: forbidden-import
-    matches: ["@tanstack/react-query", "zustand", "react-router-dom", "**/store/**", "**/business/**"]
+    matches: ["@tanstack/react-query", "zustand", "react-router", "react-router-dom", "**/store/**", "**/business/**"]
     rationale: "View 테스트는 props만 주입"
 relatedRules: [pure-view-component]
 ---

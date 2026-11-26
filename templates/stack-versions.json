@@ -28,13 +28,13 @@
       "@tanstack/react-query": "^5",
       "zustand": "^5",
       "react-router": "^7",
+      "react-router-dom": "^7",
       "axios": "^1",
-      "react-error-boundary": "^6"
+      "react-error-boundary": "^6",
+      "@ebay/nice-modal-react": "^1"
     },
     "devDependencies": {
       "vite": "^7",
-      "tailwindcss": "^4",
-      "@tailwindcss/vite": "^4",
       "typescript": "^5",
       "vitest": "^3",
       "@vitest/coverage-v8": "^3",
@@ -44,6 +44,13 @@
       "msw": "^2",
       "@playwright/test": "^1",
       "eslint-plugin-jsx-a11y": "^6"
+    },
+    "tailwindDevDependencies": {
+      "tailwindcss": "^4",
+      "@tailwindcss/vite": "^4"
+    },
+    "cssVarsDependencies": {
+      "clsx": "^2"
     },
     "sentryDependencies": {
       "@sentry/react": "^11"
@@ -58,18 +65,27 @@
       "@nestjs/core": "^11",
       "@nestjs/common": "^11",
       "@nestjs/config": "^4",
-      "@prisma/client": "^6",
       "class-validator": "^0.14",
       "class-transformer": "^0.5"
     },
     "devDependencies": {
-      "prisma": "^6",
       "@nestjs/testing": "^11",
       "jest": "^29",
       "supertest": "^7",
       "@types/supertest": "^6",
-      "@testcontainers/postgresql": "^10",
       "typescript": "^5"
+    },
+    "prismaDependencies": {
+      "@prisma/client": "^6"
+    },
+    "prismaDevDependencies": {
+      "prisma": "^6"
+    },
+    "postgresqlDevDependencies": {
+      "@testcontainers/postgresql": "^10"
+    },
+    "mysqlDevDependencies": {
+      "@testcontainers/mysql": "^10"
     },
     "authDependencies": {
       "@nestjs/jwt": "^11",
@@ -83,5 +99,6 @@
       "@types/bcrypt": "^5"
     }
   },
-  "_unverified": "규칙이 API에 깊게 기대지 않는 보조 패키지(react-error-boundary·jsdom·Sentry)는 확인 시점의 최신 major로 고정했다. 규칙 검증 대상은 아니다."
+  "_unverified": "규칙이 API에 깊게 기대지 않는 보조 패키지(react-error-boundary·jsdom·Sentry)는 확인 시점의 최신 major로 고정했다. 규칙 검증 대상은 아니다.",
+  "_groups": "설치 묶음. dependencies·devDependencies 는 모든 프리셋이 깐다. 나머지(tailwind·cssVars·prisma·postgresql·mysql·auth·sentry)는 스캐폴드 프리셋(presets/<fe|be>/*.json)이나 선택(--with auth|sentry)이 고른다 — scripts/scaffoldPreset.mjs."
 }

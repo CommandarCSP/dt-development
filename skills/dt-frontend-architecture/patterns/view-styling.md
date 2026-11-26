@@ -5,9 +5,9 @@ severity: important
 appliesTo: ["src/components/view/**/*.{ts,tsx}", "src/components/domain/**/*.{ts,tsx}"]
 detection:
   - type: forbidden-import
-    matches: ["**/*.scss", "**/*.sass", "**/*.css"]
+    matches: ["$styling.forbiddenStyleImports"]
     excludePatterns: ["**/globals.css"]
-    rationale: "SCSS/CSS 모듈 import 금지 — Tailwind 유틸리티로 표현(전역 globals.css만 예외)"
+    rationale: "스타일 파일 import 금지 — Tailwind 유틸리티로 표현(전역 globals.css만 예외). stack.styling 이 css-vars 면 SCSS 만, scss 면 검사하지 않는다"
 relatedRules: [pure-view-component, no-hardcoded-design-values]
 overridable: true
 overrideKey: styling
@@ -25,6 +25,8 @@ overrideKey: styling
 2. 조건부/가변 클래스는 `cn()`으로 병합 (예: `cn("px-4", isActive && "bg-primary")`)
 3. SCSS/CSS 모듈 import 금지 — 전역 `globals.css`(토큰/리셋)만 예외
 4. inline `style={{}}`은 **동적 CSS변수 주입 등 동적 값에 한정** (정적 스타일은 className으로)
+
+> **Tailwind가 아닌 프로젝트**: `.dt-frontend.json`의 `stack.styling`(없으면 package.json의 `tailwindcss`·`sass`로 감지)에 따라 3번이 바뀐다. `css-vars`면 CSS 모듈(`*.module.css`)은 되고 SCSS만 금지, `scss`면 스타일 import를 검사하지 않는다(보고서에 "건너뛴 규칙"으로 적는다). 어느 쪽이든 값은 토큰(CSS 변수·SCSS 변수)으로만 쓴다(`docs/refs/stack-config.md` §5).
 
 ## ❌ Incorrect
 ```tsx

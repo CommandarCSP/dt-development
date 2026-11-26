@@ -3,7 +3,7 @@
 사용자 요청 예: "orders 모듈 추가해줘 (주문 생성/조회)"
 
 다음을 순서대로 수행하라. 각 phase 끝에서 commit 후 다음 phase 진행.
-gate 스크립트: `${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/`.
+gate 스크립트: `${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/`. `--stack backend`이면 게이트가 `stack.orm`을 읽어 prisma일 때만 Prisma 검사를 켠다(`--prisma true|false`로 덮어쓸 수 있다). 아래 Prisma 단계는 기본 프리셋 기준이다 — 다른 ORM이면 `be-builder`의 스택 어댑터 안내를 따른다.
 
 > **실행 주체**: dispatched 모드면 Phase 0~5의 작성·게이트·커밋은 `be-builder`가 하고, **Phase 5 풀 리뷰와 Final 수리 루프는 조율자가** 한다 — 서브에이전트는 다른 서브에이전트를 부를 수 없다(원칙 3). inline degrade면 조율자가 전부 직접 한다(원칙 4). 절차는 같다. **계층 구현 룰의 단일 출처는 `Skill("dt-backend-architecture")`·`Skill("dt-backend-testing")`**(계층별 prompt 없음). Phase 1~4 게이트는 `gate.mjs`(tsc·테스트·규칙 검사)이고, 걸린 것은 그 자리에서 고친다. 격리 리뷰는 조율자가 `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`를 `stack:backend`으로 dispatch해 verdict만 받는다(inline 시 review.mjs `--stack backend` 직접). `NEEDS_REPAIR`면 조율자가 `repairTargets`+`.dt-impl`로 be-builder를 재dispatch한다(1회, 메인 직접수정 금지).
 
@@ -25,7 +25,7 @@ Write 도구로 작성:
 `prisma/schema.delta.prisma` 블록을 `prisma/schema.prisma`에 병합 후:
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project . \
-  --prisma true --prisma-args "validate" --test false --review false
+  --stack backend --prisma-args "validate" --test false --review false
 ```
 tsc + `prisma validate` 통과 확인. 실패면 contract/schema 수정 후 재실행.
 
@@ -43,7 +43,7 @@ git add src prisma && git commit -m "dt-backend Phase 1: <module> contract"
 1. **게이트** — tsc·prisma·jest·규칙 검사(review.mjs partial):
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/skills/dt-frontend-scaffold/scripts/gate.mjs" --project . \
-     --prisma true --prisma-args "migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code" \
+     --prisma-args "migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code" \
      --test-runner jest --stack backend \
      --paths "src/<module>/<module>.repository.ts,src/<module>/dto"
    ```

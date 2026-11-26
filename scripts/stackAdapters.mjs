@@ -12,7 +12,10 @@
  *   문자열 안 "{{orm.<이름>}}" → 정규식 조각으로 바꾼다(pattern·when·require·forbid). 값이 비면 그 검출 인자를 뺀다
  *   requiresStack: [orm]      → 그 영역이 none 이면 규칙을 건너뛴다(보고서에 적는다)
  *
- * CLI: node scripts/stackAdapters.mjs [--project <dir>] [--json]
+ * FE(GEN-07)는 `stack.styling`(tailwind|css-vars|scss) 하나 — 스캐폴드 프리셋·토큰 출력·스타일 규칙이 같은 값을 읽는다.
+ * 배열 빈칸이 비어 검출 인자(matches 등)가 없어지면 그 검출을 빼고, 검출이 하나도 안 남으면 규칙을 건너뛴다.
+ *
+ * CLI: node scripts/stackAdapters.mjs [--project <dir>] [--stack frontend|backend] [--json]
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -53,6 +56,17 @@ export const ORM_ADAPTERS = {
   none: { label: '없음', packages: [], imports: [], access: [], allowedPaths: [], mockTargets: [], mockRegex: '', connectRegex: '' },
 };
 
+/** FE 스타일 어댑터(GEN-07). `tokenEmit` 은 materialize-tokens.mjs 의 출력 방식이다. */
+export const STYLING_ADAPTERS = {
+  tailwind: { label: 'Tailwind', tokenEmit: 'tailwind', forbiddenStyleImports: ['**/*.scss', '**/*.sass', '**/*.css'] },
+  'css-vars': { label: 'CSS 변수', tokenEmit: 'css-vars', forbiddenStyleImports: ['**/*.scss', '**/*.sass'] },
+  scss: { label: 'SCSS', tokenEmit: 'scss', forbiddenStyleImports: [] },
+};
+
+export const FRONTEND_AREAS = {
+  styling: { values: Object.keys(STYLING_ADAPTERS), default: 'tailwind', detect: [['tailwindcss', 'tailwind'], ['@tailwindcss/vite', 'tailwind'], ['sass', 'scss'], ['sass-embedded', 'scss']] },
+};
+
 /** 영역별 값·감지. detect 는 [패키지, 값] — 앞에 있는 것이 먼저. 기본값은 첫 값. */
 export const AREAS = {
   orm: { values: Object.keys(ORM_ADAPTERS), default: 'prisma', detect: [['@prisma/client', 'prisma'], ['prisma', 'prisma'], ['typeorm', 'typeorm'], ['@nestjs/typeorm', 'typeorm'], ['drizzle-orm', 'drizzle']] },
@@ -86,18 +100,12 @@ function prismaProvider(projectRoot) {
   return null;
 }
 
-/**
- * @param {string} projectRoot
- * @param {object} [config] `.dt-backend.json` 객체. 없으면 읽는다.
- * @returns {{ orm, db, cache, queue, auth, from: Record<string,string>, notes: string[], container, describe }}
- */
-export function resolveBackendStack(projectRoot, config) {
-  const cfg = config ?? readJson(join(projectRoot, '.dt-backend.json')) ?? {};
+function resolveAreas(projectRoot, cfg, areas, { prismaDb = false } = {}) {
   const given = cfg.stack && typeof cfg.stack === 'object' ? cfg.stack : {};
   const pkg = readJson(join(projectRoot, 'package.json'));
   const deps = { ...(pkg?.dependencies ?? {}), ...(pkg?.devDependencies ?? {}) };
   const out = { from: {}, notes: [] };
-  for (const [area, def] of Object.entries(AREAS)) {
+  for (const [area, def] of Object.entries(areas)) {
     if (given[area] != null) {
       if (!def.values.includes(given[area])) {
         throw new Error(`stack.${area} '${given[area]}' 는 모르는 값이다 — ${def.values.join(' | ')} 중 하나 (docs/refs/stack-config.md §4)`);
@@ -105,7 +113,7 @@ export function resolveBackendStack(projectRoot, config) {
       out[area] = given[area]; out.from[area] = '설정';
       continue;
     }
-    if (area === 'db') {
+    if (prismaDb && area === 'db') {
       const prov = deps['@prisma/client'] || deps.prisma ? prismaProvider(projectRoot) : null;
       if (prov) { out.db = prov; out.from.db = 'schema.prisma provider'; continue; }
     }
@@ -119,16 +127,42 @@ export function resolveBackendStack(projectRoot, config) {
     }
     out[area] = def.default; out.from[area] = '기본값';
   }
-  out.container = TEST_CONTAINERS[out.db] ?? null;
-  out.describe = Object.keys(AREAS).map((a) => `${a} ${out[a]}(${out.from[a]})`).join(' · ');
+  out.describe = Object.keys(areas).map((a) => `${a} ${out[a]}(${out.from[a]})`).join(' · ');
   return out;
 }
 
-/** 빈칸 값 — `orm.<이름>` 만 있다. 모르는 이름이면 undefined. */
+/**
+ * @param {string} projectRoot
+ * @param {object} [config] `.dt-backend.json` 객체. 없으면 읽는다.
+ * @returns {{ orm, db, cache, queue, auth, from: Record<string,string>, notes: string[], container, describe }}
+ */
+export function resolveBackendStack(projectRoot, config) {
+  const cfg = config ?? readJson(join(projectRoot, '.dt-backend.json')) ?? {};
+  const out = resolveAreas(projectRoot, cfg, AREAS, { prismaDb: true });
+  out.container = TEST_CONTAINERS[out.db] ?? null;
+  return out;
+}
+
+/**
+ * FE 스택(GEN-07) — 지금은 styling 하나. tokenEmit 은 토큰 출력 방식.
+ * @returns {{ styling, tokenEmit, from, notes, describe }}
+ */
+export function resolveFrontendStack(projectRoot, config) {
+  const cfg = config ?? readJson(join(projectRoot, '.dt-frontend.json')) ?? {};
+  const out = resolveAreas(projectRoot, cfg, FRONTEND_AREAS);
+  out.tokenEmit = STYLING_ADAPTERS[out.styling].tokenEmit;
+  return out;
+}
+
+const SLOT_TABLES = { orm: ORM_ADAPTERS, styling: STYLING_ADAPTERS };
+const NOT_SLOTS = ['label', 'packages', 'tokenEmit'];
+
+/** 빈칸 값 — `orm.<이름>`·`styling.<이름>`. 모르는 이름이거나 그 영역을 고르지 않았으면 undefined. */
 export function slotValue(stack, name) {
   const [area, key] = name.split('.');
-  if (area !== 'orm') return undefined;
-  return ORM_ADAPTERS[stack.orm]?.[key];
+  const table = SLOT_TABLES[area];
+  if (!table || stack[area] == null) return undefined;
+  return table[stack[area]]?.[key];
 }
 
 /** 규칙 머리말이 쓰는 빈칸 이름 전부(검사기용). */
@@ -136,11 +170,15 @@ export function slotNamesIn(value) {
   const s = JSON.stringify(value ?? null);
   return [...new Set([...s.matchAll(/"\$([a-z]+\.[a-zA-Z]+)"/g), ...s.matchAll(/\{\{([a-z]+\.[a-zA-Z]+)\}\}/g)].map((m) => m[1]))];
 }
-export const KNOWN_SLOTS = Object.keys(ORM_ADAPTERS.prisma).filter((k) => !['label', 'packages'].includes(k)).map((k) => `orm.${k}`);
+export const KNOWN_SLOTS = Object.entries(SLOT_TABLES).flatMap(([area, t]) => Object.keys(Object.values(t)[0]).filter((k) => !NOT_SLOTS.includes(k)).map((k) => `${area}.${k}`));
+/** 빈칸 영역마다 고를 수 있는 값 — 검사기가 모든 값으로 채워 본다. */
+export const SLOT_AREA_VALUES = Object.fromEntries(Object.entries(SLOT_TABLES).map(([a, t]) => [a, Object.keys(t)]));
 
 const ARRAY_FIELDS = ['appliesTo', 'excludePathPatterns'];
 const DET_ARRAY_FIELDS = ['matches', 'matchArguments', 'requireAll'];
 const DET_REGEX_FIELDS = ['pattern', 'when', 'require', 'forbid'];
+// 비면 검출이 아무것도 못 잡는 배열 인자 — 비면 그 검출을 뺀다("검사하는 척" 방지).
+const DET_REQUIRED_ARRAYS = ['matches', 'matchArguments'];
 
 function expandArray(arr, stack) {
   if (!Array.isArray(arr)) return arr;
@@ -165,23 +203,31 @@ function expandRegex(str, stack) {
 }
 
 /**
- * 규칙의 빈칸을 채운 새 목록과, 영역이 none 이라 건너뛴 규칙.
- * @returns {{ rules: object[], skipped: { ruleId: string, area: string }[] }}
+ * 규칙의 빈칸을 채운 새 목록과 건너뛴 규칙.
+ * 건너뛰는 경우: requiresStack 영역이 none · 빈칸이 비어 남은 검출이 없다(예: stack.styling = scss 의 스타일 import 금지).
+ * @returns {{ rules: object[], skipped: { ruleId: string, area: string, value: string }[] }}
  */
 export function applyStackAdapters(rules, stack) {
   const kept = []; const skipped = [];
   for (const r of rules) {
     const need = (r.requiresStack ?? []).find((a) => stack[a] === 'none');
-    if (need) { skipped.push({ ruleId: r.ruleId, area: need }); continue; }
-    if (!slotNamesIn([r.appliesTo, r.excludePathPatterns, r.detection]).length) { kept.push(r); continue; }
+    if (need) { skipped.push({ ruleId: r.ruleId, area: need, value: 'none' }); continue; }
+    const slots = slotNamesIn([r.appliesTo, r.excludePathPatterns, r.detection]);
+    if (!slots.length) { kept.push(r); continue; }
     const next = { ...r };
     for (const f of ARRAY_FIELDS) next[f] = expandArray(r[f], stack);
-    next.detection = r.detection.map((d) => {
+    next.detection = r.detection.flatMap((d) => {
       const o = { ...d };
       for (const f of DET_ARRAY_FIELDS) if (f in d) o[f] = expandArray(d[f], stack);
       for (const f of DET_REGEX_FIELDS) if (f in d) { const v = expandRegex(d[f], stack); if (v == null) delete o[f]; else o[f] = v; }
-      return o;
+      const emptied = DET_REQUIRED_ARRAYS.some((f) => f in d && slotNamesIn(d[f]).length && Array.isArray(o[f]) && !o[f].length);
+      return emptied ? [] : [o];
     });
+    if (!next.detection.length) {
+      const area = slots[0].split('.')[0];
+      skipped.push({ ruleId: r.ruleId, area, value: stack[area] });
+      continue;
+    }
     kept.push(next);
   }
   return { rules: kept, skipped };
@@ -189,16 +235,26 @@ export function applyStackAdapters(rules, stack) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
-  const i = args.indexOf('--project');
-  const projectRoot = resolve(i >= 0 ? args[i + 1] : process.cwd());
+  const arg = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
+  const projectRoot = resolve(arg('--project') ?? process.cwd());
+  const stackName = arg('--stack') ?? 'backend';
   try {
-    const r = resolveBackendStack(projectRoot);
-    if (args.includes('--json')) {
-      process.stdout.write(JSON.stringify({ orm: r.orm, db: r.db, cache: r.cache, queue: r.queue, auth: r.auth, container: r.container, from: r.from, notes: r.notes }, null, 2) + '\n');
+    if (stackName === 'frontend') {
+      const r = resolveFrontendStack(projectRoot);
+      if (args.includes('--json')) process.stdout.write(JSON.stringify({ styling: r.styling, tokenEmit: r.tokenEmit, from: r.from, notes: r.notes }, null, 2) + '\n');
+      else {
+        process.stdout.write(`  styling ${String(r.styling).padEnd(13)} [${r.from.styling}]\n  토큰 출력 ${r.tokenEmit}\n`);
+        for (const n of r.notes) process.stdout.write(`  ! ${n}\n`);
+      }
     } else {
-      for (const a of Object.keys(AREAS)) process.stdout.write(`  ${a.padEnd(6)} ${String(r[a]).padEnd(13)} [${r.from[a]}]\n`);
-      process.stdout.write(`  컨테이너 ${r.container ? `${r.container.package} (${r.container.className})` : '없음'}\n`);
-      for (const n of r.notes) process.stdout.write(`  ! ${n}\n`);
+      const r = resolveBackendStack(projectRoot);
+      if (args.includes('--json')) {
+        process.stdout.write(JSON.stringify({ orm: r.orm, db: r.db, cache: r.cache, queue: r.queue, auth: r.auth, container: r.container, from: r.from, notes: r.notes }, null, 2) + '\n');
+      } else {
+        for (const a of Object.keys(AREAS)) process.stdout.write(`  ${a.padEnd(6)} ${String(r[a]).padEnd(13)} [${r.from[a]}]\n`);
+        process.stdout.write(`  컨테이너 ${r.container ? `${r.container.package} (${r.container.className})` : '없음'}\n`);
+        for (const n of r.notes) process.stdout.write(`  ! ${n}\n`);
+      }
     }
   } catch (e) {
     process.stderr.write(`${e.message}\n`);

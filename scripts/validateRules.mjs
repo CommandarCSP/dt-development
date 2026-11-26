@@ -11,7 +11,7 @@ import { join, basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from './review/lib/frontmatter.mjs';
 import { STACK_RULE_LOCATIONS } from './review/lib/rule-loader.mjs';
-import { slotNamesIn, KNOWN_SLOTS, ORM_ADAPTERS, slotValue } from './stackAdapters.mjs';
+import { slotNamesIn, KNOWN_SLOTS, SLOT_AREA_VALUES, slotValue } from './stackAdapters.mjs';
 
 export const PLUGIN_ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const SCHEMA = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'docs/refs/rule-frontmatter.schema.json'), 'utf8'));
@@ -46,7 +46,7 @@ export function validateRule(data, { file = '', ruleIds = null } = {}) {
   for (const k of ['excludePathPatterns', 'relatedRules']) if (data[k] != null && !isStrArr(data[k])) errors.push(`${k} 는 문자열 배열`);
   if (data.overridable != null && typeof data.overridable !== 'boolean') errors.push('overridable 은 true|false');
   if (data.overridable === true && !data.overrideKey) errors.push('overridable: true 면 overrideKey 가 있어야 한다');
-  // BE 스택 어댑터 빈칸(GEN-05) — 모르는 이름이면 엔진이 멈춘다. 여기서 먼저 막는다.
+  // 스택 어댑터 빈칸(GEN-05·07) — 모르는 이름이면 엔진이 멈춘다. 여기서 먼저 막는다.
   for (const n of slotNamesIn([data.appliesTo, data.excludePathPatterns, data.detection])) {
     if (!KNOWN_SLOTS.includes(n)) errors.push(`모르는 빈칸 "${n}" — ${KNOWN_SLOTS.join(', ')} 중 하나 (scripts/stackAdapters.mjs)`);
   }
@@ -61,10 +61,10 @@ export function validateRule(data, { file = '', ruleIds = null } = {}) {
       for (const k of REQUIRED_BY_TYPE[d.type] ?? []) if (d[k] == null || d[k] === '') errors.push(`${at} (${d.type}): ${k} 가 없다 — 없으면 검출기가 빈 결과를 내 "검사하는 척"한다`);
       for (const f of ['pattern', 'when', 'require', 'forbid']) {
         if (typeof d[f] !== 'string' || !d[f].includes('{{')) continue;
-        for (const orm of Object.keys(ORM_ADAPTERS)) {
-          const filled = d[f].replace(/\{\{([a-z]+\.[a-zA-Z]+)\}\}/g, (_, n) => slotValue({ orm }, n) ?? '');
+        for (const [area, values] of Object.entries(SLOT_AREA_VALUES)) for (const value of values) {
+          const filled = d[f].replace(/\{\{([a-z]+\.[a-zA-Z]+)\}\}/g, (_, n) => slotValue({ [area]: value }, n) ?? '');
           if (!filled) continue;
-          try { new RegExp(filled); } catch (e) { errors.push(`${at}: ${f} 를 ${orm} 로 채우면 정규식 오류 — ${e.message}`); }
+          try { new RegExp(filled); } catch (e) { errors.push(`${at}: ${f} 를 ${area} ${value} 로 채우면 정규식 오류 — ${e.message}`); }
         }
       }
       if (d.type === 'forbidden-pattern' && d.pattern && !d.pattern.includes('{{')) {

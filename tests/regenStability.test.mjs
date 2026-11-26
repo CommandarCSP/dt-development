@@ -42,7 +42,10 @@ test('plan: specHash 가 같으면 fresh, 주석만 바뀌어도 fresh, 본문�
 
 test('stackVersions: 고정 파일에서 설치 목록을 만들고, major 가 다른 패키지를 알려 준다', () => {
   assert.ok(installList('frontend').includes('react@^19'));
-  assert.ok(installList('backend', 'devDependencies').includes('prisma@^6'));
+  assert.ok(installList('backend', 'prismaDevDependencies').includes('prisma@^6'));
+  // 묶음을 나눠도 major 비교는 모든 묶음을 본다(GEN-07)
+  assert.deepEqual(majorMismatches({ devDependencies: { prisma: '^7.0.0', tailwindcss: '^4.1.0' } }, 'backend'), [{ package: 'prisma', expected: '^6', found: '^7.0.0' }]);
+  assert.deepEqual(majorMismatches({ devDependencies: { tailwindcss: '^3.4.0' } }, 'frontend'), [{ package: 'tailwindcss', expected: '^4', found: '^3.4.0' }]);
   assert.deepEqual(majorMismatches({ dependencies: { 'react-router': '^8.1.0', react: '^19.0.0' } }, 'frontend'), [{ package: 'react-router', expected: '^7', found: '^8.1.0' }]);
   assert.deepEqual(majorMismatches({ dependencies: { 'class-validator': '0.15.1' } }, 'backend'), [{ package: 'class-validator', expected: '^0.14', found: '0.15.1' }]);
   assert.equal(precheck({ dependencies: { react: '19', 'react-router': '^8' } }, 'frontend').versions.length, 1);

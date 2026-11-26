@@ -5,7 +5,7 @@ severity: critical
 appliesTo: ["src/components/view/**/*.{ts,tsx}"]
 detection:
   - type: forbidden-import
-    matches: ["@tanstack/react-query", "zustand", "react-router-dom", "../../store/**", "../../business/**"]
+    matches: ["@tanstack/react-query", "zustand", "react-router", "react-router-dom", "../../store/**", "../../business/**"]
     rationale: "View Component는 props만 받아 렌더링하는 순수 컴포넌트"
   - type: forbidden-call
     matches: ["useQuery", "useMutation", "useStore", "useNavigate", "useParams"]

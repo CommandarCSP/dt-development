@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveBackendStack, applyStackAdapters, ORM_ADAPTERS, KNOWN_SLOTS } from '../../scripts/stackAdapters.mjs';
+import { resolveBackendStack, applyStackAdapters, ORM_ADAPTERS, KNOWN_SLOTS, STYLING_ADAPTERS } from '../../scripts/stackAdapters.mjs';
 import { loadAllRules, STACK_RULE_LOCATIONS } from '../../scripts/review/lib/rule-loader.mjs';
 
 const PLUGIN_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -84,8 +84,10 @@ test('none 이면 그 영역 규칙을 건너뛰고, 빈 정규식 인자는 뺀
 });
 
 test('모든 어댑터가 모든 빈칸을 갖는다', () => {
-  for (const [name, a] of Object.entries(ORM_ADAPTERS)) {
-    for (const slot of KNOWN_SLOTS) assert.ok(slot.split('.')[1] in a, `${name} 에 ${slot} 가 없다`);
+  const tables = { orm: ORM_ADAPTERS, styling: STYLING_ADAPTERS };
+  for (const slot of KNOWN_SLOTS) {
+    const [area, key] = slot.split('.');
+    for (const [name, a] of Object.entries(tables[area])) assert.ok(key in a, `${area} ${name} 에 ${slot} 가 없다`);
   }
 });
 

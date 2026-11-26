@@ -1,0 +1,30 @@
+{
+  "name": "nest-prisma-mysql",
+  "stack": "backend",
+  "default": false,
+  "label": "NestJS + Prisma 6 + MySQL 8.4(compose) + Jest·Supertest·Testcontainers(MySQL)",
+  "packageManager": "npm",
+  "create": { "kind": "nest" },
+  "groups": {
+    "dependencies": ["dependencies", "prismaDependencies"],
+    "devDependencies": ["devDependencies", "prismaDevDependencies", "mysqlDevDependencies"]
+  },
+  "prisma": { "provider": "mysql" },
+  "allowBuilds": ["@nestjs/core", "@prisma/client", "@prisma/engines", "prisma", "bcrypt"],
+  "config": { "stack": { "orm": "prisma", "db": "mysql" } },
+  "db": {
+    "image": "mysql:8.4",
+    "env": { "MYSQL_ROOT_PASSWORD": "app", "MYSQL_DATABASE": "app", "MYSQL_PORT": "3306" },
+    "containerEnv": ["MYSQL_ROOT_PASSWORD", "MYSQL_DATABASE"],
+    "portVar": "MYSQL_PORT",
+    "containerPort": 3306,
+    "healthcheck": "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent",
+    "volumePath": "/var/lib/mysql",
+    "url": "mysql://root:${MYSQL_ROOT_PASSWORD}@localhost:${MYSQL_PORT}/${MYSQL_DATABASE}"
+  },
+  "setup": [
+    "Prisma는 `@^6`로 핀한다.",
+    "dev DB 접속은 root 계정이다 — `prisma migrate dev`가 섀도 DB를 만들 권한이 필요하다. 공유·운영 DB는 전용 계정 + `prisma migrate deploy`를 쓴다.",
+    "통합·e2e 테스트 컨테이너는 `@testcontainers/mysql`의 `MySqlContainer`다(`stackAdapters.mjs --json`의 `container`)."
+  ]
+}

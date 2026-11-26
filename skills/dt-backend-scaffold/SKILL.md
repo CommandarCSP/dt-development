@@ -55,7 +55,8 @@ Phase 5: module 와이어링 + AppModule 등록 → 게이트 → 빌더 반환 
 controller/service는 두 계층에 의존하므로 Phase 3/4에서 순차 진행. **리소스 간 병렬 시 `prisma/schema.prisma` 공유 머지 구간은 순차화**.
 
 ## 사용 도구
-- `skills/dt-frontend-scaffold/scripts/gate.mjs` (`--prisma true`, `--test-runner jest`, `--stack backend`)
+- `skills/dt-frontend-scaffold/scripts/gate.mjs` (`--test-runner jest`, `--stack backend` — Prisma 검사는 `stack.orm`이 prisma일 때 자동)
+- `scripts/scaffoldPreset.mjs` (새 프로젝트 프리셋 — 명령·compose·env·설정 조각)
 - `${CLAUDE_PLUGIN_ROOT}/agents/be-builder.md`: 계층 구현 워커(Task dispatch). 계층 룰은 `dt-backend-architecture`/`-testing`(계층별 prompt 없음 — 통합됨).
 - `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md`: 격리 리뷰 워커(`stack:backend`, verdict만 반환)
 - `dt-backend-review`: partial(phase mini-review) + full(final review) — 공유 엔진을 `--stack backend`로 호출

@@ -12,7 +12,7 @@
 
 ## Phase 1: 계약 델타
 - contract 인터페이스에 새 메서드/필드 추가, 새 컬럼·모델이 요구될 때 `prisma/schema.delta.prisma`에 컬럼/모델 추가.
-- 게이트: `gate.mjs --prisma true --prisma-args "validate" --test false --review false`. commit.
+- 게이트: `gate.mjs --stack backend --prisma-args "validate" --test false --review false`. commit.
 
 ## Phase 2~4: 변경 계층만 구현
 바뀌는 계층만 `dt-backend-architecture` 룰대로 구현한다(계층별 prompt 없음). 예: cancel은 repository(update) + service(상태전이 검증) + controller(POST /orders/:id/cancel) + 테스트. controller/service처럼 하위 계층 의존 단위는 순차(원칙 2).

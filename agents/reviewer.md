@@ -27,7 +27,7 @@ description: dt-frontend/dt-backend 코드를 review.mjs로 검사하고 verdict
 2. 위반(특히 Critical)과 diff coverage를 읽고, 각 위반을 **어느 파일/레이어 소관**인지 매핑한다.
 3. **크로스유닛 정합 검증(`interactions` 전달 시 — full 모드)**: `interactions.md`의 액션→리액션 항목이 코드에 **실제 배선됐는지** 확인(`${CLAUDE_PLUGIN_ROOT}/docs/refs/interaction-integrity.md` §B·C). FE는 mutation 성공 훅에 의존 쿼리 무효화/캐시갱신이 있는지(예: 수정→목록 key invalidate), BE는 여러 리소스를 걸치는 쓰기에 트랜잭션 경계가 있는지. 누락이면 `repairTargets`에 `rule: interaction-integrity`로 추가(위반: "수정 성공 후 피드 목록 무효화 없음 — 수정본이 목록에 반영 안 됨"). 스펙에 정합 요구가 없으면 검증 안 함(과검 금지).
 3.5. **디자인 충실도 크로스파일 검증(frontend — `design-fidelity` overrideKey가 켜져 있을 때)**: review.mjs가 per-file로 못 잡는 두 가지를 확인한다(rule 상세: `dt-frontend-architecture/patterns/design-fidelity.md`):
-   - **테마 물질화 누락:** `docs/project-context.md ## 디자인 토큰`에 토큰이 있는데 `src/styles/globals.css`의 `@theme` 마커 블록(`/* dt:tokens:start */ … /* dt:tokens:end */`)이 비어 있으면 → `repairTargets`에 `rule: design-fidelity`(hint: "테마 물질화 필요 — `materialize-tokens.mjs` 실행").
+   - **테마 물질화 누락:** `docs/project-context.md ## 디자인 토큰`에 토큰이 있는데 테마 파일의 토큰 마커 블록(`/* dt:tokens:start */ … /* dt:tokens:end */` — 기본 `src/styles/globals.css`, `stack.styling: scss`면 `src/styles/_tokens.scss`)이 비어 있으면 → `repairTargets`에 `rule: design-fidelity`(hint: "테마 물질화 필요 — `materialize-tokens.mjs` 실행").
    - **매니페스트 미배선:** `design.md ## 에셋 매니페스트`에 실 에셋(`(미수거)` 아님)이 있는데 컴포넌트가 그 파일을 참조하지 않고 플레이스홀더로 남아 있으면 → `rule: design-fidelity`(hint: 어느 에셋이 미배선인지). 정적 `<img>`-no-src·빈 src·임의 팔레트는 review.mjs가 이미 잡으니 중복 보고 금지. Figma 소스/토큰/매니페스트가 애초에 없으면 검증 안 함(과검 금지).
 4. **코드는 수정하지 않는다.**
 
