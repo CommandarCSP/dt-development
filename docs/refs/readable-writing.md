@@ -1,6 +1,6 @@
 # 참조: 읽기 좋은 글쓰기 (Jira/Confluence 공통)
 
-> 종류: **참조 문서(지식)** · 소비처: 계층 1(산문) `dt-worklog-sync`·`dt-confluence-doc`·`dt-explain` → `agents/ko-writing-reviewer.md`가 이 문서로 판정 · 계층 2(내부 구조 문서) `spec-author`·`bespec-author`·`definition-author`·`plan-author`·`dt-e2e`·`dt-be-e2e` → `scripts/koWritingLint.mjs`로 자기 수정.
+> 종류: **참조 문서(지식)** · 소비처: 계층 1(산문) `dt-worklog-sync`·`dt-confluence-doc` → `agents/ko-writing-reviewer.md`가 이 문서로 판정 · 계층 2(내부 구조 문서) `spec-author`·`bespec-author`·`definition-author`·`plan-author`·`dt-e2e`·`dt-be-e2e` → `scripts/koWritingLint.mjs`로 자기 수정.
 > SOT: 본 문서. 플러그인이 생성하는 모든 한글 글의 문장 규율을 한곳에서 정의한다. 깊은 판정 근거는 `rules/vendored/yoonmoon/`(번역투 8종·AI 티 11종 원문).
 
 ## 심각도 등급 (yoonmoon 승계)
@@ -74,7 +74,6 @@ C는 우리말답지 않은 티를 지운다.
 |---|---|---|---|
 | Jira 설명·코멘트 | 팀 내부 | 개조식(명사·서술 종결) | 성분·조사를 뭉개지 않는다 — 개조식이어도 "무엇을 왜"가 읽혀야 한다 |
 | Confluence 산문 | 팀·조직 내부 | "~합니다" 정중체 | — |
-| 문제 설명 답변(dt-explain) | 요청자 | "~합니다" 정중체 | 근거 라벨(🟢/🟡)은 answer-frame이 정한다 |
 | 사외 사용자 가이드 | 제품을 처음 보는 일반 사용자 | "~합니다" 정중체 + 쉬운 말 | 2인칭('여러분'·'당신'·'사용자님') 회피 — 필요하면 주어 생략. 개발 용어 첫 등장 풀이 필수(C3). 사내 시스템·티켓 키 언급 금지 |
 | 인수인계 핸드북 (`docs/handbook/handbook.md`) | 코드를 물려받는 개발자 | 평서체("~한다") | **묶음 D 적용**. 개발 용어는 풀지 않는다(A1 면제), 이모지 금지, 지시문 금지 |
 | 내부 구조 문서 (requirements·design·api-contract·definition·E2E 시나리오 원장·plan) | 같은 팀 개발자 | 평서체("~한다") | **한글 서술에** 묶음 B·C 적용 — 페이지 목적·사용자 스토리·Given-When-Then·결정 근거, 그리고 **EARS 줄의 한글 부분**(`THE SYSTEM SHALL` 뒤의 서술도 사람이 읽는 본문이다). **검사 대상 아님**: EARS 키워드 자체(`WHEN`·`THE SYSTEM SHALL` 등 — 마스킹), 요소·엔드포인트 목록 줄, `[ai-confirmed]` 같은 라벨, `<!-- … -->` 주석 |

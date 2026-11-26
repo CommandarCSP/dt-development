@@ -138,9 +138,10 @@
 - **완료(DEV-17, 2026-11-26).** `.dt.json` `gitFlow`의 네 키를 그대로 넣었다. `pushPolicy`는 `push`(머지 뒤 기준 브랜치 push, 기본)·`none`(사람이 push) 두 값으로 정했고, 원격은 origin 고정이다. `scripts/gitFlow.mjs`가 start·finish 명령 순서를 낸다 — 실행은 하지 않고 스킬이 미리보기·승인 뒤 한 단계씩 실행한다. 네 방식 모두 먼저 `origin/<base>` 위로 리베이스해 충돌을 피처 브랜치에서 잡고 재개 규칙을 같게 했다. squash는 git이 머지로 보지 않아 `branch -D`가 필요해 그 단계만 따로 승인받는다. `pr`은 피처 브랜치만 `--force-with-lease`로 push하고 `gh`·`glab`이 있으면 그것으로, 없으면 `gitWebUrl.mjs`의 새 `compareUrl`로 PR 만들기 주소를 보인다. 훅(시작 알림 브랜치, 마무리 통합 문구, 기준점 없을 때 `origin/<base>`)도 같은 설정을 읽는다. 기본값의 명령 순서와 훅 문구는 예전과 같음을 테스트로 고정했다. 확인: 임시 저장소에서 develop·squash 설정으로 start(origin/develop에서 분기) → 커밋 2개 → finish 계획을 실제 git으로 실행 — develop에 커밋 하나, push, 피처 브랜치 정리, main 그대로. pr 모드는 GitHub 모양 리모트에서 `gh` 없이 PR 만들기 주소로 끝나는 것을 봤다.
 
 ### GEN-13 기타 스킬의 트래커·위키 참조 정리
-- 대상: `dt-explain`(티켓 읽기 Atlassian 고정, 사내 티켓 키 예시), `dt-audit`(후속 조치를 Jira로), `dt-handbook`(`sources.atlassian`만, `atlassian.net`만 위키 링크로 판정).
+- 대상: `dt-explain`(티켓 읽기 Atlassian 고정, 사내 티켓 키 예시 — 결국 없앰), `dt-audit`(후속 조치를 Jira로), `dt-handbook`(`sources.atlassian`만, `atlassian.net`만 위키 링크로 판정).
 - 할 일: GEN-09·10 어댑터를 통해 읽기. `allowed-tools`의 벤더 도구 이름을 어댑터 설정에 맞춤.
 - 완료 기준: 세 스킬이 `tracker: none`에서도 동작.
+- **완료(DEV-18, 2026-11-26).** 진행 중 범위를 바꿨다: 세 스킬의 목적을 다시 보고 **`dt-explain`은 없앴다**(자동 발동 비용이 크고 산출물·후속 연결이 없음 — 기록은 `/dt-worklog` Bug, 장애는 `/dt-confluence` 장애 회고). 호환 정책의 한 minor 경고를 건너뛴 것은 사용자 결정이다. `dt-audit`은 후속 기록을 `tracker`로 보낸다(jira면 Task 하나, 아니면 `pending.md`)에 더해, 이슈 키를 `traceability.md` "후속 기록" 표에 되적어 다음 감사의 증분 표기에 진행 상태와 "완료인데 남음"을 보인다(`issue.read`를 트래커 어댑터에 추가). `dt-handbook`은 `scripts/handbook/sources.mjs`로 근거 원천을 정한다 — 결정 기록(PD·TP)이 첫 출처, 위키는 `wiki`(TP-003 라벨·폴더로 좁힘), 트래커는 jira일 때만, MCP 안내는 필요할 때만. G8은 팀 사이트·Notion 링크까지 막는다. `allowed-tools`는 머리말이라 설정으로 바꿀 수 없어, 본문이 설정을 보고 도구를 쓸지 정하게 했다. 확인: 근거 원천 네 조합(jira+confluence · none+none · none+markdown · 옛 off)과 G8을 테스트로, 감사 절차는 구조 테스트로 고정. 핸드북 전체 실행 확인은 비용 때문에 하지 않았다.
 
 ## M3. 입력 소스
 

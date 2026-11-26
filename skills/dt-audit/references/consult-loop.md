@@ -34,7 +34,7 @@
 |---|---|
 | 정의서 정정 | /dt-devspec 재실행 (diff-then-confirm) |
 | leaf 스펙 정정·백필 | /dt-spec · /dt-be-spec |
-| 코드 수정 | 백로그(Jira 연계 §6) 또는 즉시 수정 협의 |
+| 코드 수정 | 백로그(SKILL §6 — `tracker`가 `jira`면 Task, 아니면 `pending.md`) 또는 즉시 수정 협의 |
 | 보류 | docs/audits/pending.md에 이월 |
 
 ## 역참조 마커

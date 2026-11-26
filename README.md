@@ -19,7 +19,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 
 ## 무엇이 들어 있나
 
-스킬 39개 · 에이전트 16개 · 커맨드 24개로 이루어져 있습니다. 갈래로 묶으면 다음과 같습니다.
+스킬 38개 · 에이전트 16개 · 커맨드 23개로 이루어져 있습니다. 갈래로 묶으면 다음과 같습니다.
 
 | 갈래 | 하는 일 | 대표 커맨드 |
 |---|---|---|
@@ -42,7 +42,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 
 <!-- catalog:start -->
 
-<details><summary>전체 목록 — 명령 24 · 스킬 39 · 에이전트 16 (자동 생성: <code>node scripts/readmeCatalog.mjs --write</code>)</summary>
+<details><summary>전체 목록 — 명령 23 · 스킬 38 · 에이전트 16 (자동 생성: <code>node scripts/readmeCatalog.mjs --write</code>)</summary>
 
 **명령** — 사용자가 `/`로 부르는 입구. 절차는 따르는 스킬에 있다.
 
@@ -59,7 +59,6 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `/dt-decision` | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고, 찾고, 대체한다 | `dt-decision` |
 | `/dt-devspec` | Build the project-level development definition (docs/specs/definition.md) | `dt-devspec` |
 | `/dt-e2e` | Author and verify scenario-based acceptance e2e (Playwright) for implemented pages, driven by page specs and… | `dt-e2e` |
-| `/dt-explain` | Explain a discovered problem (Jira ticket, bug, issue) in structured plain language | `dt-explain` |
 | `/dt-fullstack` | 요구사항·UX 소스에서 풀스택 웹앱을 이름 있는 단계(definition → be-spec → be-build → fe-spec → fe-build, 선택 e2e·audit·guide·handbo… | `dt-fullstack` |
 | `/dt-git` | 피처 브랜치를 팀 절차로 기준 브랜치에 통합한다(기본 main · --no-ff, .dt.json gitFlow로 develop·squash·rebase·PR 선택). start=origin 최신… | `dt-git-flow` |
 | `/dt-guide` | Generate an end-user guide PDF for a web-frontend or Electron project | `dt-guide` |
@@ -96,7 +95,6 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `dt-decision` (/dt-decision) | Record, list, and supersede long-lived decisions |
 | `dt-devspec` (/dt-devspec) | starting a new project/feature and the team needs a project-level Source of Truth before FE/BE specs |
 | `dt-e2e` (/dt-e2e) | Use after /dt-implement to author and verify scenario-based acceptance e2e (Playwright) for implemented pages |
-| `dt-explain` (/dt-explain) | the user asks to explain a problem, bug, Jira ticket, or issue |
 | `dt-frontend-architecture` | writing or reviewing React/TypeScript code in a project that contains .dt-frontend.json |
 | `dt-frontend-coding-discipline` | writing, reviewing, or refactoring code in a project that contains .dt-frontend.json |
 | `dt-frontend-review` | reviewing dt-frontend project code for architecture/test rule violations, when scaffold workflow needs a phas… |

@@ -7,7 +7,12 @@
 
 ## [미출시]
 
+### 없앰
+- **`/dt-explain`(문제 설명) 스킬·명령을 없앴다.** "설명해줘"·"왜 이래?"에 자동으로 걸려 간단한 질문에도 6절 틀과 한글 리뷰가 붙었고, 산출물이 없어 다른 흐름과 이어지지 않았다. 버그 기록은 `/dt-worklog`(Bug), 장애 정리는 `/dt-confluence`(장애 회고)가 맡는다. 호환 정책은 한 minor 동안 경고한 뒤 없애게 하지만, 팀 결정으로 바로 없앴다. 한글 검사의 `docType: explain`도 함께 없앴다 (GEN-13)
+
 ### 추가
+- `scripts/handbook/sources.mjs` — 핸드북의 "왜" 근거 원천. 결정 기록(PD·TP)을 먼저 읽고(MCP 불필요), 위키는 `wiki`(confluence면 `doc-design`·`doc-guide` 라벨로 좁힘, markdown이면 `docs/wiki/design`·`guide`), 트래커는 `tracker: jira`일 때만. 옛 `sources.atlassian.enabled: off`는 MCP 원천만 끈다 (GEN-13)
+- 트래커 어댑터의 `issue.read`(이슈 하나 읽기) (GEN-13)
 - 공통 설정 `.dt.json`의 `gitFlow`(`baseBranch`·`mergeStrategy`·`branchPrefix`·`pushPolicy`)와 `scripts/gitFlow.mjs` — `/dt-git`의 기준 브랜치(예: `develop`)와 합치는 방식(`no-ff` 기본 · `squash` · `rebase` · `pr`)을 팀이 정한다. 명령 순서는 스크립트가 내고, 스킬은 미리보기·승인 뒤 한 단계씩 실행한다. `pr` 방식은 피처 브랜치를 push하고 `gh`·`glab`으로 PR을 열거나, 없으면 PR 만들기 주소(`gitWebUrl.mjs compare`)를 보인다. 설정이 없으면 예전과 같은 main · `--no-ff` · 머지 뒤 push다 (GEN-12)
 - 공통 설정 `.dt.json`의 `wrap.steps`(기본 `commit` → `wiki` → `tracker`)와 `scripts/wrapState.mjs` — `/dt-wrap`의 단계와 순서를 팀이 정한다. `wiki`·`tracker`가 꺼진 단계는 한 줄로 알리고 건너뛰며, Stop 훅 알림 문구도 실제 단계로 만든다 (GEN-11)
 - 위키 문서 규칙 팀 정책 `docs/policies/TP-003-wiki-docs.md` — 문서 7종(회의록·작업 보고·설계 문서·운영 가이드·회고·릴리즈 노트·장애 회고), 공통 머리(상태·담당자·검토일·관련 이슈·관련 결정·요약, 검토일은 설계·가이드만 6개월), 구역 6개 페이지 트리·제목 규칙·`doc-*` 라벨, 트래커 양방향 연결 (GEN-10)
@@ -56,6 +61,8 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- `/dt-audit` 후속 기록이 `tracker`를 따른다 — `jira`면 코드 수정 묶음을 Task 하나로(완료 조건 = finding 해소), 아니면 `docs/audits/pending.md`가 백로그. 기록한 이슈 키를 `traceability.md`의 "후속 기록" 표에 되적어, 다음 감사가 잔존 finding 옆에 진행 상태를 보이고 "이슈는 완료인데 finding이 남음"을 따로 알린다 (GEN-13)
+- `/dt-handbook`은 `tracker`·`wiki`가 없으면 MCP 연결 안내를 띄우지 않는다. 외부 공개 게이트(G8)는 Atlassian 말고도 Notion과 팀 설정(`.dt-confluence.json`·`.dt-worklog.json`)의 `site` 호스트 링크를 막는다 (GEN-13)
 - 훅이 `gitFlow.baseBranch`를 따른다 — 시작 알림은 기준 브랜치 위에서 뜨고, 마무리 알림의 통합 문구는 기준 브랜치·`pr`·`pushPolicy: none`을 반영한다. `dt-git-flow`의 상태 스크립트는 `isBase`·`baseBranch`를 낸다(`isMain`은 0.16.x 동안 남긴다) (GEN-12)
 - **Stop 훅 기준점을 마무리 루틴으로.** `/dt-wrap`을 마치면 `.dt-pipeline.local.json`의 `lastWrapSha`에 HEAD를 남기고(단계를 건너뛰어도), 훅은 이 값과 옛 `lastSyncSha` 중 더 최근 것부터 정리 안 된 커밋을 센다. 트래커를 안 쓰거나 기록을 건너뛰어도 마무리 뒤에는 알림이 조용하다. `/dt-wrap --init`은 이 파일을 `.gitignore`에 더하고, 트래커·위키를 쓰는지 묻는다. 설정이 없는 프로젝트의 단계와 알림 문구는 예전과 같다 (GEN-11)
 - `/dt-wrap` 단계 설명을 TP-002·TP-003 기준으로 고쳤다 — 기록 단위는 Story·Task·Bug(Sub-task는 나눌 때만), 완료 조건은 HTML 체크박스, 문서 종류는 7종 중에서 권한다 (GEN-11)

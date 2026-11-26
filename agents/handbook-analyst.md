@@ -16,7 +16,7 @@ description: /dt-handbook analyze 워커 — 정적 축 전담. structure.json(�
 
 ## 입력
 
-`{ projectRoot, config, priorInventoryPath?, area?, unattended, answers? }`
+`{ projectRoot, config, sources, priorInventoryPath?, area?, unattended, answers? }` — `sources` 는 근거 원천(`scripts/handbook/sources.mjs` 출력). 없으면 그 스크립트를 직접 돌린다.
 
 ## 할 일
 
@@ -37,8 +37,13 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/analyze.mjs" <projectRoot> --since-
 - **핫스팟** — `hotspots` 가 `available: false` 면 그 사실을 적고 넘어간다. 지어내지 않는다.
 
 ### 3. 왜 이렇게 됐는지를 모은다
-코드는 "무엇"만 말한다. git 커밋 메시지, 주석, `docs/` 의 기존 설계 문서에서 이유를 찾는다.
-`config.sources.atlassian.enabled` 가 꺼져 있지 않고 MCP 도구를 쓸 수 있으면, 모듈명·데이터명을 키워드로 **항목당 `maxHitsPerTopic` 건까지만** 조회한다. 못 찾으면 `[추정]` 으로 남긴다 — **지어내지 않는다.**
+코드는 "무엇"만 말한다. 이유는 입력 `sources`(`scripts/handbook/sources.mjs`)가 정한 순서로 찾는다.
+1. **결정 기록** — `sources.decisions.dirs` 의 PD 와 플러그인 TP. 채택(`accepted`)된 것만 근거로 쓰고, 대체된 것은 "예전엔 X였다"로만 쓴다. 인용은 `[문서] PD-007`.
+2. **위키** — `sources.wiki` 가 `markdown`이면 그 폴더의 문서를 직접 읽고, `confluence`면 `labels` 로 좁혀 찾는다. `null`이면 건너뛴다.
+3. **트래커** — `sources.tracker` 가 있을 때만 모듈명·데이터명을 키워드로 찾는다.
+4. git 커밋 메시지·주석·`docs/` 의 다른 설계 문서.
+
+MCP 원천(2의 confluence, 3)은 도구를 쓸 수 있을 때만, **항목당 `sources.maxHitsPerTopic` 건까지만** 조회한다. 못 찾으면 `[추정]` 으로 남긴다 — **지어내지 않는다.**
 
 ### 4. 시나리오 후보를 고른다 (부산물)
 순서: ① 기존 e2e 시나리오 원장·`docs/specs` 가 있으면 그 이름을 그대로 수입한다(같은 흐름을 두 이름으로 부르지 않는다) ② 없으면 `flowCandidates` 상위를 쓴다 ③ `config.maxFlows` 를 넘기지 않는다.

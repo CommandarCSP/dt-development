@@ -31,6 +31,7 @@ dt-review/dt-be-review는 "코드가 **아키텍처 룰**을 지키나"(review.m
 - 프로젝트 루트 판별: `.dt-frontend.json` / `.dt-backend.json` 마커로 자동 탐지(모노레포 대응). 못 찾으면 1회 질문.
 - ux 트랙 대상인데 `--app-url`이 없거나 접근 불가(fetch 1회 실패)면 **ux만 skip** — 리포트에 "UX 감사 미수행(사유)" 명시. 전체 실패로 만들지 않는다.
 - 증분 시드: `docs/audits/`의 최신 run에서 traceability.md를 찾아 `priorTraceability`로 전달.
+- **후속 기록 확인**: 그 traceability.md에 "후속 기록" 표가 있고 `tracker`가 `jira`면, 적힌 이슈의 상태를 `issue.read`로 읽어 §2 증분 표기에 쓴다. 다른 값이면 키만 옮겨 적고 상태는 읽지 않는다. 못 읽어도 감사는 계속한다.
 - **미결 확인**: `docs/audits/pending.md`가 있으면 읽어 미결 N건을 §4 협의 큐 최상단에 올린다.
 - **멀티루트 runDir**: FE/BE가 별도 프로젝트 루트면 — 같은 git 레포일 때 **레포 루트의
   `docs/audits/`**, 레포가 다르면 **정의서 원본 소유 루트**. traceability·evidence의 파일
@@ -77,7 +78,10 @@ code-fix → /dt-implement·/dt-be-implement 또는 수동 수정, spec-update �
 
 ### §6 후속 연계 (opt-in, 각 1회 제안)
 - decisions.md의 `e2e후보` 플래그 항목 → "dt-e2e/dt-be-e2e 시나리오로 만들까요?"
-- code-fix 액션 묶음 → "Jira Sub-task로 등록할까요?" (승인 시 dt-worklog-sync — 그 스킬의 dry-run 그대로)
+- code-fix 액션 묶음 → 기록할 곳은 `.dt.json`의 `tracker`를 따른다(`node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" .`, `${CLAUDE_PLUGIN_ROOT}/docs/refs/tracker-adapter.md`).
+  - `jira`: "이 묶음을 트래커에 Task 하나로 기록할까요?" — 승인하면 `dt-worklog-sync`(그 스킬의 dry-run 그대로). 기본 단위는 TP-002의 Task이고, 완료 조건은 "A-001·A-004 해소(다음 감사에서 해결됨)"으로 적는다.
+  - `none`·`github`·`linear`: 트래커에 쓰지 않는다. `docs/audits/pending.md`에 `code-fix` 행으로 남길지 묻는다. 이 파일이 이 팀의 백로그다.
+  - 기록하면 `traceability.md`의 "후속 기록" 표에 finding id와 이슈 키(또는 `pending.md`)를 되적는다(`references/report-template.md`). 다음 감사가 이 표로 진행 상태를 함께 보인다.
 
 ## 실행 모드
 - **dispatched (기본)**: 위 구조. `--scope fe`면 fe 워커만.

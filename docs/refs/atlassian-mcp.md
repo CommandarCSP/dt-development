@@ -1,6 +1,6 @@
 # Atlassian MCP 도구 대응표 (v1 · v2)
 
-Jira·Confluence를 쓰는 스킬(dt-worklog-sync·dt-confluence-doc·dt-explain·dt-spec의 Confluence 소스)은 **도구 이름을 본문에 박지 않고 이 표의 "하는 일" 이름으로 적는다.** 실제로 부를 도구는 이 표에서 찾는다. 공식 Atlassian MCP는 v1(`https://mcp.atlassian.com/v1/mcp`, 2027-03-01 종료)과 v2(`https://mcp.atlassian.com/v2/mcp`)의 도구 이름·인자가 다르다. 이름이 또 바뀌면 이 표만 고친다.
+Jira·Confluence를 쓰는 스킬(dt-worklog-sync·dt-confluence-doc·dt-handbook·dt-spec의 Confluence 소스)은 **도구 이름을 본문에 박지 않고 이 표의 "하는 일" 이름으로 적는다.** 실제로 부를 도구는 이 표에서 찾는다. 공식 Atlassian MCP는 v1(`https://mcp.atlassian.com/v1/mcp`, 2027-03-01 종료)과 v2(`https://mcp.atlassian.com/v2/mcp`)의 도구 이름·인자가 다르다. 이름이 또 바뀌면 이 표만 고친다.
 
 ## 1. 어느 쪽에 연결됐나 — 시작할 때 한 번
 

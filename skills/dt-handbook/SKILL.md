@@ -19,11 +19,11 @@ user-invocable: false
 4. **뼈대도 규칙을 탄다.** 장 제목·표 머리·그림 캡션은 본문과 같은 문체 규칙(묶음 D)을 지킨다. 특히 D6 — 직역한 학술 용어(`빌딩블록`·`런타임 뷰`·`횡단 관심사` 같은 arc42 목차 직역)를 제목에 쓰지 않는다. 제목은 본문보다 눈에 덜 띄어 규칙을 빠져나간다. 실제로 그렇게 한 판이 통째로 통과한 적이 있고, 그래서 플러그인 테스트가 **템플릿과 장 규격의 제목 자체를** 린트한다(`tests/handbookArtifacts.test.mjs`).
 5. **사람이 읽을 글을 쓴다.** 낱말 규칙(A~D)을 다 지켜도 표가 절을 다 먹고 문장 길이가 균일하면 읽기 힘든 글이 된다. 묶음 E 가 그 층을 본다 — 표는 대조할 때만, 문장 길이는 섞어서, 절은 도입 한 문장으로, 독자에게 길 안내를. 린트가 매 빌드마다 검사한다(G6).
 6. **처음 보는 사람 기준으로 쓴다(D8 독자 시험).** 문단마다 다섯 질문을 댄다 — 주장이 한 문장으로 나오나, 왜가 결론이 아니라 사실인가, 어긋나면 무엇이 눈에 보이나, 이 프로젝트에서만 쓰는 낱말을 풀었나, 숫자에 기준이 있나. 문장이 다 맞는데 읽는 사람이 납득하지 못하는 글은 대개 이 검사를 건너뛴 것이다.
-7. **근거 없는 단정을 쓰지 않는다.** `[코드]`(`파일:줄`) · `[문서]`(티켓·위키) · `[추정]` 을 가른다. 이모지는 쓰지 않는다.
+7. **근거 없는 단정을 쓰지 않는다.** `[코드]`(`파일:줄`) · `[문서]`(결정 기록·위키·티켓 — 결정은 `PD-007`처럼 ID로) · `[추정]` 을 가른다. 이모지는 쓰지 않는다.
 8. **범용이다.** 특정 프로젝트·스택을 전제하지 않는다. 스크립트는 힌트를 주고 판단은 워커가 한다.
 9. **리뷰는 수렴할 때까지 돈다(최대 3회).** `ko-writing-reviewer`(`docType: 'handbook'`)를 격리해 부르되 한 번으로 끝내지 않는다. 고치면 새 위반이 생긴다 — 실제로 1차 반영 때 만든 깨진 문장이 재리뷰가 없어 PDF 까지 나갔다. **사람이 여러 번 시켜서 다듬은 글처럼 나오는 것이 기본값이어야 하고, 그 반복을 사용자가 대신 돌려 줘서는 안 된다.**
 10. **게이트 먼저.** G0~G9 를 통과해야 PDF 를 낸다. 낡은 문서로 만든 PDF 는 나가지 않는다.
-11. **외부 지식 원천은 선택이다.** Atlassian MCP 가 없어도 문서는 나온다. 없으면 품질만 낮아진다.
+11. **외부 지식 원천은 선택이다.** "왜"의 첫 출처는 저장소의 결정 기록(PD·TP)이라 MCP 없이도 읽는다. 위키·트래커는 `.dt.json`의 `wiki`·`tracker`가 켜져 있을 때만 쓰고, 없으면 품질만 낮아진다.
 12. **단계를 기억으로 밟지 않는다.** §1 을 시작할 때 **체크포인트 3개와 한글 리뷰를 todo 로 만들어 놓고** 하나씩 지운다.
 
 ## 명령
@@ -60,14 +60,19 @@ user-invocable: false
 1. `<projectRoot>/.dt-handbook.json` 이 없으면 `${CLAUDE_PLUGIN_ROOT}/templates/dt-handbook.json.tmpl` 로 만든다 — `{{PRODUCT}}` 는 `package.json` 의 `name`(사람이 읽는 이름이 따로 있으면 질문), `{{PDF_NAME}}` 은 ASCII `<Product>-Handbook.pdf`.
 2. `docs/handbook/` 이 있으면 재실행이다: `inventory.md`·`structure.json`·`traces/*`·`handbook.md`·영수증의 유무를 표로 보이고, 있는 것은 `prior…Path` 로 워커에 넘긴다.
 3. `.gitignore` 에 `.dt-handbook/`(스크래치)·`docs/handbook/handbook.html`·`docs/handbook/handbook-s*.html`(빌드 중간 산출)이 없으면 그 줄을 더한다(바꿀 줄을 보이고 확인 — 무인이면 더한 뒤 기록).
-4. **외부 지식 원천 확인** — `sources.atlassian.enabled` 가 `off` 가 아니면 Atlassian MCP 도구(접두어 `mcp__atlassian__` 또는 `mcp__claude_ai_Atlassian__` — v1·v2 판정은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/atlassian-mcp.md` §1)가 있는지 본다. 없으면 **한 번만** 이렇게 알리고 그대로 진행한다.
-   > Atlassian MCP 가 연결돼 있지 않다. 붙이면 "왜 이렇게 됐나"(2·4·8장)와 알려진 이슈를 티켓·설계 문서에서 가져올 수 있다. 없이도 문서는 나오지만 그 항목은 `[추정]` 으로 남는다.
-   > 연결: `claude mcp add --scope user --transport http atlassian https://mcp.atlassian.com/v2/mcp` → `/mcp` 인증 → `/dt-handbook analyze` 재실행.
+4. **근거 원천 정하기** — `node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/sources.mjs" <projectRoot>` 의 결과(`sources`)를 워커에 넘긴다.
+   - `decisions` — 결정 기록 폴더. 늘 있다. "왜"(2·4·8장)를 여기서 먼저 찾는다.
+   - `wiki` — `confluence`면 설계·가이드 라벨(`doc-design`·`doc-guide`)로 좁혀 찾고, `markdown`이면 `docs/wiki/design`·`guide`를 직접 읽는다. `null`이면 쓰지 않는다.
+   - `tracker` — `jira`일 때만 티켓을 찾는다. `null`이면 쓰지 않는다.
+   - `skipped` 는 한 줄로만 알린다(예: "트래커·위키 없음 — 결정 기록과 코드로만 쓴다").
+   - `needsMcp` 가 true 일 때만 Atlassian MCP 도구(v1·v2 판정은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/atlassian-mcp.md` §1)가 있는지 본다. 없으면 **한 번만** 이렇게 알리고 그대로 이어 간다.
+     > Atlassian MCP 가 연결돼 있지 않다. 붙이면 "왜 이렇게 됐나"와 알려진 이슈를 티켓·설계 문서에서 더 가져올 수 있다. 없이도 결정 기록과 코드로 문서는 나오고, 못 찾은 항목은 `[추정]` 으로 남는다.
+     > 연결: `claude mcp add --scope user --transport http atlassian https://mcp.atlassian.com/v2/mcp` → `/mcp` 인증 → `/dt-handbook analyze` 재실행.
 5. **무인 규칙** — 질문은 기본값으로 답하고 `assumed` 라벨을 붙인다. 체크포인트는 자동 승인으로 `.dt-handbook/progress.md` 에 적는다.
 
 ### §1. analyze
 
-1. `handbook-analyst` dispatch — 입력 `{ projectRoot, config, priorInventoryPath?, area?, unattended }`. 반환은 작업형 봉투 `{ status, artifacts, needsDecision, summary, inventoryPath, structurePath }`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6).
+1. `handbook-analyst` dispatch — 입력 `{ projectRoot, config, sources, priorInventoryPath?, area?, unattended }`. 반환은 작업형 봉투 `{ status, artifacts, needsDecision, summary, inventoryPath, structurePath }`(`${CLAUDE_PLUGIN_ROOT}/docs/orchestration-policy.md` 원칙 5·6).
 2. `needsDecision` 이 있으면 **한 번에 묶어** `AskUserQuestion` 으로 묻는다(4개를 넘으면 나눈다 · `recommended` 선택지는 맨 앞에 "(권장)"). 답을 `answers: [{ id, choice, note? }]` 로 실어 다시 dispatch 한다. 왕복은 2회까지(원칙 6).
 3. **[체크포인트 1] 구조 승인** — 군집 표·데이터 주인 표(주인이 둘인 것 강조)·경계 표·핫스팟 상위를 보이고 승인받는다. 여기가 틀리면 뒤가 전부 틀린다.
 4. **[체크포인트 2] 시나리오 목록 승인** — [시나리오 · 진입점 · 근거(수입/자동) · 점수]를 보이고 가감받는다. 문서 비용이 여기서 정해진다. `--flow` 가 주어졌으면 그 목록으로 대신한다.
@@ -106,7 +111,7 @@ user-invocable: false
    - **G5** — 머메이드 문법·A4 폭 초과·캡션 누락·손 SVG 6장 초과. 그림을 고친다.
    - **G6** — 문체. 이모지와 지시문은 BLOCK 이다.
    - **G7** — 한글 리뷰를 안 받았거나, 리뷰 뒤에 본문을 고쳤거나, 마지막 회차의 기계 검사가 깨끗하지 않다. §3-3 의 수렴 루프를 다시 돌고 영수증을 새로 남긴다.
-   - **G8** — 토큰·이메일·개인 홈 경로가 보인다(`audience: external` 이면 티켓 키·위키 링크도). 가리거나, 제품이 일부러 보여 주는 값이면 `allowInQuotes` 에 적어 통과시킨다(그냥 통과와 적어서 통과는 다르다).
+   - **G8** — 토큰·이메일·개인 홈 경로가 보인다(`audience: external` 이면 티켓 키·위키 링크도 — 위키 링크는 Atlassian·Notion과 팀 설정 `.dt-confluence.json`·`.dt-worklog.json` 의 `site` 호스트). 가리거나, 제품이 일부러 보여 주는 값이면 `allowInQuotes` 에 적어 통과시킨다(그냥 통과와 적어서 통과는 다르다).
    - **G9** — 분석 이후 근거 파일이 바뀌었다. 메시지가 짚어 주는 명령을 그대로 돈다.
 3. 통과하면 PDF·영수증 경로를 보인다. `--pdf-only-section N` 을 줬으면 발췌본 경로도 함께.
 4. **가정 목록** — 이번 실행에서 `assumed` 가 붙은 항목을 표 [항목 · 고른 값 · 사유]로 모아 보인다.
@@ -124,4 +129,4 @@ user-invocable: false
 
 ## 관련
 
-`dt-guide`(사용자용 가이드 — 캡처 엔진·PDF 골격 공유) · `dt-audit`(스펙 대비 감사, 이쪽은 스펙 없이 현재 코드를 설명) · `dt-explain`(문제 하나를 설명) · `ko-writing-reviewer`(같은 리뷰어, `docType: 'handbook'`).
+`dt-guide`(사용자용 가이드 — 캡처 엔진·PDF 골격 공유) · `dt-audit`(스펙 대비 감사, 이쪽은 스펙 없이 현재 코드를 설명) · `ko-writing-reviewer`(같은 리뷰어, `docType: 'handbook'`).

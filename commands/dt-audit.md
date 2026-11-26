@@ -1,7 +1,7 @@
 ---
 description: Audit the implemented app against dt spec artifacts — as-built extraction per track(fe|be|ux), spec diff, git-based drift detection, action-oriented report to docs/audits/.
 argument-hint: '[--scope fe|be|ux|spec|all] [--page <p>] [--resource <r>] [--app-url <url>] [--consult]'
-allowed-tools: Read, Write, Bash, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Read, Write, Bash, Grep, Glob, Task, AskUserQuestion, mcp__atlassian__getJiraIssue, mcp__claude_ai_Atlassian__getJiraIssue
 ---
 
 Run dt-audit to audit the implementation against dt spec artifacts.

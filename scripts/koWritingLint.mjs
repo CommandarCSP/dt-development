@@ -158,7 +158,7 @@ const IMPERATIVE_RE = /[가-힣](?:세요|십시오|시기\s?바랍니다)/g;
 // A~D 는 낱말과 문장을 본다. E 는 문서의 결을 본다 — 표가 절을 다 먹었는지,
 // 문장 길이가 균일한지, 나열이 설명을 대신하는지. 낱말을 다 지켜도 읽기 힘든
 // 글이 나오는 층이라 따로 둔다. 판정은 전부 MINOR 다(사람이 고칠 힌트).
-const PROSE_DOC_TYPES = new Set(['guide', 'confluence', 'explain', 'handbook']);
+const PROSE_DOC_TYPES = new Set(['guide', 'confluence', 'handbook']);
 /** 한 절에서 표가 이만큼을 넘고 산문 문장이 이보다 적으면 표를 잘못 고른 것이다. */
 const E1_TABLE_RATIO = 0.5;
 const E1_MIN_PROSE_SENTENCES = 3;
@@ -613,7 +613,7 @@ function formatTable(result) {
   return rows.join('\n');
 }
 
-const DOC_TYPES = ['jira', 'confluence', 'guide', 'explain', 'spec', 'handbook'];
+const DOC_TYPES = ['jira', 'confluence', 'guide', 'spec', 'handbook'];
 const USAGE = `Usage: node scripts/koWritingLint.mjs <file.md> [--json] [--docType ${DOC_TYPES.join('|')}]\n`;
 
 // exit 계약: findings 0 → 0, 있음 → 1. 사용법·IO 오류만 2 (게이트가 둘을 구분해야 한다).

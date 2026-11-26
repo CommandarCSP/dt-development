@@ -73,12 +73,24 @@ severity 분포: CRITICAL n · HIGH n · MEDIUM n · LOW n
 |---|---|
 | FR-1 (feed) | src/pages/feed.tsx, src/hooks/useFeed.ts |
 | IF-3 | src/services/posts.ts ↔ api/src/posts/posts.controller.ts |
+
+## 후속 기록
+
+| finding | 기록한 곳 | 기록한 run |
+|---|---|---|
+| A-001, A-004 | DEV-31 | 2026-11-26-all |
+| A-006 | pending.md | 2026-11-26-all |
 ```
+
+"후속 기록" 표는 SKILL §6에서 기록한 것만 적는다. 기록이 없으면 표를 두지 않는다. 다음 run은 이 표를 이어받아(잔존 행은 그대로 옮기고, 해결된 finding의 행은 뺀다) 자기 traceability.md 끝에 다시 쓴다.
 
 ## 증분 감사 표기
 
 이전 run의 findings와 sourceRef+evidence로 매칭해 각 finding에 상태를 병기:
 `신규` | `잔존(A-003→A-001)` | 해결된 것은 섹션 2 끝에 "해결됨 n건: A-002, ..." 한 줄.
+
+잔존 finding이 "후속 기록"에 있으면 기록한 곳을 붙인다: `잔존(A-003→A-001) · DEV-31 진행 중`. 이슈 상태는 `tracker: jira`일 때만 읽고, 아니면 `· DEV-31`처럼 키만 적는다.
+- **이슈는 완료인데 finding이 남았으면** 그 finding을 요약 매트릭스 아래 한 줄로 따로 알린다: "DEV-31은 완료인데 A-001이 남아 있다 — 고친 범위가 스펙과 다르다". 같은 지적이 조용히 쌓이지 않게 하는 장치다.
 
 ## decisions.md (협의 결과 — run 폴더 내)
 

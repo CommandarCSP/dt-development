@@ -8,6 +8,8 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { lintKoWriting } from '../koWritingLint.mjs';
+import { linkHosts, linkRegex } from './sources.mjs';
+
 
 const FM_RE = /^---\n([\s\S]*?)\n---\n?/;
 const SECTION_RE = /^##\s+(\d)\.\s/gm;
@@ -25,9 +27,10 @@ const SECRET_RES = [
   { why: '이메일', re: /\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b/g },
   { why: '개인 홈 경로', re: /\/(?:Users|home)\/[A-Za-z0-9._-]+/g },
 ];
-const EXTERNAL_RES = [
+// 위키·트래커 링크는 호스트가 팀마다 다르다 — scripts/handbook/sources.mjs linkHosts(기본 Atlassian·Notion + 팀 설정의 site).
+const externalRes = (projectRoot) => [
   { why: '티켓 키', re: /\b[A-Z][A-Z0-9]+-\d+\b/g },
-  { why: '위키 링크', re: /https?:\/\/[\w.-]*atlassian\.net\S*/g },
+  { why: '위키 링크', re: linkRegex(linkHosts(projectRoot)) },
 ];
 
 /** 한글 리뷰 영수증의 해시 — front matter 를 뺀 본문만 본다(머리말을 고쳐도 리뷰는 유효하다). */
@@ -161,7 +164,7 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
   }
 
   // ── G8: 유출 ───────────────────────────────────────────────────────
-  const rules = config.audience === 'external' ? [...SECRET_RES, ...EXTERNAL_RES] : SECRET_RES;
+  const rules = config.audience === 'external' ? [...SECRET_RES, ...externalRes(projectRoot)] : SECRET_RES;
   const allow = new Set(config.allowInQuotes ?? []);
   for (const { why, re } of rules) {
     for (const m of body.matchAll(re)) {

@@ -11,7 +11,7 @@ user-invocable: false
 
 ## 왜 있는가
 
-한글 리뷰는 이미 `dt-worklog-sync`·`dt-confluence-doc`·`dt-explain`·`dt-guide` 안에 들어 있다.
+한글 리뷰는 이미 `dt-worklog-sync`·`dt-confluence-doc`·`dt-guide`·`dt-handbook` 안에 들어 있다.
 다만 그 넷은 **자기 산출물에만** 붙는다 — Jira 로 나가는 글, Confluence 로 나가는 글, 가이드 PDF.
 정작 저장소에 남는 글(README·CHANGELOG·배포 문서·스펙·앱 UI 문구)은 아무도 보지 않았고,
 사람이 "이 문서 한국어 좀 봐줘" 라고 부를 데도 없었다. 이 스킬이 그 자리다.
@@ -29,7 +29,7 @@ user-invocable: false
 ```
 /dt-ko                    git 변경분(staged + unstaged) 중 한글 .md
 /dt-ko <파일…>            지정한 파일
-/dt-ko --docType <type>   판정을 강제 (jira|confluence|guide|explain|spec)
+/dt-ko --docType <type>   판정을 강제 (jira|confluence|guide|handbook|spec)
 /dt-ko --fix              표를 보인 뒤 승인 없이 적용 (사용자가 미리 허용했을 때만)
 ```
 

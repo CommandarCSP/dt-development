@@ -1,6 +1,6 @@
 ---
 description: Check Korean prose in the given files (or the git diff) — mechanical lint plus one isolated review pass, shown as before/after and applied only on approval.
-argument-hint: '[파일…] [--docType jira|confluence|guide|explain|spec] [--fix]'
+argument-hint: '[파일…] [--docType jira|confluence|guide|handbook|spec] [--fix]'
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, AskUserQuestion
 ---
 
@@ -11,7 +11,7 @@ Raw arguments: `$ARGUMENTS`
 ## 인자
 - (없음): git 변경분(staged + unstaged) 중 한글 `.md` 를 대상으로 한다.
 - `<파일…>`: 그 파일만 본다.
-- `--docType <type>`: 경로로 하는 자동 판정을 덮어쓴다(`jira`·`confluence`·`guide`·`explain`·`spec`).
+- `--docType <type>`: 경로로 하는 자동 판정을 덮어쓴다(`jira`·`confluence`·`guide`·`handbook`·`spec`).
 - `--fix`: 표를 보인 뒤 승인 없이 적용한다. **사용자가 미리 허용했을 때만** 쓴다.
 
 ## 동작
