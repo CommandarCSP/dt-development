@@ -8,14 +8,18 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderMarkdown } from '../guide/markdown.mjs';
 import { assembleGuideHtml, buildFontCss } from '../guide/assemble.mjs';
-import { loadChromium, assetMime } from '../guide/build.mjs';
+import { loadChromium, assetMime, logoHtml } from '../guide/build.mjs';
+import { docLabels, resolveDocStyle, themeCss } from '../lib/docOutput.mjs';
 import { renderToPdf } from './render.mjs';
 import { runGate, splitSections } from './gate.mjs';
 
 const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const readTemplate = () =>
-  readFileSync(join(PLUGIN_ROOT, 'templates', 'handbook-theme.html'), 'utf8')
+// 프로젝트가 docs/handbook/theme.override.html 을 두면 그걸 쓴다(가이드와 같은 규칙). 도형 키트 CSS 는 어느 쪽이든 넣는다.
+const readTemplate = (handbookDir) => {
+  const override = join(handbookDir, 'theme.override.html');
+  return readFileSync(existsSync(override) ? override : join(PLUGIN_ROOT, 'templates', 'handbook-theme.html'), 'utf8')
     .replace('{{FIGURES_CSS}}', () => readFileSync(join(PLUGIN_ROOT, 'templates', 'handbook-figures.css'), 'utf8'));
+};
 
 export async function buildHandbook({ projectRoot, pdf = true, onlySection, figures = true, playwrightFrom }) {
   projectRoot = resolve(projectRoot);
@@ -23,6 +27,9 @@ export async function buildHandbook({ projectRoot, pdf = true, onlySection, figu
   if (!first.ok) { const e = new Error('GATE_FAILED'); e.findings = first.findings; throw e; }
   const { meta, body, config, structure, handbookDir } = first;
 
+  const language = config.language ?? 'ko';
+  const labels = docLabels(language);
+  const style = resolveDocStyle(config);
   const excerpt = onlySection !== undefined && onlySection !== null;
   const sections = splitSections(body);
   if (excerpt && !sections[onlySection]) {
@@ -32,14 +39,15 @@ export async function buildHandbook({ projectRoot, pdf = true, onlySection, figu
   }
   // 발췌본은 어느 판에서 뽑았는지 스스로 밝힌다 — 한 달 뒤에 어느 게 최신인지 알아야 한다.
   const content = excerpt
-    ? `> 이 문서는 전권 ${meta.version} 에서 ${onlySection}장만 뽑음 (${new Date().toISOString().slice(0, 10)})\n\n${sections[onlySection]}`
+    ? `> ${labels.excerpt(meta.version, onlySection, new Date().toISOString().slice(0, 10))}\n\n${sections[onlySection]}`
     : body;
 
   const html = assembleGuideHtml({
     markdown: content,
-    theme: readTemplate(),
+    theme: readTemplate(handbookDir),
     version: meta.version,
-    title: `${config.product} ${meta.version} 개발 핸드북`,
+    title: `${config.product} ${meta.version} ${labels.handbookTitle}`,
+    lang: language, tocTitle: labels.toc, themeCss: themeCss(style.theme), logoHtml: logoHtml(handbookDir, style.theme.logo),
     fontCss: buildFontCss((name) => readFileSync(join(PLUGIN_ROOT, 'templates', 'fonts', name))),
     renderMarkdown,
     resolveAsset: (rel) => {
@@ -60,7 +68,7 @@ export async function buildHandbook({ projectRoot, pdf = true, onlySection, figu
     const suffix = `${excerpt ? `-s${onlySection}` : ''}${figures ? '' : '-draft'}`;
     const out = join(handbookDir, config.pdfName.replace(/\.pdf$/, `${suffix}.pdf`));
     ({ figureErrors } = await renderToPdf({
-      html, pdfPath: out, chromium, product: config.product, version: meta.version,
+      html, pdfPath: out, chromium, product: config.product, version: meta.version, pageSize: style.pageSize,
     }));
     if (figures && figureErrors.length > 0) {
       const second = runGate({ projectRoot, figureErrors });

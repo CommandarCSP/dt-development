@@ -57,7 +57,7 @@ user-invocable: false
 
 ### §0. 설정
 
-1. `<projectRoot>/.dt-handbook.json` 이 없으면 `${CLAUDE_PLUGIN_ROOT}/templates/dt-handbook.json.tmpl` 로 만든다 — `{{PRODUCT}}` 는 `package.json` 의 `name`(사람이 읽는 이름이 따로 있으면 질문), `{{PDF_NAME}}` 은 ASCII `<Product>-Handbook.pdf`.
+1. `<projectRoot>/.dt-handbook.json` 이 없으면 `${CLAUDE_PLUGIN_ROOT}/templates/dt-handbook.json.tmpl` 로 만든다 — `{{PRODUCT}}` 는 `package.json` 의 `name`(사람이 읽는 이름이 따로 있으면 질문), `{{PDF_NAME}}` 은 ASCII `<Product>-Handbook.pdf`. 버전 출처·언어·테마·용지·진입점 패턴 추가(`entrypoints.extraPatterns`)는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/doc-output.md` 를 따른다 — JS 밖의 언어는 내장 패턴이 진입점을 못 찾으니 analyze 전에 패턴을 더할지 묻는다.
 2. `docs/handbook/` 이 있으면 재실행이다: `inventory.md`·`structure.json`·`traces/*`·`handbook.md`·영수증의 유무를 표로 보이고, 있는 것은 `prior…Path` 로 워커에 넘긴다.
 3. `.gitignore` 에 `.dt-handbook/`(스크래치)·`docs/handbook/handbook.html`·`docs/handbook/handbook-s*.html`(빌드 중간 산출)이 없으면 그 줄을 더한다(바꿀 줄을 보이고 확인 — 무인이면 더한 뒤 기록).
 4. **근거 원천 정하기** — `node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/sources.mjs" <projectRoot>` 의 결과(`sources`)를 워커에 넘긴다.
@@ -104,14 +104,14 @@ user-invocable: false
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/build.mjs" <projectRoot>` — 종료 코드 0 통과, 1 게이트 실패·렌더 오류, 2 사용법 오류. 점검만 할 때는 `--gate-only`.
 2. 게이트가 막으면 findings 를 그대로 보이고 멈춘다.
-   - **G1/G1-b** — front matter 와 본문의 버전을 `package.json` 에 맞춘다.
+   - **G1/G1-b** — front matter 와 본문의 버전을 프로젝트 버전(`versionSource`, `docs/refs/doc-output.md`)에 맞춘다.
    - **G2** — 인벤토리에 있는 군집이 문서에 없다. 그 장을 다시 쓴다.
    - **G3** — 근거 파일·줄이 어긋난다. `파일:줄` 을 고치거나 `/dt-handbook trace --flow <이름>` 을 다시 돈다.
    - **G4** — 6장에만 있는 모듈이다. 4·5장에 그 모듈을 넣는다. 구조 장이 런타임 장에 얹혀 있다는 신호다.
-   - **G5** — 머메이드 문법·A4 폭 초과·캡션 누락·손 SVG 6장 초과. 그림을 고친다.
+   - **G5** — 머메이드 문법·용지 폭 초과(`pdf.pageSize`, 기본 A4)·캡션 누락·손 SVG 6장 초과. 그림을 고친다.
    - **G6** — 문체. 이모지와 지시문은 BLOCK 이다.
    - **G7** — 한글 리뷰를 안 받았거나, 리뷰 뒤에 본문을 고쳤거나, 마지막 회차의 기계 검사가 깨끗하지 않다. §3-3 의 수렴 루프를 다시 돌고 영수증을 새로 남긴다.
-   - **G8** — 토큰·이메일·개인 홈 경로가 보인다(`audience: external` 이면 티켓 키·위키 링크도 — 위키 링크는 Atlassian·Notion과 팀 설정 `.dt-confluence.json`·`.dt-worklog.json` 의 `site` 호스트). 가리거나, 제품이 일부러 보여 주는 값이면 `allowInQuotes` 에 적어 통과시킨다(그냥 통과와 적어서 통과는 다르다).
+   - **G8** — 토큰·이메일·개인 홈 경로가 보인다(`audience: external` 이면 티켓 키·위키 링크도 — 티켓 키는 트래커 키 형식이나 `ticketKeyPattern` 이 있을 때만 본다(`docs/refs/doc-output.md` §3). 위키 링크는 Atlassian·Notion과 팀 설정 `.dt-confluence.json`·`.dt-worklog.json` 의 `site` 호스트). 가리거나, 제품이 일부러 보여 주는 값이면 `allowInQuotes` 에 적어 통과시킨다(그냥 통과와 적어서 통과는 다르다).
    - **G9** — 분석 이후 근거 파일이 바뀌었다. 메시지가 짚어 주는 명령을 그대로 돈다.
 3. 통과하면 PDF·영수증 경로를 보인다. `--pdf-only-section N` 을 줬으면 발췌본 경로도 함께.
 4. **가정 목록** — 이번 실행에서 `assumed` 가 붙은 항목을 표 [항목 · 고른 값 · 사유]로 모아 보인다.

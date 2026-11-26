@@ -29,7 +29,7 @@ description: /dt-handbook write 워커 — 인벤토리·structure.json·추적 
 
 1. **읽는다** — 위 세 참조 + 인벤토리 + `structure.json` + `traces/*.json`. 코드를 새로 뒤지지 않는다. 재료가 모자라면 그 사실을 `coverage.missing` 으로 올린다.
 
-2. **8장을 쓴다.** `docs/handbook/handbook.md`. front matter 는 `${CLAUDE_PLUGIN_ROOT}/templates/handbook.md.tmpl` 을 따르고 `version` 은 대상 `package.json` 과 같아야 한다(G1).
+2. **8장을 쓴다.** `docs/handbook/handbook.md`. front matter 는 `${CLAUDE_PLUGIN_ROOT}/templates/handbook.md.tmpl` 을 따르고 `version` 은 대상 프로젝트 버전(`versionSource`, `${CLAUDE_PLUGIN_ROOT}/docs/refs/doc-output.md`)과 같아야 한다(G1).
    - `sections` 가 오면 **그 장만** 새로 쓰고 나머지는 원문 그대로 둔다.
    - `priorDraftPath` 가 있으면 바뀌지 않은 장은 다시 쓰지 않는다.
 

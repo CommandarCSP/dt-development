@@ -7,7 +7,7 @@
 - 독자는 제품을 **처음 보는 사람**이다. 개발 용어는 첫 등장에서 풀어 쓴다(C3). 2인칭('여러분'·'당신')은 피하고 필요하면 주어를 생략한다.
 - **그림 한 장은 한 절에서만** 쓴다. 같은 화면이 4절(흐름)과 5절(화면 안내)에 둘 다 필요하면 4절에는 흐름 속 장면, 5절에는 화면 전체로 **다른 그림**을 쓰거나, 한쪽은 글로 참조한다.
 - 없는 절은 **뺀다**. 빈 절을 남기지 않는다.
-- 사내 시스템 주소·티켓 키·개발 환경 흔적은 쓰지 않는다(G5).
+- 사내 시스템 주소·티켓 키·개발 환경 흔적은 쓰지 않는다(G5 — 티켓 키는 트래커 키 형식이나 `ticketKeyPattern`이 있을 때 막는다).
 
 ## 절
 
@@ -78,7 +78,7 @@
 ## front matter
 
 ```yaml
-version: <package.json version>
+version: <프로젝트 버전>
 manualShotsReviewedAt: <같은 값 — 첫 판>
 covers:
   - item: S1
@@ -93,4 +93,4 @@ changelogCovers: [<이번 버전 굵은 제목>]  # CHANGELOG 가 있을 때만
 
 `covers`는 인벤토리의 `publish: true` 항목 **전부**를 가리켜야 한다(G2 양방향).
 
-`version`과 `manualShotsReviewedAt`은 둘 다 `x.y.z` 형식이어야 하고, `version`은 프로젝트 `package.json`의 값과 같아야 한다(G1). MINOR가 오르면 `manualShotsReviewedAt`도 올린다(G4).
+`version`과 `manualShotsReviewedAt`은 둘 다 `x.y.z` 형식이어야 하고, `version`은 프로젝트 버전(설정 `versionSource`, 기본은 `package.json` → `Cargo.toml` → `pyproject.toml` — `docs/refs/doc-output.md`)과 같아야 한다(G1). MINOR가 오르면 `manualShotsReviewedAt`도 올린다(G4).

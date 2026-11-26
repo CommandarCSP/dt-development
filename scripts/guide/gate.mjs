@@ -5,12 +5,15 @@
  */
 import { createHash } from 'node:crypto';
 import { splitFrontMatter } from './frontMatter.mjs';
+import { TICKET_KEY_ALLOW, findTicketKeys } from '../lib/docOutput.mjs';
 
 export const DEFAULT_FORBIDDEN_MARKERS = ['/Users/', 'GH_TOKEN', '.env.'];
-/** 사내 티켓 키(PROJ-43·TASK-338 …) — 사외 PDF 에 나갈 수 없다. */
+/**
+ * 아무 대문자 접두어 + 숫자 모양. 기본 판정에는 **쓰지 않는다**(ES-2015·PEP-8 을 막는다) —
+ * 팀이 `ticketKeyPattern` 으로 직접 켤 때의 예시값이다. 실제 판정 패턴은 resolveTicketKeyRule(docs/refs/doc-output.md).
+ */
 export const TICKET_KEY_RE = /\b[A-Z][A-Z0-9]+-\d+\b/;
-/** 티켓 키처럼 생겼지만 표준 약어인 접두사 — UTF-8·ISO-8601·RFC-2119 … */
-export const TICKET_KEY_ALLOW = new Set(['ISO', 'UTF', 'SHA', 'RFC', 'AES', 'HTTP', 'MP3', 'MP4', 'H2', 'CVE']);
+export { TICKET_KEY_ALLOW };
 const SEMVER_RE = /^\d+\.\d+\.\d+$/;
 
 export function parseGuideSource(raw) {
@@ -140,7 +143,8 @@ export function checkShotText({ id, text, forbiddenMarkers = [], allowInShots = 
   }));
 }
 
-export function checkGuide({ meta, body, appVersion, inventoryItems, changelogItems, shotExists, forbiddenMarkers = DEFAULT_FORBIDDEN_MARKERS }) {
+/** ticketKeyRe: 막을 티켓 키 패턴(resolveTicketKeyRule). 없으면 티켓 키는 보지 않는다. */
+export function checkGuide({ meta, body, appVersion, inventoryItems, changelogItems, shotExists, forbiddenMarkers = DEFAULT_FORBIDDEN_MARKERS, ticketKeyRe = null }) {
   const findings = [];
   const push = (gate, message) => findings.push({ gate, message });
 
@@ -187,9 +191,8 @@ export function checkGuide({ meta, body, appVersion, inventoryItems, changelogIt
   // G5
   body.split('\n').forEach((line, idx) => {
     for (const marker of forbiddenMarkers) if (line.includes(marker)) push('G5', `사내 표지 발견 — 본문 ${idx + 1}행의 "${marker}". 공개 배포 자산에 나갈 수 없다.`);
-    for (const t of line.matchAll(new RegExp(TICKET_KEY_RE.source, 'g'))) {   // 한 줄에 여러 개면 전부
-      if (TICKET_KEY_ALLOW.has(t[0].split('-')[0])) continue;
-      push('G5', `티켓 키 발견 — 본문 ${idx + 1}행의 "${t[0]}". 공개 배포 자산에 나갈 수 없다.`);
+    for (const key of findTicketKeys(line, ticketKeyRe)) {              // 한 줄에 여러 개면 전부
+      push('G5', `티켓 키 발견 — 본문 ${idx + 1}행의 "${key}". 공개 배포 자산에 나갈 수 없다.`);
     }
   });
 

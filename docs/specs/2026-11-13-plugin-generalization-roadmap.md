@@ -167,6 +167,7 @@
 - 문제: `dt-guide` 게이트가 `[A-Z]+-\d+`를 전부 사내 티켓으로 차단(`ES-2015`·`PEP-8` 오탐). `language` 설정이 있으나 미사용. 버전은 `package.json`만, PDF A4·강조색·Pretendard 고정. 핸드북 진입점 감지가 JS/Node 전용.
 - 할 일: `forbiddenMarkers`·`ticketKeyPattern` opt-in, `versionSource`(package.json|Cargo.toml|file|git-tag), `theme.{accent,logo,font}`, `pdf.pageSize`, 진입점 패턴 확장 지점.
 - 완료 기준: 기본 설정에서 일반 약어 오탐 0, `language`가 게이트·폰트·개요에 반영.
+- **완료(DEV-22, 2026-11-26).** 공통 모듈 `scripts/lib/docOutput.mjs`와 설명 `docs/refs/doc-output.md`를 두고 가이드·핸드북이 같은 키를 받게 했다. 티켓 키는 기본으로 끄고 키 형식을 알 때만 막는다(`ticketKeyPattern` → 트래커 `defaultProjectKey` → `issueKeyPattern`, 표준 약어 접두어는 늘 넘긴다). `versionSource`는 `auto`(package.json → Cargo.toml → pyproject.toml)·`git-tag`·`file:<경로>`. `theme.{accent,font,logo}`·`pdf.pageSize`(핸드북 그림 폭 검사도 용지 폭을 따른다), 핸드북 테마 통째 바꾸기. 진입점은 Express·Koa·Fastify·Next.js와 설정 패턴 `entrypoints.extraPatterns`(다른 언어 파일도 읽는다). `language`는 PDF 틀(목차·제목 꼬리·발췌 머리말·`<html lang>`)에 반영했다. **게이트 쪽 반영(언어가 `ko`가 아니면 한글 검사·리뷰를 끄는 일)은 GEN-16과 함께 보류했다** — 영어 본문 파이프라인이 없는 지금 끄면 검사 없는 한글 본문이 나간다. 글꼴은 Pretendard가 라틴 글자도 덮어 언어별로 바꾸지 않고 `theme.font`로 연다. 확인(dogfood): scratchpad에 `Cargo.toml`만 있는 Rust 프로젝트를 두고 `audience: external` · `language: en` · `pdf.pageSize: Letter` · `theme.accent`로 핸드북 PDF를 실제로 만들었다. 버전 0.7.0을 Cargo.toml에서 읽었고, 본문의 `ES-2015`·`UTF-8`은 막히지 않았고, PDF 용지는 612×792pt(Letter), 제목은 "Developer Handbook", 목차는 "Contents"였다.
 
 ## 버그
 

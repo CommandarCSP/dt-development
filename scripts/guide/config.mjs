@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_FORBIDDEN_MARKERS } from './gate.mjs';
+import { resolveDocStyle } from '../lib/docOutput.mjs';
 
 /** .dt-guide.json + 기본값. 기존 .dt-frontend.json·.dt-confluence.json 관례. */
 export function loadGuideConfig(projectRoot) {
@@ -9,6 +10,7 @@ export function loadGuideConfig(projectRoot) {
   const pkg = existsSync(join(projectRoot, 'package.json')) ? JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8')) : {};
   const product = raw.product ?? pkg.name ?? 'Product';
   const ascii = String(product).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'Product';
+  const style = resolveDocStyle(raw);                              // theme·pdf — docs/refs/doc-output.md
   return {
     product,
     language: raw.language ?? 'ko',
@@ -23,5 +25,10 @@ export function loadGuideConfig(projectRoot) {
     allowInShots: raw.allowInShots ?? [],
     distribution: raw.distribution ?? [],
     pluginRoot: raw.pluginRoot,
+    versionSource: raw.versionSource ?? 'auto',
+    ticketKeyPattern: raw.ticketKeyPattern,
+    theme: style.theme,
+    pageSize: style.pageSize,
+    warnings: style.warnings,
   };
 }

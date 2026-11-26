@@ -9,6 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { lintKoWriting } from '../koWritingLint.mjs';
 import { linkHosts, linkRegex } from './sources.mjs';
+import { readAppVersion, resolveTicketKeyRule, resolveDocStyle, TICKET_KEY_ALLOW } from '../lib/docOutput.mjs';
 
 
 const FM_RE = /^---\n([\s\S]*?)\n---\n?/;
@@ -28,10 +29,14 @@ const SECRET_RES = [
   { why: '개인 홈 경로', re: /\/(?:Users|home)\/[A-Za-z0-9._-]+/g },
 ];
 // 위키·트래커 링크는 호스트가 팀마다 다르다 — scripts/handbook/sources.mjs linkHosts(기본 Atlassian·Notion + 팀 설정의 site).
-const externalRes = (projectRoot) => [
-  { why: '티켓 키', re: /\b[A-Z][A-Z0-9]+-\d+\b/g },
-  { why: '위키 링크', re: linkRegex(linkHosts(projectRoot)) },
-];
+// 티켓 키는 트래커 설정의 키 형식이 있을 때만 본다(docs/refs/doc-output.md) — 아무 대문자-숫자를 막으면 UTF-8·ES-2015 가 걸린다.
+const externalRes = (projectRoot, config) => {
+  const ticket = resolveTicketKeyRule(projectRoot, config).re;
+  return [
+    ...(ticket ? [{ why: '티켓 키', re: ticket, ticket: true }] : []),
+    { why: '위키 링크', re: linkRegex(linkHosts(projectRoot)) },
+  ];
+};
 
 /** 한글 리뷰 영수증의 해시 — front matter 를 뺀 본문만 본다(머리말을 고쳐도 리뷰는 유효하다). */
 export const koReviewHash = (body) => createHash('sha256').update(body, 'utf8').digest('hex');
@@ -68,7 +73,6 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
   const mdPath = join(handbookDir, 'handbook.md');
   const cfgPath = join(projectRoot, '.dt-handbook.json');
   const structPath = join(handbookDir, 'structure.json');
-  const pkgPath = join(projectRoot, 'package.json');
 
   for (const [p, what] of [[mdPath, 'docs/handbook/handbook.md'], [cfgPath, '.dt-handbook.json'], [structPath, 'docs/handbook/structure.json']]) {
     if (!existsSync(p)) block('G0', `${what} 이 없다 — /dt-handbook analyze 부터 돈다`);
@@ -78,7 +82,11 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
   const config = JSON.parse(readFileSync(cfgPath, 'utf8'));
   const structure = JSON.parse(readFileSync(structPath, 'utf8'));
   const { meta, body } = parseFrontMatter(readFileSync(mdPath, 'utf8'));
-  const appVersion = existsSync(pkgPath) ? (JSON.parse(readFileSync(pkgPath, 'utf8')).version ?? null) : null;
+  // 버전 출처: versionSource(기본 auto). auto 로 못 찾으면 G1 을 건너뛴다 — 버전이 없는 저장소도 있다.
+  const ver = readAppVersion(projectRoot, config.versionSource ?? 'auto');
+  const appVersion = ver.version;
+  if (!appVersion && config.versionSource && config.versionSource !== 'auto') block('G1', ver.error);
+  for (const w of resolveDocStyle(config).warnings) minor('G0', `.dt-handbook.json ${w}`);
 
   if (!meta) {
     block('G0', 'handbook.md 에 front matter 가 없다');
@@ -87,7 +95,7 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
 
   // ── G1 / G1-b: 버전 ────────────────────────────────────────────────
   if (appVersion && meta.version !== appVersion) {
-    block('G1', `front matter version(${meta.version}) 이 package.json(${appVersion}) 과 다르다`);
+    block('G1', `front matter version(${meta.version}) 이 ${ver.from}(${appVersion}) 과 다르다`);
   }
   if (appVersion) {
     for (const m of body.matchAll(VERSION_IN_BODY_RE)) {
@@ -164,11 +172,12 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
   }
 
   // ── G8: 유출 ───────────────────────────────────────────────────────
-  const rules = config.audience === 'external' ? [...SECRET_RES, ...externalRes(projectRoot)] : SECRET_RES;
+  const rules = config.audience === 'external' ? [...SECRET_RES, ...externalRes(projectRoot, config)] : SECRET_RES;
   const allow = new Set(config.allowInQuotes ?? []);
-  for (const { why, re } of rules) {
+  for (const { why, re, ticket } of rules) {
     for (const m of body.matchAll(re)) {
       if (allow.has(m[0])) continue;
+      if (ticket && TICKET_KEY_ALLOW.has(m[0].split('-')[0])) continue;
       block('G8', `${why} 가 보인다: ${m[0]}`);
     }
   }

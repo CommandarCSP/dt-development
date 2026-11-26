@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseGuideSource, extractChangelogItems, checkGuide, checkShotText, checkKoReview, koReviewHash, DEFAULT_FORBIDDEN_MARKERS, TICKET_KEY_ALLOW } from '../scripts/guide/gate.mjs';
+import { parseGuideSource, extractChangelogItems, checkGuide, checkShotText, checkKoReview, koReviewHash, DEFAULT_FORBIDDEN_MARKERS, TICKET_KEY_ALLOW, TICKET_KEY_RE } from '../scripts/guide/gate.mjs';
 
 const GUIDE = `---
 version: 0.3.3
@@ -82,7 +82,7 @@ test('G4: MINOR 이 올랐는데 manualShotsReviewedAt 이 옛 값', () => {
 
 test('G5: 기본 금칙어·티켓 키 패턴·추가 금칙어, 행 번호 표기', () => {
   const p = parseGuideSource(GUIDE.replace('본문.', '본문. 경로 /Users/me 와 PROJ-43 참고 https://git.example.com'));
-  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, forbiddenMarkers: [...DEFAULT_FORBIDDEN_MARKERS, 'git.example.com'] });
+  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, forbiddenMarkers: [...DEFAULT_FORBIDDEN_MARKERS, 'git.example.com'], ticketKeyRe: TICKET_KEY_RE });
   const g5 = r.findings.filter((f) => f.gate === 'G5');
   assert.equal(g5.length, 3);
   assert.ok(g5.every((f) => /2행/.test(f.message)));
@@ -90,16 +90,23 @@ test('G5: 기본 금칙어·티켓 키 패턴·추가 금칙어, 행 번호 표�
 
 test('G5: 표준 약어(UTF-8·ISO-8601 …)는 티켓 키로 보지 않는다', () => {
   const p = parseGuideSource(GUIDE.replace('본문.', '본문. UTF-8 인코딩과 ISO-8601 날짜, RFC-2119 를 쓴다.'));
-  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true });
+  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, ticketKeyRe: TICKET_KEY_RE });
   assert.deepEqual(r, { ok: true });
   assert.ok(TICKET_KEY_ALLOW.has('UTF') && TICKET_KEY_ALLOW.has('ISO'));
   const q = parseGuideSource(GUIDE.replace('본문.', '본문. PROJ-43 참고.'));
-  assert.deepEqual(gates(checkGuide({ meta: q.meta, body: q.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true })), ['G5']);
+  assert.deepEqual(gates(checkGuide({ meta: q.meta, body: q.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, ticketKeyRe: TICKET_KEY_RE })), ['G5']);
+});
+
+test('G5: 티켓 키 패턴을 안 넘기면(기본) ES-2015·PEP-8·PROJ-43 모두 보지 않는다', () => {
+  const p = parseGuideSource(GUIDE.replace('본문.', '본문. ES-2015 문법과 PEP-8, PROJ-43.'));
+  assert.deepEqual(checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true }), { ok: true });
+  const only = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, ticketKeyRe: /\bPROJ-\d+\b/ });
+  assert.deepEqual(only.findings.map((f) => f.message.match(/"(.+?)"/)[1]), ['PROJ-43']);
 });
 
 test('G5: 한 줄에 티켓 키가 여럿이면 전부 보고한다', () => {
   const p = parseGuideSource(GUIDE.replace('본문.', '본문. PROJ-43 과 TASK-338 과 UTF-8.'));
-  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true });
+  const r = checkGuide({ meta: p.meta, body: p.body, appVersion: '0.3.3', inventoryItems: ITEMS, shotExists: () => true, ticketKeyRe: TICKET_KEY_RE });
   const g5 = r.findings.filter((f) => f.gate === 'G5');
   assert.equal(g5.length, 2);
   assert.ok(g5.some((f) => /PROJ-43/.test(f.message)) && g5.some((f) => /TASK-338/.test(f.message)));

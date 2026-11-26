@@ -12,14 +12,24 @@ import { parseGuideSource, checkGuide, checkShotText, checkKoReview, extractChan
 import { renderMarkdown } from './markdown.mjs';
 import { assembleGuideHtml, buildFontCss } from './assemble.mjs';
 import { collectGuideFiles, computeSourceHash } from './receipt.mjs';
+import { readAppVersion, resolveTicketKeyRule, docLabels, themeCss } from '../lib/docOutput.mjs';
 
 const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUTPUTS = (pdfName) => [pdfName, 'guide-receipt.json', 'guide.html'];
 
-function readVersion(projectRoot) {
-  const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8'));
-  if (typeof pkg.version !== 'string') throw new Error('package.json 의 version 을 읽지 못했다.');
-  return pkg.version;
+/** 버전 출처는 설정 versionSource(기본 auto: package.json → Cargo.toml → pyproject.toml). */
+function readVersion(projectRoot, source) {
+  const r = readAppVersion(projectRoot, source);
+  if (!r.version) throw new Error(r.error);
+  return r.version;
+}
+
+/** 로고 — 표지 맨 위에 넣는다. 경로는 문서 폴더 기준. */
+export function logoHtml(docDir, logo) {
+  if (!logo) return '';
+  const full = join(docDir, logo);
+  if (!existsSync(full)) throw new Error(`theme.logo 그림이 없다: ${logo} (문서 폴더 기준 경로)`);
+  return `<img class="cover-logo" alt="" src="data:${assetMime(logo)};base64,${readFileSync(full).toString('base64')}">`;
 }
 
 /** 파일 사실만 모아 순수 판정에 넘긴다(함정 ④: 조립 전에 게이트). */
@@ -28,8 +38,8 @@ export function runGate({ projectRoot }) {
   const guideDir = join(projectRoot, 'docs', 'guide');
   const fail = (reason) => ({ ok: false, findings: [{ gate: 'G0', message: reason }] });
   let appVersion, config;                                          // 읽기 실패도 G0 로 — CLI 가 스택을 토하지 않게
-  try { appVersion = readVersion(projectRoot); } catch (err) { return fail(`package.json 을 읽지 못했다 — ${err.message}`); }
   try { config = loadGuideConfig(projectRoot); } catch (err) { return fail(`.dt-guide.json 을 읽지 못했다 — ${err.message}`); }
+  try { appVersion = readVersion(projectRoot, config.versionSource); } catch (err) { return fail(`프로젝트 버전을 읽지 못했다 — ${err.message}`); }
   if (!existsSync(join(guideDir, 'inventory.md'))) return fail('docs/guide/inventory.md 가 없다 — /dt-guide analyze 를 먼저 돌려라.');
   const inv = parseInventory(readFileSync(join(guideDir, 'inventory.md'), 'utf8'));   // guide.md 보다 먼저 — analyze 직후 --gate-only 가 스키마 위반을 잡게
   if (inv.kind === 'failed') return fail(`inventory.md: ${inv.reason}`);
@@ -43,6 +53,7 @@ export function runGate({ projectRoot }) {
     changelogItems: changelogPath ? extractChangelogItems(readFileSync(changelogPath, 'utf8'), appVersion) : undefined,
     shotExists: (rel) => existsSync(join(guideDir, rel)),
     forbiddenMarkers: config.forbiddenMarkers,
+    ticketKeyRe: resolveTicketKeyRule(projectRoot, config).re,
   });
   // G6 — 그림 속 글자. `capture.mjs` 가 찍으면서 남긴 `shots/<id>.txt` 를 읽는다.
   // 그림이 아니라 그 그림을 그린 DOM 의 글자라, OCR 없이 검사할 수 있다.
@@ -105,12 +116,14 @@ export async function buildGuide({ projectRoot, pdf = true, shotsRefreshed = fal
   if (!gate.ok) { const e = new Error('GATE_FAILED'); e.findings = gate.findings; throw e; }
   const { meta, body, config, appVersion, guideDir } = gate;
 
+  const labels = docLabels(config.language);
   const themePath = existsSync(join(guideDir, 'theme.override.html')) ? join(guideDir, 'theme.override.html') : join(PLUGIN_ROOT, 'templates', 'guide-theme.html');
   const html = assembleGuideHtml({
     markdown: body,
     theme: readFileSync(themePath, 'utf8'),
     version: meta.version,
-    title: `${config.product} ${meta.version} 사용 안내`,
+    title: `${config.product} ${meta.version} ${labels.guideTitle}`,
+    lang: config.language, tocTitle: labels.toc, themeCss: themeCss(config.theme), logoHtml: logoHtml(guideDir, config.theme.logo),
     fontCss: buildFontCss((name) => readFileSync(join(PLUGIN_ROOT, 'templates', 'fonts', name))),
     renderMarkdown,
     resolveAsset: (rel) => {
@@ -134,7 +147,7 @@ export async function buildGuide({ projectRoot, pdf = true, shotsRefreshed = fal
       await page.evaluate('document.fonts.ready');                  // 함정 ①: 안 기다리면 조용히 폴백 글꼴
       pdfPath = join(guideDir, config.pdfName);
       await page.pdf({
-        path: pdfPath, format: 'A4', printBackground: true,
+        path: pdfPath, format: config.pageSize, printBackground: true,
         margin: { top: '18mm', bottom: '18mm', left: '16mm', right: '16mm' },
         displayHeaderFooter: true, headerTemplate: '<div></div>',
         footerTemplate: `<div style="width:100%;font-size:8pt;color:#888;padding:0 16mm;font-family:-apple-system,sans-serif;display:flex;justify-content:space-between;"><span>${config.product} ${meta.version}</span><span class="pageNumber"></span></div>`,

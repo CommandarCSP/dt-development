@@ -11,6 +11,8 @@
 - **`/dt-explain`(문제 설명) 스킬·명령을 없앴다.** "설명해줘"·"왜 이래?"에 자동으로 걸려 간단한 질문에도 6절 틀과 한글 리뷰가 붙었고, 산출물이 없어 다른 흐름과 이어지지 않았다. 버그 기록은 `/dt-worklog`(Bug), 장애 정리는 `/dt-confluence`(장애 회고)가 맡는다. 호환 정책은 한 minor 동안 경고한 뒤 없애게 하지만, 팀 결정으로 바로 없앴다. 한글 검사의 `docType: explain`도 함께 없앴다 (GEN-13)
 
 ### 추가
+- 가이드·핸드북 PDF 출력 설정 `docs/refs/doc-output.md`(읽는 곳 `scripts/lib/docOutput.mjs`) — `.dt-guide.json`·`.dt-handbook.json`이 같은 키로 받는다. `versionSource`(`auto` = package.json → Cargo.toml → pyproject.toml · `git-tag` · `file:<경로>`), `ticketKeyPattern`, `theme.{accent,font,logo}`, `pdf.pageSize`(`A4` · `A5` · `Letter` · `Legal`), `language`(목차·문서 제목 문구와 `<html lang>`). 핸드북도 `docs/handbook/theme.override.html`로 테마를 통째 바꿀 수 있다 (GEN-17)
+- 핸드북 진입점 감지에 Express·Koa(router)·Fastify 라우트와 Next.js 파일 라우트(`app/**/page`·`route`, `pages/**`, `next` 의존이 있을 때만)를 더했다. 그 밖의 언어는 `.dt-handbook.json`의 `entrypoints.extraPatterns`(`ext`로 `.py`·`.go` 같은 파일도 읽는다)로 더한다 (GEN-17)
 - UX 소스 어댑터 `docs/refs/ux-sources.md` — 소스 종류별 읽는 방법(Notion·Confluence는 MCP → 없으면 `WebFetch` → 그래도 안 되면 내보낸 파일·붙여 넣기를 묻는다), 주 소스 정하기, Figma·Notion 하는 일 → 도구 대응표(접두어 세 가지), 접두어를 찾는 Figma 사전 점검, 소스별 출처 표기 (GEN-14)
 - API 규칙 프리셋 `docs/refs/api-conventions.md`와 `.dt.json`의 `conventions.preset`(`rest-v1` 기본 · `custom`) — 정의서 §3이 URL 규칙을 물을 때의 제안값. `custom`은 모양을 전제하지 않고 항목마다 묻는다(경로 규칙 없음 포함) (GEN-14)
 - `/dt-devspec --primary <locator>` — 화면·기능의 존재를 다툴 때 기준이 되는 주 소스 (GEN-14)
@@ -64,6 +66,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **가이드·핸드북의 티켓 키 검사는 키 형식을 알 때만 막는다.** 예전에는 아무 `대문자-숫자`나 사내 티켓으로 막아 `ES-2015`·`PEP-8`이 걸렸고, 핸드북 `audience: external`은 `UTF-8`·`ISO-8601`까지 막았다. 이제 `ticketKeyPattern` → 트래커 설정의 `defaultProjectKey`(`SHOP`이면 `SHOP-123`만) → `issueKeyPattern` 순으로 찾고, 없으면 보지 않는다. 예전처럼 다 막으려면 `"ticketKeyPattern": "[A-Z][A-Z0-9]+-\\d+"`를 적는다 (GEN-17)
 - **`/dt-devspec`은 Figma 없이도 시작한다.** 기획 문서(Notion·Confluence·PDF·Markdown)에서 목차 → 화면·기능 후보 → 인터페이스 후보 → 규칙 문장을 뽑는 절차를 두었고(`skills/dt-devspec/references/source-discovery.md`), Figma는 있으면 함께 쓴다. 충돌 정리의 "원본(Figma) 우선"은 "주 소스 우선"이 됐다. Figma 사전 점검도 새로 들어갔다 (GEN-14)
 - **Figma 화면의 오른쪽 주석 틀만 읽는 판별은 opt-in이 됐다.** 기본은 데이터가 오가는 화면을 통째로 한 번 읽는다. 화면을 [왼쪽 UI]+[오른쪽 주석]으로 그리는 팀은 `.dt.json`에 `"uxSources": { "figma": { "annotationLayout": "right-panel" } }`을 넣으면 예전과 같다 (GEN-14)
 - `dt-spec` Figma 사전 점검이 연결 방식별 접두어(`plugin_figma_figma`·`claude_ai_Figma`·`figma`)를 찾아 쓴다 — 예전에는 한 가지 이름으로만 확인해 다른 방식으로 연결한 사람은 "연결 안 됨"이 됐다 (GEN-14)

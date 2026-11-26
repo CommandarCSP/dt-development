@@ -49,11 +49,16 @@ test('runGate: 인벤토리에 화면을 더하면 G2, 본문에 티켓 키를 �
   const inv = join(dir, 'docs/guide/inventory.md');
   writeFileSync(inv, readFileSync(inv, 'utf8').replace('screens:\n', 'screens:\n  - id: SCR-extra\n    title: 추가\n    route: "/x"\n    capture: { mode: auto }\n    publish: true\n    source: [code:a.tsx:1]\n'));
   const g = join(dir, 'docs/guide/guide.md');
-  writeFileSync(g, readFileSync(g, 'utf8').replace('데모입니다.', '데모입니다. PROJ-43 참고.'));
+  writeFileSync(g, readFileSync(g, 'utf8').replace('데모입니다.', '데모입니다. PROJ-43 참고, ES-2015 문법.'));
   stampReview(dir);
+  // 트래커 설정이 없으면 티켓 키를 보지 않는다 — G2 만
+  assert.deepEqual([...new Set(runGate({ projectRoot: dir }).findings.map((f) => f.gate))].sort(), ['G2']);
+  // 트래커 프로젝트 키가 있으면 그 키만 막는다(ES-2015 는 통과)
+  writeFileSync(join(dir, '.dt-worklog.json'), JSON.stringify({ defaultProjectKey: 'PROJ' }));
   const r = runGate({ projectRoot: dir });
   assert.equal(r.ok, false);
   assert.deepEqual([...new Set(r.findings.map((f) => f.gate))].sort(), ['G2', 'G5']);
+  assert.deepEqual(r.findings.filter((f) => f.gate === 'G5').map((f) => f.message.match(/"(.+?)"/)[1]), ['PROJ-43']);
 });
 test('runGate: 한글 리뷰 기록이 없으면 G7 로 막는다', () => {
   const dir = tmpProject();
@@ -118,13 +123,13 @@ test('PDF smoke (대상 프로젝트에 playwright + chromium 이 있을 때만 
 });
 
 // ── G0: 설정·버전을 못 읽으면 게이트가 한 줄로 잡는다(스택 트레이스 금지) ──
-test('runGate: package.json 이 없거나 .dt-guide.json 이 깨졌으면 G0 로 실패한다', () => {
+test('runGate: 버전 출처가 없거나 .dt-guide.json 이 깨졌으면 G0 로 실패한다', () => {
   const noPkg = tmpProject();
   rmSync(join(noPkg, 'package.json'));
   const a = runGate({ projectRoot: noPkg });
   assert.equal(a.ok, false);
   assert.deepEqual(a.findings.map((f) => f.gate), ['G0']);
-  assert.match(a.findings[0].message, /package\.json 을 읽지 못했다/);
+  assert.match(a.findings[0].message, /프로젝트 버전을 읽지 못했다[\s\S]*versionSource/);
 
   const bad = tmpProject();
   writeFileSync(join(bad, '.dt-guide.json'), '{ "product": ', 'utf8');

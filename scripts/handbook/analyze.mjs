@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, realpathSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectEntrypoints } from '../entrypoints.mjs';
+import { collectEntrypoints, loadExtraPatterns } from '../entrypoints.mjs';
 import { buildDepGraph } from '../depGraph.mjs';
 import { collectWriteSites } from '../writeSites.mjs';
 import { collectHotspots } from '../hotspots.mjs';
@@ -40,9 +40,11 @@ function reachable(edges, from, hops) {
   return seen;
 }
 
-export function analyzeStructure(root, { sinceMonths = 12, runGit, headCommit } = {}) {
+export function analyzeStructure(root, { sinceMonths = 12, runGit, headCommit, extraPatterns } = {}) {
   root = resolve(root);
-  const { entrypoints } = collectEntrypoints(root);
+  // 설정 .dt-handbook.json 의 entrypoints.extraPatterns — 내장 패턴이 못 보는 언어·프레임워크를 더한다.
+  const extra = extraPatterns ? { patterns: extraPatterns, warnings: [] } : loadExtraPatterns(root);
+  const { entrypoints } = collectEntrypoints(root, { extraPatterns: extra.patterns });
   const { edges, clusters } = buildDepGraph(root);
   const { byTarget, multiOwner } = collectWriteSites(root);
   const hotspots = collectHotspots(root, { sinceMonths, runGit });
@@ -73,6 +75,7 @@ export function analyzeStructure(root, { sinceMonths = 12, runGit, headCommit } 
     data: { byTarget, multiOwner },
     hotspots,
     flowCandidates,
+    ...(extra.warnings.length ? { warnings: extra.warnings } : {}),
   };
 
   const dir = join(root, 'docs', 'handbook');
@@ -98,6 +101,7 @@ if (isMain) {
     `진입점 ${s.entrypoints.length} · 군집 ${s.clusters.length} · 데이터 대상 ${Object.keys(s.data.byTarget).length}` +
     ` · 주인 둘 이상 ${s.data.multiOwner.length} · 핫스팟 ${s.hotspots.available ? s.hotspots.files.length : '없음'}\n`,
   );
+  for (const w of s.warnings ?? []) process.stdout.write(`⚠ ${w}\n`);
   for (const f of s.flowCandidates.slice(0, 10)) {
     process.stdout.write(`  [${f.score}] ${f.kind} ${f.name} — ${f.why} (${f.file}:${f.line})\n`);
   }

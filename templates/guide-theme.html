@@ -1,4 +1,5 @@
-<!-- dt-guide 기본 테마 — 프로젝트는 docs/guide/theme.override.html 로 통째 대체할 수 있다. 자리표시자 네 개(TITLE / VERSION / FONT_CSS / CONTENT, 각각 이중 중괄호)는 scripts/guide/assemble.mjs 가 채운다. -->
+<!-- dt-guide 기본 테마 — 프로젝트는 docs/guide/theme.override.html 로 통째 대체할 수 있다. 자리표시자(TITLE / VERSION / FONT_CSS / CONTENT / LANG / THEME_CSS, 각각 이중 중괄호)는 scripts/guide/assemble.mjs 가 채운다. -->
+<html lang="{{LANG}}">
 <meta charset="utf-8" />
 <title>{{TITLE}}</title>
 <style>
@@ -100,6 +101,10 @@
   }
 
   ul, ol { padding-left: 18pt; margin: 6pt 0; }
+  .cover-logo { display: block; max-height: 48px; margin: 0 0 16pt; }
+
+  /* 설정 theme.accent·theme.font 덮어쓰기 — 맨 뒤에 둬 위 규칙을 이긴다. */
+  {{THEME_CSS}}
 </style>
 <body>
   <main data-version="{{VERSION}}">{{CONTENT}}</main>

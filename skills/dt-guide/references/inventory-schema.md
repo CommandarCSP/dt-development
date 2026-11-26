@@ -11,7 +11,7 @@
 
 | 키 | 필수 | 뜻 |
 |---|---|---|
-| `version` | ✓ | 마지막 analyze 시점의 프로젝트 `package.json` version |
+| `version` | ✓ | 마지막 analyze 시점의 프로젝트 버전(`versionSource` — `docs/refs/doc-output.md`) |
 | `analyzedAt` | ✓ | ISO 날짜 |
 | `type` | ✓ | `web` \| `electron` |
 | `product` | ✓ | 제품명(표지·PDF 파일명 근거) |

@@ -10,7 +10,9 @@ import { fileURLToPath } from 'node:url';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'dist-preload', 'build', 'out', 'release', 'coverage', '.next', '.superpowers']);
 const SRC_EXT = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs']);
 
-export function walkSourceFiles(root) {
+/** extraExts: 더 읽을 확장자(예: ['.py']) — 핸드북 진입점의 설정 패턴이 쓴다. */
+export function walkSourceFiles(root, { extraExts = [] } = {}) {
+  const exts = extraExts.length ? new Set([...SRC_EXT, ...extraExts]) : SRC_EXT;
   const out = [];
   const walk = (dir) => {
     for (const entry of readdirSync(dir)) {
@@ -20,7 +22,7 @@ export function walkSourceFiles(root) {
       const full = join(dir, entry);
       const st = statSync(full);
       if (st.isDirectory()) { walk(full); continue; }
-      if (SRC_EXT.has(extname(entry))) out.push(relative(root, full).split(sep).join(posix.sep));
+      if (exts.has(extname(entry))) out.push(relative(root, full).split(sep).join(posix.sep));
     }
   };
   walk(root);

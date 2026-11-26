@@ -132,11 +132,13 @@ test('G8: 토큰 모양 문자열을 막는다', () => {
   assert.ok(r.findings.some((f) => f.id === 'G8'));
 });
 
-test('G8: audience external 이면 티켓 키도 막는다', () => {
-  const body = '## 2. 스택\n\n결정은 ABC-123 에 있다.\n';
+test('G8: audience external 이고 티켓 키 형식이 있으면 그 키를 막는다', () => {
+  const body = '## 2. 스택\n\n결정은 ABC-123 에 있다. UTF-8 과 ES-2015 를 쓴다.\n';
   assert.equal(runGate({ projectRoot: proj({ body }) }).findings.some((f) => f.id === 'G8'), false);
-  const r = runGate({ projectRoot: proj({ body, config: { audience: 'external' } }) });
-  assert.ok(r.findings.some((f) => f.id === 'G8' && /ABC-123/.test(f.message)));
+  // 형식이 없으면(기본) 티켓 키는 보지 않는다 — 일반 표기를 막지 않게
+  assert.equal(runGate({ projectRoot: proj({ body, config: { audience: 'external' } }) }).findings.some((f) => f.id === 'G8'), false);
+  const r = runGate({ projectRoot: proj({ body, config: { audience: 'external', ticketKeyPattern: 'ABC-\\d+' } }) });
+  assert.deepEqual(r.findings.filter((f) => f.id === 'G8').map((f) => f.message), ['티켓 키 가 보인다: ABC-123']);
 });
 
 test('G8: allowInQuotes 에 적은 값은 통과시킨다', () => {

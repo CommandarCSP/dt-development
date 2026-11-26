@@ -22,7 +22,7 @@ const stripTags = (html) => html.replace(/<[^>]+>/g, '').trim();
  * **번호를 스스로 매기지 않는다**(`<ul>`). 절 제목이 이미 "0. 이 문서에 대하여"
  * 처럼 번호를 갖기 때문에 `<ol>` 을 쓰면 "1. 0. 이 문서에 대하여" 가 된다.
  */
-export function buildToc(renderedHtml) {
+export function buildToc(renderedHtml, tocTitle = '목차') {
   const entries = [];
   const used = new Map();
   const body = renderedHtml.replace(H2_RE, (whole, attrs, inner) => {
@@ -40,16 +40,20 @@ export function buildToc(renderedHtml) {
   const html =
     entries.length === 0
       ? ''
-      : `<nav class="toc"><h2 class="toc-title">목차</h2><ul>${entries
+      : `<nav class="toc"><h2 class="toc-title">${tocTitle}</h2><ul>${entries
           .map((e) => `<li><a href="#${e.id}">${e.text}</a></li>`)
           .join('')}</ul></nav>`;
 
   return { entries, html, body };
 }
 
-export function assembleGuideHtml({ markdown, theme, version, title, fontCss, renderMarkdown, resolveAsset }) {
+/**
+ * lang·tocTitle 은 문서 언어(docs/refs/doc-output.md), themeCss·logoHtml 은 설정의 theme 에서 온다.
+ * 기본 테마는 `{{LANG}}`·`{{THEME_CSS}}` 자리를 갖는다. 그 자리가 없는 덮어쓰기 테마는 제 모양을 그대로 쓴다.
+ */
+export function assembleGuideHtml({ markdown, theme, version, title, fontCss, renderMarkdown, resolveAsset, lang = 'ko', tocTitle = '목차', themeCss = '', logoHtml = '' }) {
   const rendered = renderMarkdown(markdown);
-  const toc = buildToc(rendered);
+  const toc = buildToc(rendered, tocTitle);
   const withImages = toc.body.replace(SRC_RE, (whole, attrs, src) => (isPassThrough(src) ? whole : `<img${attrs}src="${resolveAsset(src)}"`));
   // 함정 ③: 본문을 **마지막에** 끼운다 — 먼저 넣으면 본문 속 {{VERSION}} 같은 문자열이 뒤이은 치환에 걸린다.
   // 목차는 **표지 뒤**에 온다 — 표지가 1쪽이어야 한다. 표지와 본문을 가르는
@@ -58,14 +62,17 @@ export function assembleGuideHtml({ markdown, theme, version, title, fontCss, re
   const BREAK = '<div class="page-break"></div>';
   const at = withImages.indexOf(BREAK);
   const body =
-    at === -1
+    logoHtml +
+    (at === -1
       ? toc.html + withImages
-      : withImages.slice(0, at + BREAK.length) + toc.html + withImages.slice(at + BREAK.length);
+      : withImages.slice(0, at + BREAK.length) + toc.html + withImages.slice(at + BREAK.length));
 
   return theme
     .replaceAll('{{TITLE}}', () => title)
     .replaceAll('{{VERSION}}', () => version)
     .replaceAll('{{FONT_CSS}}', () => fontCss)
+    .replaceAll('{{LANG}}', () => lang)
+    .replaceAll('{{THEME_CSS}}', () => themeCss)
     .replaceAll('{{CONTENT}}', () => body);
 }
 
