@@ -34,6 +34,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 | `decisions.sharedDir` | FE·BE 저장소가 나뉘었을 때 정의서가 있는 저장소의 결정 폴더(이 프로젝트 루트 기준 상대 경로, 예: `"../web/docs/decisions"`). 결정 읽기·다음 번호·override 근거 검사가 자기 폴더와 함께 본다. 폴더가 없으면(그 저장소만 받은 CI) 못 찾은 근거는 오류 대신 경고. 경로가 사람마다 다르면 `.dt.local.json`으로 덮는다 | `null`(자기 `docs/decisions/`만) | `scripts/decisions.mjs` |
 | `tracker` | 작업 기록 트래커. `jira` · `github` · `linear` · `none`. 연동은 `jira`만 한다 — `github`·`linear`는 아직 "지원하지 않는다"고 알리고 `none`처럼 요약만 낸다. `none`은 아무 데도 쓰지 않고 정리한 작업을 마크다운으로만 보인다(`docs/refs/tracker-adapter.md`) | `"jira"` | `scripts/worklogConfig.mjs` |
 | `wiki` | 위키. `confluence` · `markdown` · `notion` · `none`. 연동은 `confluence`만 한다 — `markdown`은 같은 템플릿으로 저장소 `docs/wiki/`에 쓰고, `notion`은 아직 "지원하지 않는다"고 알리며 `none`처럼, `none`은 본문을 대화에 마크다운으로만 보인다(`docs/refs/wiki-adapter.md`) | `"confluence"` | `scripts/wikiConfig.mjs` |
+| `wrap.steps` | 마무리 루틴(`/dt-wrap`)의 단계와 순서. `commit`·`wiki`·`tracker` 중에서 고른다. 어댑터가 꺼진 단계(`wiki`가 `none`·`notion`, `tracker`가 `none`·`github`·`linear`)는 넣어 두어도 건너뛴다. Stop 훅 알림 문구도 이 단계로 만든다. 모르는 이름·중복은 경고하고 빼며, 남는 단계가 없으면 기본 순서를 쓴다 | `["commit", "wiki", "tracker"]` | `scripts/wrapState.mjs` |
 | `team.requiredMcp` | 팀이 꼭 쓰는 MCP 서버 이름 목록(예: `"figma"`, `"atlassian"`). 그 MCP를 쓰는 스킬이 시작할 때 연결을 점검한다 | `[]` | `docs/orchestration-policy.md` |
 
 에이전트가 어느 티어(`planner`·`builder`·`reviewer`)에 속하는지는 `scripts/lib/config.mjs`의 `AGENT_TIERS`가 정한다.
@@ -61,6 +62,10 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 - `gitFlow`(기본 브랜치 등) — GEN-12
 
 새 키를 넣을 때는 세 곳을 같이 바꾼다. 로더의 `DEFAULTS`와 검증, 위 표, 그리고 그 키를 실제로 읽는 코드나 스킬이다. 구조 테스트가 표와 로더가 어긋나거나 읽는 곳이 없는 키를 잡는다.
+
+## 개인 상태 파일
+
+`.dt-pipeline.local.json`은 설정이 아니라 상태다. `/dt-wrap`을 마칠 때 `lastWrapSha`(그때의 HEAD)를 남기고, Stop 훅은 이 값과 `.dt-worklog.local.json`의 `lastSyncSha` 중 더 최근 것부터 정리 안 된 커밋을 센다. 사람마다 다르므로 커밋하지 않는다(`/dt-wrap --init`이 `.gitignore`에 더한다).
 
 ## 기능별 설정은 따로 둔다
 

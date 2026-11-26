@@ -129,6 +129,7 @@
 - 문제: 마무리 순서가 커밋→Confluence→Jira로 고정. Stop 훅이 `.dt-worklog.local.json`의 `lastSyncSha`로 미정리 커밋을 셈 → 트래커를 안 쓰면 알림이 꺼지지 않음.
 - 할 일: 마무리 단계를 설정(`wrap.steps`)으로 구성, 꺼진 어댑터 단계는 생략. 훅 기준을 파이프라인 상태(`.dt-pipeline.local.json`의 `lastWrapSha`)로 이동.
 - 완료 기준: `tracker: none`, `wiki: none`에서 훅·루틴 정상 동작.
+- **완료(DEV-16, 2026-11-26).** `.dt.json` `wrap.steps`(기본 commit → wiki → tracker = 예전 순서)를 `scripts/wrapState.mjs`가 실제 단계로 바꾼다. wiki는 confluence·markdown일 때만, tracker는 jira일 때만 돌고, 뺀 단계는 이유와 함께 알린다. 루틴과 훅이 같은 계산을 써서 알림 문구도 실제 단계로 나온다. 훅 기준점은 `/dt-wrap`이 마칠 때 남기는 `.dt-pipeline.local.json` `lastWrapSha`로 옮겼고, 옛 `lastSyncSha`도 함께 봐서 더 최근 것부터 센다(`/dt-worklog`만 돌려도 조용, 기존 사용자 동작 그대로). 기준점이 dangling이면 빼고, 다 없으면 예전처럼 origin/main 기준. 단계 설명은 TP-002·TP-003 용어로 고쳤다. 확인: `tracker: none`·`wiki: none` 임시 저장소에서 실제 훅 스크립트를 돌려 커밋 단계만 권함 → 마무리(`mark`) 뒤 조용 → 새 커밋에 다시 알림을 봤고, 같은 흐름을 entry 테스트로 고정했다.
 
 ### GEN-12 git-flow 설정화
 - 문제: `main` + rebase + `--no-ff` 팀 정책을 "표준 절차"로 고정.

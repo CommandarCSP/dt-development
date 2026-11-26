@@ -59,3 +59,12 @@ test('decideSchemaNotice: 훅이 켜져 있고 /dt- 명령일 때만, 옮길 것
   assert.equal(decideSchemaNotice({ config: on, prompt: '/dt-spec', scanFn: () => [{ status: 'current' }], repoRoot: '.' }).inject, false);
   assert.equal(decideSchemaNotice({ config: on, prompt: '/dt-spec', scanFn: () => { throw new Error('x'); }, repoRoot: '.' }).inject, false, '실패해도 막지 않는다');
 });
+
+test('decideWrapReminder: 문구는 실제 단계로 — 기본은 예전 그대로, 꺼진 단계는 없다 (GEN-11)', () => {
+  const base = { config: { enabled: true }, unsynced: 1, head: 'x', snooze: null };
+  assert.match(decideWrapReminder(base).reason, /\(커밋 정리 → Confluence 문서 판단 → Jira 동기화\)/);
+  const r = decideWrapReminder({ ...base, labels: ['커밋 정리'] }).reason;
+  assert.match(r, /\/dt-wrap \(커밋 정리\)/);
+  assert.doesNotMatch(r, /Jira|Confluence|위키/);
+  assert.match(r, /dt-git finish/, 'main 통합 확인은 그대로');
+});

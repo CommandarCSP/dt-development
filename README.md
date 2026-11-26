@@ -38,7 +38,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 기존 프로젝트 들이기 | 이미 만든 프로젝트에서 화면·API를 근거와 함께 뽑아 정의서·스펙·결정(PD) 초안을 만들고, 의도/버그를 확인해 확정한다 | `/dt-adopt` |
 | 결정 기록 | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고 찾는다. 규칙 끄기의 근거가 된다 | `/dt-decision` |
 | 형식 이전 | 플러그인을 올린 뒤 프로젝트의 dt 산출물이 지금 형식과 맞는지 보고, 옮길 수 있는 것은 미리보기 → 확인 → 옮긴다. 바뀐 점은 [CHANGELOG](CHANGELOG.md) | `/dt-migrate` |
-| 마무리 | 브랜치 통합, 커밋→문서화 판단→Jira 동기화 순서 안내 | `/dt-git` · `/dt-wrap` |
+| 마무리 | 브랜치 통합, 커밋→위키 문서 판단→작업 기록 동기화 순서 안내(단계는 설정으로, 꺼진 트래커·위키는 건너뜀) | `/dt-git` · `/dt-wrap` |
 
 <!-- catalog:start -->
 
@@ -154,7 +154,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `.dt-confluence.json` / `.dt-confluence.local.json` | 위키 문서(스페이스·구역 페이지·검토 주기) | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-handbook.json` | 인수인계 핸드북 설정 | 없으면 기본 템플릿으로 자동 생성 |
-| `.dt.json` / `.dt.local.json` | 공통 설정 — 알림 훅(opt-in)·팀 실행 방식·역할별 모델·언어·필수 MCP. 키는 [docs/refs/config-schema.md](docs/refs/config-schema.md) | `/dt-wrap --init` |
+| `.dt.json` / `.dt.local.json` | 공통 설정 — 알림 훅(opt-in)·팀 실행 방식·역할별 모델·언어·필수 MCP·트래커·위키·마무리 단계. 키는 [docs/refs/config-schema.md](docs/refs/config-schema.md) | `/dt-wrap --init` |
 | `.dt-pipeline.json` | (옛 훅 설정 — 계속 읽지만 `.dt.json`의 `hooks`로 옮기기를 권한다) | — |
 | `.dt-frontend.json` / `.dt-backend.json` | FE/BE 아키텍처 규칙 | 스킬이 필요할 때 없으면 만든다 |
 

@@ -30,6 +30,8 @@ export const SUPPORTED_LOCALES = ['ko'];
 export const TRACKERS = ['jira', 'github', 'linear', 'none'];
 /** 위키(GEN-10). confluence 만 연동, markdown 은 저장소 docs/wiki/ 에 쓴다, notion 은 스텁(none 처럼), none 은 대화에만. */
 export const WIKIS = ['confluence', 'markdown', 'notion', 'none'];
+/** 마무리 루틴 단계(GEN-11). 이름과 뜻은 scripts/wrapState.mjs 가 정한다. */
+export const WRAP_STEP_NAMES = ['commit', 'wiki', 'tracker'];
 
 /**
  * 에이전트 → 모델 티어. `team.models.<tier>` 가 있으면 조율자가 dispatch 때 그 모델로 덮어쓴다.
@@ -60,6 +62,8 @@ export const DEFAULTS = Object.freeze({
   tracker: 'jira',
   // 위키(GEN-10) — dt-confluence-doc·dt-worklog-sync 가 읽는다(scripts/wikiConfig.mjs). 기본 confluence = 지금 동작.
   wiki: 'confluence',
+  // 마무리 루틴(GEN-11) — dt-wrap·Stop 훅이 읽는다(scripts/wrapState.mjs). 기본 순서 = 지금 동작.
+  wrap: { steps: ['commit', 'wiki', 'tracker'] },
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -154,6 +158,25 @@ export function validate(raw, warnings = []) {
   if (raw?.wiki != null) {
     if (WIKIS.includes(raw.wiki)) out.wiki = raw.wiki;
     else warnings.push(`wiki: "${raw.wiki}" 은 ${WIKIS.join('|')} 가 아니라 "confluence" 를 씁니다`);
+  }
+  // wrap
+  const w = raw?.wrap;
+  if (w != null && !isObj(w)) warnings.push('wrap: 객체여야 합니다 — 무시했습니다');
+  else if (w) {
+    for (const k of Object.keys(w)) if (!(k in DEFAULTS.wrap)) warnings.push(`알 수 없는 키 "wrap.${k}" — 무시했습니다`);
+    if ('steps' in w) {
+      if (!Array.isArray(w.steps)) warnings.push('wrap.steps: 배열이어야 합니다 — 기본 순서를 씁니다');
+      else {
+        const steps = [];
+        for (const s of w.steps) {
+          if (!WRAP_STEP_NAMES.includes(s)) warnings.push(`wrap.steps: "${s}" 은 ${WRAP_STEP_NAMES.join('|')} 가 아니라 뺐습니다`);
+          else if (steps.includes(s)) warnings.push(`wrap.steps: "${s}" 가 두 번 있어 한 번만 씁니다`);
+          else steps.push(s);
+        }
+        if (steps.length) out.wrap.steps = steps;
+        else warnings.push('wrap.steps: 쓸 단계가 없어 기본 순서를 씁니다');
+      }
+    }
   }
   return out;
 }

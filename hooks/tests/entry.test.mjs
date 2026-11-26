@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const WRAP = fileURLToPath(new URL('../scripts/wrap-detect.mjs', import.meta.url));
 const START = fileURLToPath(new URL('../scripts/start-detect.mjs', import.meta.url));
+const WRAP_STATE = fileURLToPath(new URL('../../scripts/wrapState.mjs', import.meta.url));
 
 function run(cwd, args) {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
@@ -93,6 +94,35 @@ test('start-detect: silent on feature branch or non-impl prompt', () => {
     assert.equal(invoke(START, { cwd: work, prompt: '기능 추가해줘' }).stdout, '');
     run(work, ['switch', 'main']);
     assert.equal(invoke(START, { cwd: work, prompt: '이거 왜 안돼?' }).stdout, '');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// GEN-11 완료 기준: tracker: none · wiki: none 에서 훅과 루틴이 정상 동작한다.
+test('wrap-detect: tracker·wiki 가 none 이면 커밋 단계만 권하고, 루틴을 마친 뒤엔 조용, 새 커밋엔 다시', () => {
+  const { root, work } = makeRepo();
+  try {
+    writeFileSync(join(work, '.dt.json'), JSON.stringify({ hooks: { enabled: true }, tracker: 'none', wiki: 'none' }));
+    commit(work, 'a.txt');
+    const steps = JSON.parse(spawnSync('node', [WRAP_STATE, 'steps', '--project', work], { encoding: 'utf8' }).stdout);
+    assert.deepEqual(steps.steps.map((s) => s.name), ['commit']);
+    assert.deepEqual(steps.skipped, [{ name: 'wiki', reason: 'wiki: none' }, { name: 'tracker', reason: 'tracker: none' }]);
+
+    const first = JSON.parse(invoke(WRAP, { cwd: work }).stdout);
+    assert.equal(first.decision, 'block');
+    assert.match(first.reason, /\/dt-wrap \(커밋 정리\)/);
+    assert.doesNotMatch(first.reason, /Jira|Confluence/);
+
+    // 루틴을 마침 → lastWrapSha = HEAD
+    const m = spawnSync('node', [WRAP_STATE, 'mark', '--project', work], { encoding: 'utf8' });
+    assert.equal(m.status, 0, m.stderr);
+    writeFileSync(join(work, '.git', 'dt-wrap-snooze'), ''); // 스누즈를 지워 기준점만으로 조용한지 본다
+    assert.equal(invoke(WRAP, { cwd: work }).stdout, '', '마무리 뒤 조용');
+
+    commit(work, 'b.txt');
+    const again = JSON.parse(invoke(WRAP, { cwd: work }).stdout);
+    assert.match(again.reason, /1커밋/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

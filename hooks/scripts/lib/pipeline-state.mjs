@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadConfig } from '../../../scripts/lib/config.mjs';
+import { resolveWrapSteps, loadWrapBaselines } from '../../../scripts/wrapState.mjs';
 
 // 한글은 부분문자열(공백 토큰화가 약함), 영문은 단어 경계로 매칭한다.
 // 영문을 부분문자열로 보면 add∈address, fix∈prefix, bug∈debug 같은 오탐이 난다.
@@ -15,8 +16,12 @@ export function isImplementationPrompt(text) {
   return IMPL_KEYWORDS_EN.some((k) => new RegExp(`\\b${k}\\b`).test(t));
 }
 
+// 설정이 없을 때(기본 jira·confluence)의 단계 이름 — 알림 문구가 예전과 같다.
+const DEFAULT_WRAP_LABELS = ['커밋 정리', 'Confluence 문서 판단', 'Jira 동기화'];
+
 // config: 공통 설정의 hooks(.dt.json 또는 옛 .dt-pipeline.json — loadPipelineConfig) 또는 null. 판정은 IO 없이 주어진 값으로만.
-export function decideWrapReminder({ config, unsynced, head, snooze }) {
+// labels: 실제로 돌 마무리 단계 이름(scripts/wrapState.mjs resolveWrapSteps). 꺼진 어댑터 단계는 이미 빠져 있다.
+export function decideWrapReminder({ config, unsynced, head, snooze, labels = DEFAULT_WRAP_LABELS }) {
   if (!config || config.enabled === false) return { block: false };
   const threshold = config.commitThreshold ?? 1;
   if (unsynced < threshold) return { block: false };
@@ -24,7 +29,7 @@ export function decideWrapReminder({ config, unsynced, head, snooze }) {
   const reason =
     `작업 마무리 게이트 — 정리 안 된 작업 ${unsynced}커밋 감지. 사용자에게 다음을 확인하세요: ` +
     `① main 머지 + origin push 여부 (/dt-git finish — 자동 금지, 매번 사용자 승인). ` +
-    `② 마무리 루틴 /dt-wrap (커밋 정리 → Confluence 문서 판단 → Jira 동기화). ` +
+    `② 마무리 루틴 /dt-wrap (${labels.join(' → ')}). ` +
     `둘 다 사용자가 선택하게 하고, 건너뛰려면 "넘어가"라고 하세요.`;
   return { block: true, reason };
 }
@@ -70,6 +75,21 @@ export function loadLastSyncSha(repoRoot) {
   return local && typeof local.lastSyncSha === 'string' ? local.lastSyncSha : null;
 }
 
+/** 훅 기준점 — `/dt-wrap` 이 남긴 lastWrapSha 와 `/dt-worklog` 이 남긴 lastSyncSha(GEN-11). */
+export function loadBaselines(repoRoot) {
+  const b = loadWrapBaselines(repoRoot);
+  return [b.lastWrapSha, b.lastSyncSha].filter(Boolean);
+}
+
+/** 알림 문구에 넣을 단계 이름. 설정을 못 읽으면 기본 단계. */
+export function loadWrapLabels(repoRoot) {
+  try {
+    return resolveWrapSteps(loadConfig(repoRoot).config).labels;
+  } catch {
+    return DEFAULT_WRAP_LABELS;
+  }
+}
+
 export function currentBranch(repoRoot) {
   const r = git(repoRoot, ['rev-parse', '--abbrev-ref', 'HEAD']);
   return r.status === 0 ? r.stdout.trim() : null;
@@ -80,7 +100,8 @@ export function headSha(repoRoot) {
   return r.status === 0 ? r.stdout.trim() : null;
 }
 
-// lastSyncSha 이후 커밋 수. lastSyncSha가 dangling(force-push/gc)이면 origin/main으로 폴백
+// 기준점 이후 커밋 수. 기준점이 여럿이면(lastWrapSha·lastSyncSha) 가장 적게 세는 것 = 가장 최근 것을 쓴다.
+// 기준점이 dangling(force-push/gc)이면 그것은 빼고, 다 실패하면 origin/main으로 폴백
 // 한다 — 그렇지 않으면 넛지가 영구 침묵해 버린다. 전부 실패하면 0(침묵).
 function countRange(repoRoot, range) {
   const r = git(repoRoot, ['rev-list', '--count', range]);
@@ -89,12 +110,13 @@ function countRange(repoRoot, range) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function unsyncedCommitCount(repoRoot, lastSyncSha) {
-  if (lastSyncSha) {
-    const n = countRange(repoRoot, `${lastSyncSha}..HEAD`);
-    if (n !== null) return n;
-    // lastSyncSha 조회 실패 → origin/main 기준으로 폴백
-  }
+export function unsyncedCommitCount(repoRoot, ...baselines) {
+  const counts = baselines.flat()
+    .filter(Boolean)
+    .map((sha) => countRange(repoRoot, `${sha}..HEAD`))
+    .filter((n) => n !== null);
+  if (counts.length) return Math.min(...counts);
+  // 기준점이 없거나 모두 조회 실패 → origin/main 기준으로 폴백
   return countRange(repoRoot, 'origin/main..HEAD') ?? 0;
 }
 

@@ -7,6 +7,8 @@ import { join } from 'node:path';
 import {
   loadPipelineConfig,
   loadLastSyncSha,
+  loadBaselines,
+  loadWrapLabels,
   currentBranch,
   headSha,
   unsyncedCommitCount,
@@ -116,6 +118,48 @@ test('writeSnooze/readSnooze round-trip via .git/dt-wrap-snooze', () => {
     assert.equal(readSnooze(work), null);
     writeSnooze(work, 'deadbeef');
     assert.equal(readSnooze(work), 'deadbeef');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('unsyncedCommitCount: 기준점이 여럿이면 가장 최근 것, dangling 은 빼고 센다 (GEN-11)', () => {
+  const { root, work } = makeRepo();
+  try {
+    const base = headSha(work);
+    commit(work, 'a.txt');
+    const mid = headSha(work);
+    commit(work, 'b.txt');
+    assert.equal(unsyncedCommitCount(work, [base, mid]), 1, '더 최근(mid)부터');
+    assert.equal(unsyncedCommitCount(work, [mid, base]), 1, '순서와 무관');
+    assert.equal(unsyncedCommitCount(work, ['nonexistent-ref', mid]), 1, 'dangling 은 빼고');
+    assert.equal(unsyncedCommitCount(work, []), 2, '없으면 origin/main');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('loadBaselines: lastWrapSha(.dt-pipeline.local.json) 와 lastSyncSha 를 함께 읽는다', () => {
+  const { root, work } = makeRepo();
+  try {
+    assert.deepEqual(loadBaselines(work), []);
+    writeFileSync(join(work, '.dt-worklog.local.json'), JSON.stringify({ lastSyncSha: 'bbb' }));
+    assert.deepEqual(loadBaselines(work), ['bbb']);
+    writeFileSync(join(work, '.dt-pipeline.local.json'), JSON.stringify({ lastWrapSha: 'aaa' }));
+    assert.deepEqual(loadBaselines(work), ['aaa', 'bbb']);
+    writeFileSync(join(work, '.dt-pipeline.local.json'), '{ broken');
+    assert.deepEqual(loadBaselines(work), ['bbb'], '망가진 파일은 없는 것처럼');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('loadWrapLabels: 설정 없으면 예전 단계, tracker·wiki 가 none 이면 커밋만', () => {
+  const { root, work } = makeRepo();
+  try {
+    assert.deepEqual(loadWrapLabels(work), ['커밋 정리', 'Confluence 문서 판단', 'Jira 동기화']);
+    writeFileSync(join(work, '.dt.json'), JSON.stringify({ tracker: 'none', wiki: 'none' }));
+    assert.deepEqual(loadWrapLabels(work), ['커밋 정리']);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
