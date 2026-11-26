@@ -34,7 +34,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 인수인계 핸드북 | 이미 있는 코드를 분석해 신규 개발자용 핸드북 PDF를 만든다. 데이터 주인·군집·경계를 먼저 세우고 시나리오 호출 사슬을 얹는다 | `/dt-handbook` |
 | 한국어 문장 검사 | 기계 검사 + 격리 리뷰로 어색한 문장을 고친다 | `/dt-ko` |
 | Jira 연동 | 개발 작업을 Story·Task·Bug로 정리해 설명·진행·마무리 댓글로 기록한다(조직 규칙은 프리셋) | `/dt-worklog` |
-| Confluence 연동 | 작업을 Confluence 문서(회의록·요약·기술문서·릴리즈노트)로 쓴다 | `/dt-confluence` |
+| 위키 문서 | 작업을 위키 문서 7종(회의록·작업 보고·설계·운영 가이드·회고·릴리즈 노트·장애 회고)으로 쓴다 — Confluence 또는 저장소 markdown | `/dt-confluence` |
 | 기존 프로젝트 들이기 | 이미 만든 프로젝트에서 화면·API를 근거와 함께 뽑아 정의서·스펙·결정(PD) 초안을 만들고, 의도/버그를 확인해 확정한다 | `/dt-adopt` |
 | 결정 기록 | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고 찾는다. 규칙 끄기의 근거가 된다 | `/dt-decision` |
 | 형식 이전 | 플러그인을 올린 뒤 프로젝트의 dt 산출물이 지금 형식과 맞는지 보고, 옮길 수 있는 것은 미리보기 → 확인 → 옮긴다. 바뀐 점은 [CHANGELOG](CHANGELOG.md) | `/dt-migrate` |
@@ -55,7 +55,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `/dt-be-review` | Run dt-backend rule and coverage review against current project | `dt-backend-review` |
 | `/dt-be-scaffold` | Generate or extend dt-backend (NestJS) module code via multi-agent scaffold workflow | `dt-backend-scaffold` |
 | `/dt-be-spec` | Build backend SDD spec documents (requirements.md/design.md/tasks.md/api-contract.md) for a REST resource fro… | `dt-bespec-generate-spec` |
-| `/dt-confluence` | 개발 작업(git/세션/Jira)을 Confluence 문서로 작성한다 | `dt-confluence-doc` |
+| `/dt-confluence` | 개발 작업(git/세션/Jira)을 위키 문서로 쓴다(기본 Confluence, 저장소 markdown도) | `dt-confluence-doc` |
 | `/dt-decision` | 계속 유효한 결정을 프로젝트 결정(PD)·팀 정책(TP) 문서로 남기고, 찾고, 대체한다 | `dt-decision` |
 | `/dt-devspec` | Build the project-level development definition (docs/specs/definition.md) | `dt-devspec` |
 | `/dt-e2e` | Author and verify scenario-based acceptance e2e (Playwright) for implemented pages, driven by page specs and… | `dt-e2e` |
@@ -92,7 +92,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | `dt-bespec-ask-missing` | Use within dt-bespec to resolve source conflicts/duplicates and fill missing endpoint details (method, path,… |
 | `dt-bespec-collect-project-context` | Use within dt-bespec to collect/maintain backend project context (framework, ORM, database, cache/queue, auth… |
 | `dt-bespec-generate-spec` | generating backend SDD spec documents (requirements.md/design.md/tasks.md/api-contract.md) for a REST resourc… |
-| `dt-confluence-doc` | the user wants to write a Confluence document from their dev work |
+| `dt-confluence-doc` | the user wants to write a wiki document (Confluence by default, or markdown in the repo) from their dev work |
 | `dt-decision` (/dt-decision) | Record, list, and supersede long-lived decisions |
 | `dt-devspec` (/dt-devspec) | starting a new project/feature and the team needs a project-level Source of Truth before FE/BE specs |
 | `dt-e2e` (/dt-e2e) | Use after /dt-implement to author and verify scenario-based acceptance e2e (Playwright) for implemented pages |
@@ -151,7 +151,7 @@ Claude Code 세션 안에서 다음 두 명령을 입력합니다(터미널이 �
 | 파일 | 무엇 | 만들어지는 방법 |
 |---|---|---|
 | `.dt-worklog.json` / `.dt-worklog.local.json` | 작업 기록(프로젝트 키·프리셋 `basic`/`org-guideline` 등) | 최초 실행 위저드가 자동으로 진입해 만든다 |
-| `.dt-confluence.json` / `.dt-confluence.local.json` | Confluence 연동 | 최초 실행 위저드가 자동으로 진입해 만든다 |
+| `.dt-confluence.json` / `.dt-confluence.local.json` | 위키 문서(스페이스·구역 페이지·검토 주기) | 최초 실행 위저드가 자동으로 진입해 만든다 |
 | `.dt-guide.json` | 가이드 PDF 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt-handbook.json` | 인수인계 핸드북 설정 | 없으면 기본 템플릿으로 자동 생성 |
 | `.dt.json` / `.dt.local.json` | 공통 설정 — 알림 훅(opt-in)·팀 실행 방식·역할별 모델·언어·필수 MCP. 키는 [docs/refs/config-schema.md](docs/refs/config-schema.md) | `/dt-wrap --init` |
@@ -191,7 +191,7 @@ Jira 연동 위저드는 cloudId·site를 `site.resources`로 자동 확인합�
 
 ## 한 줄 밝히기
 
-사내 저장소에서 다듬어 온 것을 공개판으로 분리했습니다. 업무 규칙(Jira·Confluence 연동)은 특정 조직의 운영 방식을 따른 것이라, 쓰는 곳에 맞춰 고쳐야 합니다.
+사내 저장소에서 다듬어 온 것을 공개판으로 분리했습니다. 작업 기록·위키 문서 규칙은 일반 프로젝트용 팀 정책(`docs/policies/TP-002`·`TP-003`)이 기본이고, 조직마다 다른 규칙은 프리셋·설정으로 고릅니다.
 
 ---
 

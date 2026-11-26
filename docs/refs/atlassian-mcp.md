@@ -38,6 +38,7 @@ v2에서 "직접 도구"가 없는 일은 범용 실행기로 부른다: 읽기 
 | `jira.transitions` (지금 가능한 전이) | `getTransitionsForJiraIssue` | `executeRead` → `listJiraIssueTransitions` | 응답의 전이 id를 `jira.transition`에 넘긴다. 전이 이름과 도착 상태는 다른 필드다 — 도착 상태로 고른다 |
 | `jira.transition` | `transitionJiraIssue` | `transitionJiraIssue` | **v1 `transition: { id }` → v2 `transitionId: "<id>"`.** v2는 도착한 상태를 돌려준다(다시 읽을 필요 없음) |
 | `jira.comment` | `addCommentToJiraIssue` | `addOrEditJiraIssueComment` | 본문 `commentBody`·`contentFormat: "markdown"`은 같다. v2는 `commentId`를 주면 수정. **markdown의 `- [ ]`는 체크박스가 되지 않는다** — 체크박스는 `contentFormat: "html"`의 task list(`<ul data-type="task-list">`)로 쓴다(설명·댓글 같음) |
+| `jira.remoteLink` (이슈의 웹 링크) | (없음) | `executeWrite` → `createJiraIssueRemoteIssueLink` | 이슈 "웹 링크" 칸에 문서를 단다. 지금 역링크 표준은 댓글(TP-002·TP-003)이고, 이 도구는 아직 스킬이 쓰지 않는다(후속) |
 | `jira.worklog` | `addWorklogToJiraIssue` | `executeWrite` → `addOrEditJiraIssueWorklog` | `timeSpent`(예 `2h 30m`)·`started`(ISO 8601)·`comment` |
 
 ### Confluence
@@ -49,6 +50,7 @@ v2에서 "직접 도구"가 없는 일은 범용 실행기로 부른다: 읽기 
 | `confluence.get` (페이지 읽기 — URL·id) | `getConfluencePage`·`fetch` | `getConfluenceContent` | v2 `content_url` 또는 `content_id`, 본문이 필요하면 `detail: "full"`·`content_format: "markdown"\|"html"` |
 | `confluence.create` | `createConfluencePage(spaceId, parentId, title, body, contentFormat)` | `createConfluenceContent` | **모양이 다르다:** `parent: { spaceId, parentContentId? }`·`contentType: "page"`·`title`·`body: { format: "html", value }`. 쓰기 전에 `executeRead` → `getContentFormatGuide({ toolName: "createConfluencePage" })`(Confluence HTML 규칙)와 `getConfluenceSpace({ spaceIdOrKey })`(공간 지침)를 작업당 한 번 읽는다 |
 | `confluence.update` | `updateConfluencePage` | `updateConfluenceContent` | v2는 `contentId`·`body`(또는 `edits`)·**`snapshotToken` 필수** — 먼저 `getConfluenceContent(detail: "full")`로 읽어 받은 토큰을 넘긴다. `dryRun: true`로 미리보기 가능 |
+| `confluence.labels` (라벨 붙이기) | (전용 도구 없음 — 본문 끝에 "라벨: …"을 남기고 보고) | `executeWrite` → `addLabelsToConfluenceContent` | `contentId`·`labels: [{ name }]`(공백 없는 이름) |
 
 ## 3. 명령의 `allowed-tools`
 

@@ -83,7 +83,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/worklogConfig.mjs" --project . --json
 
 ### 3.7 관련 문서 (Confluence) — 있으면 같이 링크
 이번 작업과 관련된 위키 문서가 **이미 있으면** 진행·마무리 댓글의 "관련 문서" 줄에 넣는다. 자동 아님 — 후보를 보이고 사람이 고른 것만.
-1. `confluence.search`로 찾는다. 예: `text ~ "<요약 키워드>" AND type = page ORDER BY lastmodified DESC`. 10건이 넘으면 `space`·`label`로 좁힌다.
+1. 위키는 `.dt.json`의 `wiki`다(`docs/refs/wiki-adapter.md`). `confluence`면 `confluence.search`로 찾는다 — 예: `text ~ "<요약 키워드>" AND type = page ORDER BY lastmodified DESC`, 10건이 넘으면 `space`·`label`(`doc-*`)로 좁힌다. `markdown`이면 저장소 `docs/wiki/` 아래에서 제목·본문을 찾는다. `notion`·`none`이면 이 단계를 건너뛴다.
 2. 후보가 0건이면 이 단계를 끝낸다(묻지 않는다).
 3. 후보가 있으면 [문서 → 넣을 이슈·댓글] 매칭을 [4] 표에 함께 보인다. 어느 이슈인지 불명확하면 묻는다. 이슈에 이미 있는 링크는 다시 넣지 않는다.
 4. 형식은 `references/worklog-templates.md`의 "관련 문서 줄"이다 — `dt-confluence-doc` §7의 역링크와 같은 공유 표준이다.

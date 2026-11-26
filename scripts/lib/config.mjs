@@ -28,6 +28,8 @@ export const MODEL_NAMES = ['opus', 'sonnet', 'haiku', 'fable'];
 export const SUPPORTED_LOCALES = ['ko'];
 /** 작업 기록 트래커(GEN-09). jira 만 연동한다 — github·linear 는 스텁(none 처럼 요약만), none 은 아무 데도 쓰지 않는다. */
 export const TRACKERS = ['jira', 'github', 'linear', 'none'];
+/** 위키(GEN-10). confluence 만 연동, markdown 은 저장소 docs/wiki/ 에 쓴다, notion 은 스텁(none 처럼), none 은 대화에만. */
+export const WIKIS = ['confluence', 'markdown', 'notion', 'none'];
 
 /**
  * 에이전트 → 모델 티어. `team.models.<tier>` 가 있으면 조율자가 dispatch 때 그 모델로 덮어쓴다.
@@ -56,6 +58,8 @@ export const DEFAULTS = Object.freeze({
   decisions: { sharedDir: null },
   // 작업 기록 트래커(GEN-09) — dt-worklog-sync 가 읽는다(scripts/worklogConfig.mjs). 기본 jira = 지금 동작.
   tracker: 'jira',
+  // 위키(GEN-10) — dt-confluence-doc·dt-worklog-sync 가 읽는다(scripts/wikiConfig.mjs). 기본 confluence = 지금 동작.
+  wiki: 'confluence',
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -145,6 +149,11 @@ export function validate(raw, warnings = []) {
   if (raw?.tracker != null) {
     if (TRACKERS.includes(raw.tracker)) out.tracker = raw.tracker;
     else warnings.push(`tracker: "${raw.tracker}" 은 ${TRACKERS.join('|')} 가 아니라 "jira" 를 씁니다`);
+  }
+  // wiki
+  if (raw?.wiki != null) {
+    if (WIKIS.includes(raw.wiki)) out.wiki = raw.wiki;
+    else warnings.push(`wiki: "${raw.wiki}" 은 ${WIKIS.join('|')} 가 아니라 "confluence" 를 씁니다`);
   }
   return out;
 }

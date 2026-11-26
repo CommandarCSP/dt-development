@@ -8,6 +8,9 @@
 ## [미출시]
 
 ### 추가
+- 위키 문서 규칙 팀 정책 `docs/policies/TP-003-wiki-docs.md` — 문서 7종(회의록·작업 보고·설계 문서·운영 가이드·회고·릴리즈 노트·장애 회고), 공통 머리(상태·담당자·검토일·관련 이슈·관련 결정·요약, 검토일은 설계·가이드만 6개월), 구역 6개 페이지 트리·제목 규칙·`doc-*` 라벨, 트래커 양방향 연결 (GEN-10)
+- `scripts/wikiConfig.mjs` — 위키 설정 합치기(`sections`·`labelsByType`·`reviewMonths`), 제목·공통 머리(HTML·markdown)·markdown 경로. `/dt-confluence`의 템플릿 7종 (GEN-10)
+- 공통 설정 `.dt.json`의 `wiki`(`confluence` 기본 · `markdown` · `notion` · `none`)와 `docs/refs/wiki-adapter.md`. `markdown`은 같은 템플릿으로 저장소 `docs/wiki/`에 쓴다. `/dt-worklog`의 관련 문서 찾기도 이 값을 따른다 (GEN-10)
 - 작업 기록 규칙 팀 정책 `docs/policies/TP-002-task-records.md` — 계층(Epic → Story·Task·Bug가 기본 단위 → Sub-task는 나눌 때만, 크기 한 주 안), 설명 템플릿(배경·목표·완료 조건·참고), 진행 댓글·마무리 댓글 템플릿, 마무리 규칙(Done 전 마무리 댓글에 산출물이나 결정 사항). 관련 Confluence 문서가 있으면 댓글의 "관련 문서" 줄로 링크한다 (GEN-09)
 - 작업 기록 프리셋 — `basic`(기본, TP-002)과 `org-guideline`(사내 가이드라인 v1.0: Sub-task 강제·1~3일·수행 Epic·날짜·산출물 필드·릴리즈 필수). 설정을 합치고 검사하는 `scripts/worklogConfig.mjs`(`--json`, 마무리 댓글 검사 `check-close`), 키 설명 `skills/dt-worklog-sync/references/presets/README.md` (GEN-09)
 - git 호스트별 커밋·PR 주소 `scripts/gitWebUrl.mjs` — GitHub·GitLab·Bitbucket. 이름으로 모르는 사설 호스트는 지어내지 않고 묻는다(`gitHost`) (GEN-09)
@@ -30,6 +33,7 @@
 - 선택 참고 문서 `docs/refs/docker-runtime-hints.md` — colima·rancher-desktop·podman 소켓, Ryuk 끄기. 규칙·체크리스트·`be-builder`에 흩어져 있던 값을 모았다 (GEN-06)
 
 ### 고침
+- Atlassian 대응표에 v2 라벨 도구(`addLabelsToConfluenceContent`)와 이슈 웹 링크 도구(`createJiraIssueRemoteIssueLink`)를 더했다 — 스킬이 "없다"고 적고 있었다 (GEN-10 실기록에서 발견)
 - `/dt-worklog`가 완료 조건 체크박스를 markdown(`- [x]`)으로 써서 Jira에 체크박스가 아닌 `[x]` 글자로 저장되던 것 — 체크박스가 든 설명은 HTML task list로 쓴다(예전 규칙의 DoD 체크도 같은 문제였다) (GEN-09 DEV-14 기록에서 발견)
 - README 전체 목록이 접은 블록 설명(`description: >-`)을 `>-`로 적던 것(`dt-worklog-sync`·`auditor`) (GEN-09)
 - new-module Phase 2의 Prisma 게이트 인자(`migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma`)가 스키마를 자기 자신과 비교해 마이그레이션을 빠뜨려도 늘 통과하던 것 — dev DB와 비교한다(`--from-schema-datasource`) (GEN-43)
@@ -50,6 +54,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **`/dt-confluence` 문서 종류를 4종에서 7종으로.** `worklog`는 `report`(작업 보고)로 이름이 바뀌고, `techdoc`은 설계 문서(`design`)와 운영 가이드(`guide`)로 나뉘고, 회고의 릴리즈노트 모드는 `release`로 따로 섰다. 옛 이름은 0.16.x 동안 받는다(`worklog`는 경고 후 `report`, `techdoc`은 어느 쪽인지 묻는다). 모든 문서 맨 위에 공통 머리가 붙고, 종류별 구역 페이지 아래에 들어간다(없으면 묻고 만든다). 옛 `parentPageId`는 구역 페이지가 없는 종류의 부모로 쓰고 경고한다 (GEN-10)
 - **`/dt-worklog` 기본 규칙을 사내 가이드라인에서 TP-002로.** 새 프로젝트는 Story·Task·Bug에 설명·진행·마무리 댓글로 기록하고, Sub-task·날짜·"수행" Epic·산출물 커스텀 필드를 강제하지 않는다. 커밋 주소도 GitLab 고정이 아니라 호스트에 맞춘다. **이미 쓰던 설정은 그대로다** — `preset` 없이 옛 키(`issueTypeNames`·`transitionMap`·`outputFieldName`·`outputFieldId`)가 있으면 `org-guideline`으로 읽고 "`preset`을 적으라"고 경고한다. 옛 키는 0.16.x 동안 함께 받는다(새 키 `issueTypes`·`transitions`·`outputField`). 위저드는 프리셋을 묻는다(기본 `basic`). `references/jira-guideline.md`·`output-field-rules.md`는 `references/presets/org-guideline.md` 하나로 합쳤다 (GEN-09)
 - 스캐폴드 게이트(`gate.mjs --stack backend`)는 `--prisma`가 없으면 `stack.orm`이 prisma일 때만 Prisma 검사를 켠다. 문서의 `--prisma true` 고정을 지웠다 — `--prisma true|false`는 덮어쓰기로 남는다. FE 게이트는 그대로다 (GEN-07)
 - 리뷰 보고서의 건너뛴 규칙 줄: `건너뛴 규칙(stack.<영역> = none): 규칙(영역)` → `건너뛴 규칙(스택에 맞지 않음): 규칙(stack.영역 = 값)` (GEN-07)

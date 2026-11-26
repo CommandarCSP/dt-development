@@ -123,6 +123,7 @@
 - 문제: `dt-confluence-doc`이 Atlassian 전용, 문서 4종 고정, 예시 URL이 사내 사이트.
 - 할 일: `wiki` 어댑터(confluence|notion|markdown 로컬). 문서 종류를 템플릿 디렉터리 기반으로 확장 가능하게. 역링크 포맷은 트래커 어댑터와 공유.
 - 완료 기준: `wiki: markdown`으로 로컬 `docs/`에 문서 생성 가능.
+- **완료(DEV-15, 2026-11-26).** GEN-09처럼 진행 중 방향을 바꿨다: Confluence 전용 규칙을 넓히는 대신 문서 표준을 리서치해(Diátaxis, Confluence 구조 권장, Google 설계 문서·SRE 장애 회고, 문서 신선도) 팀 정책 **TP-003**으로 정했다. 문서 7종(회의록·작업 보고·설계·운영 가이드·회고·릴리즈 노트·장애 회고), 공통 머리(상태·담당자·검토일은 설계·가이드만 6개월·관련 이슈·관련 결정·요약), 구역 6개 페이지 트리와 제목 규칙·`doc-*` 라벨, 트래커 양방향 연결(머리의 관련 이슈 + TP-002와 같은 `📄 관련 문서` 댓글, 액션은 `/dt-worklog` Task)이다. `scripts/wikiConfig.mjs`가 설정 합치기·제목·공통 머리(HTML·markdown)·markdown 경로를 낸다. 옛 종류(`worklog`→`report`, `techdoc`→design·guide 묻기)와 옛 키(`parentPageId`·옛 라벨 키)는 경고와 함께 받는다. 위키 어댑터는 `.dt.json` `wiki`(confluence·markdown·notion 스텁·none) + `docs/refs/wiki-adapter.md`. 문서 종류를 템플릿 디렉터리로 늘린다는 할 일은 종류 표(`TYPES`)와 템플릿 파일 한 쌍으로 했다. 확인: 같은 작업 보고를 markdown 위키(scratchpad)와 Confluence 개인 스페이스에 실제로 썼다 — 구역 페이지(하위 목록 매크로) → 작업 보고(공통 머리·표·경고 패널) → `doc-report` 라벨 → DEV-2·3·15 역링크 댓글. 한글 리뷰 4건 반영, Confluence 산문 정중체 규칙에 맞췄다. 이때 v2에 라벨 도구와 이슈 웹 링크 도구가 있는 것을 찾아 대응표를 고쳤다(웹 링크는 후속).
 
 ### GEN-11 dt-wrap·Stop 훅과 트래커 분리
 - 문제: 마무리 순서가 커밋→Confluence→Jira로 고정. Stop 훅이 `.dt-worklog.local.json`의 `lastSyncSha`로 미정리 커밋을 셈 → 트래커를 안 쓰면 알림이 꺼지지 않음.
