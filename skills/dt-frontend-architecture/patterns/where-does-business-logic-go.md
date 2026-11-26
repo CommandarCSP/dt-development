@@ -2,10 +2,13 @@
 ruleId: where-does-business-logic-go
 summary: "Business Hook=ViewModel 가공, Store Query=fetching, View=렌더링 — 레이어 책임 위반 금지"
 severity: important
-appliesTo: ["src/**/*.{ts,tsx}"]
+appliesTo: ["src/business/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "Business Hook이 JSX를 반환하거나 DOM 요소를 import하면 위반. Store Query가 ViewModel 변환을 수행하면 위반."
+  - type: forbidden-pattern
+    pattern: "return\s*\(?\s*<[A-Za-z]|=>\s*\(?\s*<[A-Za-z][\w.]*[\s/>]|from\s+['\"]react-dom['\"/]"
+    rationale: "Business Hook 이 JSX 를 반환하거나 react-dom 을 import 한다 — 렌더링은 View·Domain Component 몫이다. Hook 은 ViewModel 만 돌려준다"
+  - type: manual
+    description: "Store Query 의 queryFn·select 안에서 응답을 ViewModel 로 가공하는지(map 으로 필드 이름을 바꾸는 등)는 사람이 본다 — 응답 그대로 두는 단순 map 과 가공을 기계로 가르기 어렵다"
 relatedRules: [dto-vs-viewmodel, server-vs-client-state]
 ---
 

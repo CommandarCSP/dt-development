@@ -117,7 +117,8 @@ allowed-tools: Read, Bash, AskUserQuestion   # 스킬 절차에 필요한 도구
      | `requires-acceptance-ledger` | — | 수용 e2e 원장 |
      | `registered-in-sibling-module` | — | NestJS 모듈 등록 |
      | `required-pattern` | `description` | 설명 문구로 정해진 검사만, 나머지는 수동 확인 |
-     | `ast-rule` · `manual` | `description` | 기계 검출 없음 — 보고서의 "수동 확인" |
+     | `manual` | `description` | 기계 검출 없음 — 리뷰어 에이전트가 규칙 문서를 읽고 본다. 기계 검출과 함께 한 규칙에 둘 수 있다(기계로 볼 부분 + 사람이 볼 부분) |
+     | `ast-rule` | `description` | 옛 자리표 유형. 새 규칙에 쓰지 않는다 — 보고서에 "사람 확인"으로만 남는다 |
 
    - **기계로 못 잡으면 `type: manual`로 정직하게 적는다.** 필수 인자 없이 type만 적으면 검출기가 빈 결과를 내 "검사하는 척"한다 — 검사기가 막는다.
    - 정규식에 `\`가 필요하면 `[.]`·`[(]`·`[ \t]` 같은 문자 묶음을 먼저 쓴다(머리말 파서가 따옴표 안 문자를 그대로 넘긴다).

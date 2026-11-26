@@ -6,7 +6,7 @@
 //
 // --stack:   which rule set + config file to use (default: frontend). The coverage command is
 //            picked from the stack config's coverage.* and the project (lockfile, package.json).
-// --verbose: show Manual Review heuristic stubs in full (default: summary only).
+// --verbose: show manual-review (사람 확인) items in full (default: summary only).
 
 import { resolve } from 'node:path';
 import { runFullMode } from './modes/full.mjs';

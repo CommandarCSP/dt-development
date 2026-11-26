@@ -4,8 +4,13 @@ summary: "비즈니스 코드 80%+ (View 제외), critical 영역(business/store
 severity: critical
 appliesTo: ["vitest.config.*"]
 detection:
-  - type: ast-rule
-    description: "vitest.config의 coverage.thresholds가 비즈니스 경로(business/, store/, components/domain/, pages/) 기준 80 미만이거나, business/store가 include에서 빠지면 위반."
+  - type: pattern-pair
+    when: "\bcoverage\s*:"
+    require: "\bthresholds\s*:"
+    forbid: "\b(?:lines|statements|functions|branches)\s*:\s*[0-7]?\d(?![\d.])"
+    rationale: "vitest coverage 설정에 thresholds 가 없거나 기준이 80 미만이다 — 비즈니스 코드 80% 이상을 강제한다"
+  - type: manual
+    description: "coverage.include 를 직접 적었을 때 business/·store/ 가 빠졌는지, 어서션 품질은 사람이 본다"
 relatedRules: [test-case-design-techniques, test-anti-patterns]
 ---
 

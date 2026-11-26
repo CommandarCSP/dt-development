@@ -5,8 +5,11 @@ severity: important
 appliesTo: ["src/**/*.controller.ts"]
 excludePathPatterns: ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/__tests__/**"]
 detection:
-  - type: ast-rule
-    description: "Controller 메서드는 DTO 검증 후 Service 호출 결과를 반환만 해야 함 — 메서드 본문의 분기/반복/계산은 Service로 이동 (v1: 수동 검토)"
+  - type: forbidden-pattern
+    pattern: "\bfor\s*\(|\bwhile\s*\(|\.reduce\s*\(|\bswitch\s*\("
+    rationale: "Controller 에 반복·누적 계산·분기 묶음(for·while·reduce·switch)이 있다 — Service 로 옮긴다"
+  - type: manual
+    description: "if 분기가 업무 규칙인지(옮길 것) 단순 응답 변환인지는 사람이 본다 — 기계로 가르면 오탐이 많다"
     rationale: "비즈니스 로직은 Service에 집중 — Controller 비대화 방지"
 relatedRules: [service-no-http-context, service-no-direct-orm]
 ---
@@ -19,7 +22,7 @@ Controller는 "요청을 받아 Service에 넘기고 결과를 응답으로 변�
 - 동일 로직이 여러 엔드포인트에 복붙됨
 - 트랜잭션 경계가 모호해짐
 
-> v1에서는 정규식으로 단정하기 어려워 `ast-rule` 수동 검토 stub로 표시된다. 추후 ts-morph 기반 AST로 메서드 본문 복잡도를 강제한다.
+> 기계 검사: `*.controller.ts`에 `for`·`while`·`.reduce(`·`switch`가 있으면 위반이다. `if` 분기가 업무 규칙인지는 리뷰어가 본다.
 
 ## ❌ Incorrect
 

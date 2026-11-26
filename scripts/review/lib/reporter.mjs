@@ -1,7 +1,8 @@
 // Render review findings as markdown report.
 // Options:
-//   verbose: when true, prints each Manual Review heuristic stub finding (one line per file/rule).
+//   verbose: when true, prints each manual-review finding (one line per file/rule).
 //            Default false — manual-review hints are summarized as a single count line by rule.
+//   manual-review = 기계 검사로 단정하지 못한 항목(사람 확인). 외부 규칙의 ast-rule, 설명을 모르는 required-pattern 따위.
 
 export function renderReport({ findings, coverage, overrides, scope = null, stackInfo = null }, { verbose = false } = {}) {
   const manualReviews = findings.filter((f) => f.manualReview);
@@ -37,7 +38,7 @@ export function renderReport({ findings, coverage, overrides, scope = null, stac
 
   if (manualReviews.length) {
     if (verbose) {
-      sections.push('### Manual Review (heuristic stubs — AST analysis not implemented yet)');
+      sections.push('### Manual Review (사람 확인 — 기계 검사로 단정하지 못한 항목)');
       for (const f of manualReviews) {
         sections.push(`- ${f.file}${f.line ? ':' + f.line : ''} — ${f.ruleId} — ${f.hint || f.message || ''}`);
       }
@@ -49,10 +50,10 @@ export function renderReport({ findings, coverage, overrides, scope = null, stac
         if (!perRule.has(key)) perRule.set(key, new Set());
         perRule.get(key).add(f.file);
       }
-      sections.push('### Manual Review (suppressed — run with `--verbose` for full list)');
+      sections.push('### Manual Review (사람 확인 — `--verbose` 로 파일별 목록)');
       const summary = [...perRule.entries()]
         .sort((a, b) => b[1].size - a[1].size)
-        .map(([rule, files]) => `- ${rule}: ${files.size}개 파일 (AST 미구현 휴리스틱)`);
+        .map(([rule, files]) => `- ${rule}: ${files.size}개 파일 (사람 확인)`);
       sections.push(...summary);
     }
   }

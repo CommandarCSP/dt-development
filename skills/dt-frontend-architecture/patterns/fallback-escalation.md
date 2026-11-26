@@ -4,8 +4,12 @@ summary: "로컬 폴백은 자기 책임 밖 에러를 rethrow해 상위 경계�
 severity: minor
 appliesTo: ["src/components/error/**/*.{ts,tsx}", "src/**/*Fallback.{tsx}"]
 detection:
-  - type: ast-rule
-    description: "local fallback should rethrow errors outside its responsibility (manual review)"
+  - type: pattern-pair
+    when: "FallbackProps|resetErrorBoundary"
+    require: "\bthrow\b"
+    rationale: "에러 폴백 컴포넌트에 throw 가 하나도 없다 — 책임 밖 에러(인증 만료·치명적 런타임)를 다시 던져 상위 경계로 넘긴다"
+  - type: manual
+    description: "어떤 에러를 이 폴백이 다루고 어떤 에러를 던지는지(분류 기준)는 사람이 본다"
 relatedRules: [error-boundary-required, no-imperative-error-branch]
 ---
 
@@ -24,9 +28,10 @@ function LocalSectionFallback({ error, resetErrorBoundary }: FallbackProps) {
 }
 ```
 
-## 탐지 (v1)
+## 탐지
 
-자동검출 불가 → **수동검토(ast-rule stub)**. review 리포트에 "수동 확인" 항목으로 표기된다.
+- 기계 검사: `FallbackProps`·`resetErrorBoundary`를 쓰는 폴백 파일에 `throw`가 하나도 없으면 위반이다.
+- 사람 확인: 무엇을 이 폴백이 다루고 무엇을 던지는지(분류 기준)는 리뷰어가 본다.
 에러 분류 기준은 [에러 경계 계층](../references/error-boundary-layering.md) 참조.
 
 ## 관련 규칙

@@ -2,10 +2,13 @@
 ruleId: adding-business-params
 summary: "limit/sort 같은 비즈니스 파라미터는 Page에서 선언 → Business Hook param으로 전달, 내부 하드코딩 금지"
 severity: minor
-appliesTo: ["src/business/hooks/**/*.{ts,tsx}", "src/components/domain/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}"]
+appliesTo: ["src/business/hooks/**/*.{ts,tsx}", "src/store/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "limit/sort 같은 비즈니스 파라미터가 Page에서 선언되지 않고 Business Hook 내부에 하드코딩되면 위반."
+  - type: forbidden-pattern
+    pattern: "\b(?:limit|pageSize|perPage|size|sort|sortBy|order|orderBy)\??\s*:\s*(?:\d+|'[^'\n]*'|\"[^\"\n]*\")(?!\s*\|)"
+    rationale: "Business Hook·Store Query 안에 limit·sort 값을 직접 적었다 — 값은 Page 가 정하고 파라미터로 받는다(같은 hook 을 다른 페이지가 다른 값으로 쓴다). 기본값은 매개변수 기본값(`{ limit = 10 }`)으로 둔다"
+  - type: manual
+    description: "Domain Component 가 값을 직접 적는지, Page 에서 hook 까지 파라미터가 끊기지 않고 전달되는지는 사람이 본다 — Page 는 값을 적는 곳이라 같은 검사를 걸 수 없다"
 relatedRules: [query-key-design]
 ---
 

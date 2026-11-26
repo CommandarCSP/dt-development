@@ -52,12 +52,12 @@ test('rules expose overridable(false default) + overrideKey(null default)', asyn
   }
 });
 
-test('sentry-breadcrumb-no-pii loads as a minor manual-review rule', async () => {
+test('sentry-breadcrumb-no-pii loads as a minor rule with a machine check + manual part (GEN-40)', async () => {
   const rules = await loadAllRules(PLUGIN_ROOT); // 파일 상단의 기존 import·PLUGIN_ROOT 상수 사용
   const rule = rules.find((r) => r.ruleId === 'sentry-breadcrumb-no-pii');
   assert.ok(rule, 'rule should be discovered by the loader');
   assert.equal(rule.severity, 'minor');
-  assert.equal(rule.detection[0].type, 'ast-rule');
+  assert.deepEqual(rule.detection.map((d) => d.type), ['forbidden-pattern', 'manual']);
 });
 
 test('no duplicate ruleIds across sources', async () => {

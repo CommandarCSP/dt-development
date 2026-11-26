@@ -4,8 +4,8 @@ summary: "View 단위 테스트, props만으로 렌더링/콜백 검증, router/
 severity: important
 appliesTo: ["src/components/view/**/__tests__/**/*.{ts,tsx}"]
 detection:
-  - type: ast-rule
-    description: "View 테스트는 props 변형을 통한 시각/콜백 검증만 수행. (view-test-props-only와 짝)"
+  - type: manual
+    description: "View 테스트가 props 를 바꿔 가며 화면·콜백만 검증하는지는 사람이 본다. 기계로 볼 수 있는 부분(store·router·business import 금지)은 짝 규칙 view-test-props-only 가 검사한다 — 같은 검사를 두 번 걸지 않는다"
 relatedRules: [view-test-props-only, pure-view-component]
 ---
 

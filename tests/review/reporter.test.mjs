@@ -37,7 +37,7 @@ test('manualReview findings default to suppressed summary', () => {
     { severity: 'important', ruleId: 'r1', file: 'b.ts', manualReview: true, hint: 'inspect' },
   ];
   const out = renderReport({ findings, coverage: { findings: [] } });
-  assert.match(out, /### Manual Review \(suppressed/);
+  assert.match(out, /### Manual Review \(사람 확인 — `--verbose`/);
   assert.match(out, /r1: 2개 파일/);
   // individual file paths should NOT be listed in default mode
   assert.doesNotMatch(out, /a\.ts/);
@@ -50,7 +50,7 @@ test('manualReview findings show full list when verbose=true', () => {
     { severity: 'important', ruleId: 'r1', file: 'a.ts', manualReview: true, hint: 'inspect' },
   ];
   const out = renderReport({ findings, coverage: { findings: [] } }, { verbose: true });
-  assert.match(out, /### Manual Review \(heuristic stubs/);
+  assert.match(out, /### Manual Review \(사람 확인/);
   assert.match(out, /a\.ts/);
   assert.match(out, /inspect/);
   assert.match(out, /Ready to merge: Yes/);

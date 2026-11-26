@@ -27,7 +27,7 @@ description: Use when reviewing dt-frontend project code for architecture/test r
 
 - 기본: `full` 모드, `base`는 `.dt-frontend.json`의 `coverage.baselineRef`(기본 HEAD)
 - `partial`: scaffold의 phase-level mini-review용. `--paths`로 검사 대상 명시.
-- `--verbose`: Manual Review 휴리스틱 스텁(AST 미구현 룰)을 모든 파일별로 출력. 기본은 룰별 카운트만 요약. 실제 Critical/Important 위반은 항상 노출됨.
+- `--verbose`: Manual Review(사람 확인 — 기계 검사로 단정하지 못한 항목)를 모든 파일별로 출력. 기본은 룰별 카운트만 요약. 실제 Critical/Important 위반은 항상 노출됨.
 
 ### 단독 실행 절차 (`/dt-review`)
 사용자가 직접 부른 리뷰는 **보고서 전문을 보려는 것**이다. 그래서 메인 세션에서 스크립트를 돌려 출력을 그대로 보인다(`docs/orchestration-policy.md` 원칙 3의 단독 실행 예외). 해석·수리 판단은 하지 않는다. 아래 1~5단계를 건너뛰지 않는다 — 명령 파일이 스크립트만 부르고 이 순서를 건너뛰면 설정 없이 조용히 기본값으로 리뷰하게 된다(GEN-33에서 고친 결함).
@@ -76,7 +76,7 @@ Reasoning: Critical 위반 1건 + coverage 1건 — 머지 전 수정 필요.
   - `forbidden-pattern`: 원시 정규식 패턴 차단. `{ type: 'forbidden-pattern', pattern: 'style=\\{\\{' }` 식. JSX 속성·문자열 등 import/호출이 아닌 텍스트 패턴 검출용.
   - `requires-sibling-test`: 검사 대상 파일에 대응하는 sibling 테스트 파일 존재를 강제. `{ type: 'requires-sibling-test', testPath: '__tests__/{basename}.test.ts' }` 식. `*Business.ts` 같이 단위 테스트 필수 모듈에 적용.
   - `required-pattern`: 휴리스틱 (현재 querykey-param 한정), 미지원 패턴은 manual-review 표시
-  - `ast-rule`: v1 stub, manual-review 표시
+  - `manual`: 기계로 단정하지 못하는 부분 — 리뷰어 에이전트가 규칙 문서를 읽고 본다. 플러그인 밖 규칙이 옛 유형 `ast-rule`을 쓰면 manual-review(사람 확인) 항목으로 남긴다
   - `pattern-pair`: 파일 단위 짝 — `when`이 맞는 파일에 `require`(또는 `requireAll` 전부)가 없거나 `forbid`가 있으면 위반. AST 없이 잡는 구조 위반용(예: `.map` 목록에 빈 상태 분기 없음)
   - `jsx-tag-attrs`: JSX 여는 태그 단위 — `tags` 중 `when`이 맞는 태그가 `requireAll` 속성을 다 갖췄는지(`{…}` 안의 `=>`는 건너뜀)
   - `registered-in-sibling-module`: NestJS `@Injectable`·`@Controller` 클래스가 같은 폴더 `*.module.ts`에 등록됐는지

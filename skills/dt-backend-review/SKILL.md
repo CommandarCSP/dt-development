@@ -32,7 +32,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/review/review.mjs" $ARGUMENTS --stack backen
 
 - 기본: `full` 모드, `base`는 `.dt-backend.json`의 `coverage.baselineRef`(기본 HEAD)
 - `partial`: scaffold의 phase-level mini-review용. `--paths`로 검사 대상 명시.
-- `--verbose`: Manual Review 휴리스틱 스텁(AST 미구현 룰)을 파일별로 출력.
+- `--verbose`: Manual Review(사람 확인 — 기계 검사로 단정하지 못한 항목)를 파일별로 출력.
 
 ### 단독 실행 절차 (`/dt-be-review`)
 사용자가 직접 부른 리뷰는 **보고서 전문을 보려는 것**이다. 그래서 메인 세션에서 스크립트를 돌려 출력을 그대로 보인다(`docs/orchestration-policy.md` 원칙 3의 단독 실행 예외). 해석·수리 판단은 하지 않는다. 아래 1~5단계를 건너뛰지 않는다 — 명령 파일이 스크립트만 부르고 이 순서를 건너뛰면 설정 없이 조용히 기본값으로 리뷰하게 된다(GEN-33에서 고친 결함).
@@ -61,7 +61,9 @@ FE와 동일한 스키마·detector를 사용한다 (`dt-frontend-review` SKILL.
 - `forbidden-pattern` — `res.status(`, `new Queue(`, 중앙 키 팩토리 위반 등
 - `requires-sibling-test` — `*.service.ts`↔`*.unit.test.ts`, `*.controller.ts`↔`*.integration.test.ts` (`testing.*` 설정이 있으면 그 이름. `docs/refs/stack-config.md` §3)
 - `required-pattern` — 요청 DTO의 class-validator 데코레이터 강제 (validation-at-boundary)
-- `ast-rule` — controller-no-business-logic / module-registration (v1 수동 검토 stub)
+- `pattern-pair` — 파일 안에 A가 있으면 B도 있어야 한다(예: jest 커버리지 설정에 `coverageThreshold`·80 이상)
+- `registered-in-sibling-module` — provider·controller가 같은 폴더 `*.module.ts`에 등록됐는지(module-registration)
+- `manual` — 기계로 단정하지 못하는 부분. 리뷰어 에이전트가 규칙 문서를 읽고 본다(예: 컨트롤러의 `if` 분기가 업무 규칙인지). 컨트롤러의 반복·누적 계산(`for`·`while`·`.reduce(`·`switch`)은 `forbidden-pattern`이 잡는다
 
 ## 코딩 규율 Manual Review
 `dt-backend-coding-discipline`의 판단 룰(Simplicity / Surgical / Goal-Driven)을 변경 diff에서 육안 확인 — severity minor.

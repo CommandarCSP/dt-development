@@ -4,8 +4,13 @@ summary: "비즈니스 코드 80%+ (DTO/entity 제외), critical 영역(service/
 severity: critical
 appliesTo: ["jest.config.*", "package.json"]
 detection:
-  - type: ast-rule
-    description: "jest coverage threshold가 비즈니스 경로(service/repository) 기준 80 미만이거나, service/repository가 collectCoverageFrom에서 빠지면 위반 (v1: 수동 검토)"
+  - type: pattern-pair
+    when: "collectCoverageFrom|coverageThreshold|coverageDirectory|collectCoverage\b"
+    require: "coverageThreshold"
+    forbid: "[\"']?\b(?:lines|statements|functions|branches)[\"']?\s*:\s*[0-7]?\d(?![\d.])"
+    rationale: "jest 커버리지 설정에 coverageThreshold 가 없거나 기준이 80 미만이다 — 비즈니스 코드 80% 이상을 강제한다"
+  - type: manual
+    description: "collectCoverageFrom 에서 service·repository 가 빠졌는지, 커버리지 설정이 아예 없는지, 어서션 품질은 사람이 본다"
 relatedRules: [integration-no-db-mocking, test-case-design-techniques]
 ---
 

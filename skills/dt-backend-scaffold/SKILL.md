@@ -75,4 +75,4 @@ controller/service는 두 계층에 의존하므로 Phase 3/4에서 순차 진�
 ## 한계 (v1)
 - Contract validator는 tsc + `prisma validate`에 의존 (export-name AST 검증은 추후)
 - repair loop는 1회만
-- controller-no-business-logic / module-registration은 review의 ast-rule 수동 검토 stub
+- controller-no-business-logic은 반복·누적 계산만 기계로 잡고 `if` 분기는 리뷰어가 본다. module-registration은 같은 폴더 `*.module.ts` 등록을 기계로 본다

@@ -70,7 +70,7 @@ export function Card({ title }: Props) {
     const r = spawnSync('node', [REVIEW_SCRIPT, 'full', '--no-coverage', '--project', dir], {
       encoding: 'utf8',
     });
-    // Clean view component has no critical violations — only ast-rule manual-review stubs
+    // Clean view component has no critical violations — only manual-review (사람 확인) items
     // which produce "Ready to merge: With fixes" (not "No"). Exit code is 0.
     assert.doesNotMatch(r.stdout, /Ready to merge: No/);
     assert.equal(r.status, 0);
