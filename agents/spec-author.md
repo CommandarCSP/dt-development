@@ -10,6 +10,11 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 
 > **절차 SOT는 베껴넣지 않는다(얇은 에이전트).** 각 단계의 상세 규칙은 아래 *참조*를 그때 Read해 따른다. 인라인 degrade(조율자가 직접 수행) 시에도 동일 문서를 읽어 같은 동작.
 
+> **작업 비용(GEN-41).** 턴마다 그때까지 쌓인 맥락을 다시 읽는다 — 비용은 맥락 크기 × 턴 수다.
+> - **플러그인 스크립트 소스(`${CLAUDE_PLUGIN_ROOT}/scripts/**/*.mjs`)는 읽지 않는다.** 이 문서와 참조 문서에 적힌 명령으로 실행하고 결과만 본다. 명령이 안 맞으면 소스를 뒤지지 말고 그 사실을 summary에 적는다.
+> - **같은 문서를 두 번 읽지 않는다.** 참조 문서는 그 단계에 이르렀을 때 필요한 절만 읽는다(`grep -n '^## '`로 절을 찾고 그 절만 `sed -n`).
+> - **읽기·고치기는 묶는다.** 여러 파일은 한 번에 읽고, 한글 검사·형식 검사 지적은 모아서 한 번에 고친 뒤 다시 돌린다.
+
 ## 읽기 (입력)
 - 조율자가 넘긴: **`pages` 목록**(1개 이상; 각 슬러그+소스 locator), `--scope`/`--only`/`--api-doc` 등 인자, (있으면) 직전 라운드의 사용자 답변.
 - 파일: `docs/specs/definition.md`(게이트), `docs/project-context.md`, 대상 페이지 디렉토리(재실행 시), `.dt-spec/<page>/progress.md`(재개).
@@ -30,7 +35,7 @@ description: 요청 범위의 FE 페이지 스펙 전체(requirements/design/tas
 3. **소스 분석** — 각 소스를 타입/역할에 맞는 분석 절차(analyze-figma/-document 참조)로 처리 → 부분 `ExtractionResult`들. `extraction.json`에 저장. **문서 전용(Figma 소스 없음)**이면 `layoutTree`·`designTokens`·`assets`는 산출하지 않는다(시각값 fabricate 금지) → [6] layout-skeleton은 구조 스켈레톤(Case 2) 또는 스텁(Case 3)으로. **figma@design 소스면 analyze-figma Step 1이 `get_variable_defs`(토큰 권위값)와 `download_assets`(실제 에셋 → `docs/specs/assets/<page>/`)까지 수행** — 테마·에셋 충실도의 원천.
 4. **머지** — `mergeExtractionResults.mjs`(순수 구조 머지) + `alignmentCandidates.mjs`(크로스소스 정렬 후보) → `_conflicts`·`_possibleDuplicates` 채운 결과. `merged.json`에 저장.
 5. **충돌·미해소·값채움** — ask-missing 절차(Step 0~7)를 *판정*까지 수행하되, **사람이 결정해야 하는 것**(필드 충돌, 중복 동일여부, 미해소 API 값, 네비게이션 미정, 비기능 요구)은 **직접 AskUserQuestion 하지 않고** `needsDecision`으로 구조화해 반환한다(워커는 사용자 채널 없음 — 컨텍스트 경제 §8). 스크립트로 결정 가능한 것(우선순위·검증·라벨)은 그대로 적용.
-6. **산출물 빌드** — `${CLAUDE_PLUGIN_ROOT}/templates/*.tmpl`(절대경로 — 워커 cwd는 사용자 프로젝트라 상대 `templates/` 금지) + `buildSpecHeader.mjs` 헤더 + EARS 변환(`ears-patterns.md`). layout-skeleton 3-way·detectStyledLibrary 등 dt-spec [7-4] 규칙 따름.
+6. **산출물 빌드** — `${CLAUDE_PLUGIN_ROOT}/templates/*.tmpl`(절대경로 — 워커 cwd는 사용자 프로젝트라 상대 `templates/` 금지) + 헤더 + EARS 변환(`ears-patterns.md`). 헤더는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/buildSpecHeader.mjs" --status <draft|finalized> --source <type:locator[@role]> [--source …] [--definition <정의서 상대경로>@v<N> --if IF-1,IF-3 | --sot none] [--scope <s>]`의 출력으로 템플릿 헤더 블록을 바꾼다(이미 쓴 파일이면 `--replace <파일>` — 헤더 줄만 바꾸고 다른 주석은 남긴다). layout-skeleton 3-way·detectStyledLibrary 등 dt-spec [7-4] 규칙 따름.
 7. **상태 결정** — dt-spec [7-6] 트리거대로 finalized/draft. 미해소 needsDecision이 남으면 draft.
 8. **상향 정합** — consume(generated)면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/upward-alignment.md`(T2~T8·D8·H3, `deepRead`=Figma·`unitRef`=`dt-spec/<page>`) 수행. `확정` lock·diff-then-confirm 우회 금지.
 9. **크로스페이지 산출 (2개 이상 페이지 — 홀리스틱의 핵심)** — 전 페이지 스펙을 한 시야로 보고 `interaction-integrity.md`(§A·B)대로:

@@ -10,6 +10,11 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 
 > **절차 SOT는 베껴넣지 않는다(얇은 에이전트).** 각 단계 상세 규칙은 아래 *참조*를 그때 Read해 따른다. 인라인 degrade 시에도 동일 문서를 읽어 같은 동작.
 
+> **작업 비용(GEN-41).** 턴마다 그때까지 쌓인 맥락을 다시 읽는다 — 비용은 맥락 크기 × 턴 수다.
+> - **플러그인 스크립트 소스(`${CLAUDE_PLUGIN_ROOT}/scripts/**/*.mjs`)는 읽지 않는다.** 이 문서와 참조 문서에 적힌 명령으로 실행하고 결과만 본다. 명령이 안 맞으면 소스를 뒤지지 말고 그 사실을 summary에 적는다.
+> - **같은 문서를 두 번 읽지 않는다.** 참조 문서는 그 단계에 이르렀을 때 필요한 절만 읽는다(`grep -n '^## '`로 절을 찾고 그 절만 `sed -n`).
+> - **읽기·고치기는 묶는다.** 여러 파일은 한 번에 읽고, 한글 검사·형식 검사 지적은 모아서 한 번에 고친 뒤 다시 돌린다.
+
 ## 읽기 (입력)
 - 조율자가 넘긴: **`resources` 목록**(1개 이상; 각 슬러그+소스 locator), `--scope`/`--only`/인자, (있으면) 직전 라운드 사용자 답변.
 - 파일: `docs/specs/definition.md`(게이트), `docs/project-context.md`, 대상 리소스 디렉토리(재실행 시), `.dt-spec/<resource>/progress.md`(재개), `prisma/schema.prisma`.
@@ -31,7 +36,7 @@ description: 요청 범위의 BE 리소스 스펙 전체(requirements/design/tas
 3. **소스 분석** — OpenAPI→analyze-openapi(계약 우선, Case 1), ERD/SQL→analyze-datamodel(스키마 우선, `_inferred`), 문서→analyze-document. 부분 `ExtractionResult`(endpoints/schemas/dataModel/...) → `extraction.json`.
 4. **머지** — `mergeExtractionResults.mjs`(엔드포인트 method+path 키 union) + 충돌→`_conflicts`. `merged.json`.
 5. **충돌·미해소·값채움** — **소스 우선순위 사다리로 자동 해소**(와이어포맷: OpenAPI>ERD>문서 / 타입·제약: ERD/SQL>OpenAPI>문서 / 비즈규칙: 문서>기타 → `source: precedence-resolved`). 승자 없으면(둘 다 침묵·동률) **직접 묻지 말고 `needsDecision`으로**. auth 발급(토큰 발급 여부)·toggle 멱등성은 **소스 우선**(OpenAPI security/ERD passwordHash 등 있으면 안 물음), 소스 침묵 시 needsDecision. 트리거되면 auth-recipe/toggle-recipe 인스턴스화.
-6. **산출물 빌드** — `${CLAUDE_PLUGIN_ROOT}/templates-backend/*.tmpl`(절대경로 — 워커 cwd는 사용자 프로젝트라 상대경로 금지) + `buildSpecHeader.mjs` 헤더 + EARS(`ears-patterns.md`, BE는 Unwanted/error가 풍부). 인덱스/페이지네이션 전략(쿼리 패턴→인덱스). api-contract 3-way(Case 1 정밀/Case 2 구조 draft/Case 3 스텁).
+6. **산출물 빌드** — `${CLAUDE_PLUGIN_ROOT}/templates-backend/*.tmpl`(절대경로 — 워커 cwd는 사용자 프로젝트라 상대경로 금지) + 헤더(헤더는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/buildSpecHeader.mjs" --status <draft|finalized> --source <type:locator[@role]> [--source …] [--definition <정의서 상대경로>@v<N> --if IF-1,IF-3 | --sot none] [--scope <s>]`의 출력으로 템플릿 헤더 블록을 바꾼다(이미 쓴 파일이면 `--replace <파일>` — 헤더 줄만 바꾸고 다른 주석은 남긴다)) + EARS(`ears-patterns.md`, BE는 Unwanted/error가 풍부). 인덱스/페이지네이션 전략(쿼리 패턴→인덱스). api-contract 3-way(Case 1 정밀/Case 2 구조 draft/Case 3 스텁).
 7. **상태 결정** — finalized/draft. 미해소 needsDecision 남으면 draft. **단 finalize는 8의 최종 정합 게이트를 통과해야 확정된다**(최종 api-contract ↔ SOT 미반영 드리프트 0).
 8. **상향 정합 (2단계 — 산출 전 + 산출 후 강제)** — consume면 `${CLAUDE_PLUGIN_ROOT}/docs/refs/upward-alignment.md`(T2~T8·D8·H3, `deepRead`=OpenAPI/데이터모델·`unitRef`=`dt-bespec/<resource>`, Figma 출처 T7 비적용=G1) 수행. `확정` lock·diff-then-confirm·compare-and-swap 우회 금지.
    - **(a) 산출 직전**: deep-read 계약 ↔ SOT diff → 잠정 IF 승격(드리프트 리포트 필수).

@@ -10,6 +10,11 @@ description: /dt-adopt 역추출 워커 — 기계 추출 뼈대(.dt-adopt/extra
 
 > 현행 동작이 곧 의도라고 가정하지 않는다. 의도인지 버그인지 갈리는 자리는 **판정하지 않고** `suspects`로 올린다. 버그를 스펙으로 굳히면 그 뒤로는 버그가 "계약"이 된다.
 
+> **작업 비용(GEN-41).** 턴마다 그때까지 쌓인 맥락을 다시 읽는다 — 비용은 맥락 크기 × 턴 수다.
+> - **플러그인 스크립트 소스(`${CLAUDE_PLUGIN_ROOT}/scripts/**/*.mjs`)는 읽지 않는다.** 이 문서와 참조 문서에 적힌 명령으로 실행하고 결과만 본다. 명령이 안 맞으면 소스를 뒤지지 말고 그 사실을 summary에 적는다.
+> - **같은 문서를 두 번 읽지 않는다.** 참조 문서는 그 단계에 이르렀을 때 필요한 절만 읽는다(`grep -n '^## '`로 절을 찾고 그 절만 `sed -n`).
+> - **읽기·고치기는 묶는다.** 여러 파일은 한 번에 읽고, 한글 검사·형식 검사 지적은 모아서 한 번에 고친 뒤 다시 돌린다.
+
 ## 읽기 (입력)
 - 조율자가 넘긴: `frontendRoot`·`backendRoot`(하나만 있을 수 있음), `extractionPath`(`.dt-adopt/extraction.json` — `scripts/adopt/extract.mjs` 결과), `scope`(전부 또는 고른 화면·리소스), (재dispatch면) `answers`.
 - 결정(조율자가 넘김): `decisions` — 채택된 PD·TP(`docs/orchestration-policy.md` 원칙 9).

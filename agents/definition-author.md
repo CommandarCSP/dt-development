@@ -10,6 +10,11 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 
 > **절차 SOT는 베껴넣지 않는다(얇은 에이전트).** 상세 규칙은 `${CLAUDE_PLUGIN_ROOT}/skills/dt-devspec/SKILL.md`의 해당 절(§1~§2.5·불변원칙·D1/D3/D6/D8 등)을 그때 Read해 따른다. 인라인 degrade(조율자 직접 수행) 시에도 동일 문서를 읽어 같은 동작.
 
+> **작업 비용(GEN-41).** 턴마다 그때까지 쌓인 맥락을 다시 읽는다 — 비용은 맥락 크기 × 턴 수다.
+> - **플러그인 스크립트 소스(`${CLAUDE_PLUGIN_ROOT}/scripts/**/*.mjs`)는 읽지 않는다.** 이 문서와 참조 문서에 적힌 명령으로 실행하고 결과만 본다. 명령이 안 맞으면 소스를 뒤지지 말고 그 사실을 summary에 적는다.
+> - **같은 문서를 두 번 읽지 않는다.** 참조 문서는 그 단계에 이르렀을 때 필요한 절만 읽는다(`grep -n '^## '`로 절을 찾고 그 절만 `sed -n`).
+> - **읽기·고치기는 묶는다.** 여러 파일은 한 번에 읽고, 한글 검사·형식 검사 지적은 모아서 한 번에 고친 뒤 다시 돌린다.
+
 ## 읽기 (입력)
 - dt-devspec이 넘긴: 소스 locator(Figma 페이지/PDF/링크/MD), `--scope <slug>`, (재dispatch면) §3 협의 사용자 답변, (재실행) 기존 `definition[.scope].md`.
 - 파일: 기존 정의서(in-memory 스냅샷), `docs/specs/{pages,resources}/*/`(역합치 leaf), `.dt-devspec/<scope>/progress.md`(재개).
@@ -27,7 +32,7 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 3. **FE/BE 경계·IF 추론 (§2)** — 책임 `FE|BE|공통`(confident/ambiguous) 분류, IF 후보, **URL 경로 결정론 도출(D1)**(컨벤션 미합의면 `협의중`), 타입/nullable 출처 규칙(D6 — 단정 금지, 모호하면 협의로), DM-n 공유 shape(D3), SP↔IF·DM↔IF 링크, 출처 deep-link(D10).
 4. **충실도·협의완전성 검증 (§2.5)** — 입력 원본 ground truth로 초안 대조(누락/왜곡/환각) + 협의완전성(handoff-checklist 카탈로그) → 자동 정제(IF 누락채움·왜곡교정·환각제거) + 남은 모호/미해소는 **협의 큐**로. (워커 자신이 A/B/refute 라운드 수행 — 별도 서브에이전트 불필요.)
 5. **초안 저장 + 협의 큐 반환** — `draft.md`에 SP/IF/DM 초안 저장. **§3 협의가 필요한 것**(ambiguous 분담, 전역 규약 미정, IF 합의 상태)은 **직접 AskUserQuestion 하지 않고 `needsDecision`으로** 반환(기초→파생 정렬, 기능 그룹 군집화).
-6. **(재dispatch — §3 답변 수신 후) §3.5 점검 + §4 산출** — 사용자 답변 일관성 경량 점검(전역규약 위반·답변 간 모순·원본 충돌) → `buildDefinitionHeader.mjs`로 산출/갱신(재실행=diff-then-confirm, 전역규약 lock 보존, definitionVersion은 계약이 바뀌었을 때만 +1 — `${CLAUDE_PLUGIN_ROOT}/scripts/definitionVersion.mjs`) → `validateDefinition.mjs` 자체 검증. **다른 스코프 파일 절대 안 건드림.**
+6. **(재dispatch — §3 답변 수신 후) §3.5 점검 + §4 산출** — 사용자 답변 일관성 경량 점검(전역규약 위반·답변 간 모순·원본 충돌) → 헤더는 `node "${CLAUDE_PLUGIN_ROOT}/scripts/buildDefinitionHeader.mjs" --status <draft|finalized> --source <type:locator[@role]> [--source …] --version <N> [--scope <s>]`(이미 있는 정의서면 `--replace docs/specs/definition.md --version <N>` — 빠진 값은 지금 헤더에서 가져온다)로 산출/갱신(재실행=diff-then-confirm, 전역규약 lock 보존, definitionVersion은 계약이 바뀌었을 때만 +1 — `${CLAUDE_PLUGIN_ROOT}/scripts/definitionVersion.mjs`) → `validateDefinition.mjs` 자체 검증. **다른 스코프 파일 절대 안 건드림.**
 
 ## 게이트 (필수 — 조용한 누락/지어내기 금지)
 - 식별된 IF/SP는 정보 없어도 협의 큐에 **반드시 1회** surface(미해소면 `미해소`로 명시, G3 지어내기 금지).

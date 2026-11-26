@@ -145,7 +145,7 @@ leaf spec(FE requirements.md · BE api-contract.md/requirements.md)이 "어느 �
 - **§3.5 forceDraft 처리:** §3.5가 `forceDraft: true`를 반환했으면 `buildDefinitionHeader`를 `status:'draft'`로 호출한다(시그니처 불변 — `status` 값만 `draft`).
 - 본문: 전역 규약(+URL 컨벤션) / 범위 분담(SP-n, `관련 IF` 컬럼) / 인터페이스 합의(IF-n, `합의 상태`·`참조 DM`·`출처` 컬럼) / **데이터 모델(DM-n, 옵셔널 — IF 응답에 실제 등장한 공유 shape만)** / 변경 추적.
 - **재실행**: 기존 `docs/specs/definition.md`와 비교(diff-then-confirm). **전역 규약은 보존(lock)** 하고 바뀐 SP/IF만 갱신하며, 계약이 바뀌었을 때만 definitionVersion +1(`definitionVersion.mjs`). 사용자 승인 후 저장. (전역 규약 변경은 사용자가 "전역 규약 수정"을 명시 요청할 때만 — 불변원칙 4)
-- 저장 직후 `validateDefinition.mjs`로 자체 검증.
+- 저장 직후 `node "${CLAUDE_PLUGIN_ROOT}/scripts/validateDefinition.mjs" docs/specs/definition.md`로 자체 검증한다(결과 JSON 출력, 유효하지 않으면 종료 코드 1).
 - **1.1→1.2 마이그레이션(D7, 재실행):** ① `parseDefinitionHeader`로 구버전/specVersion-미상 감지(헤더 옵셔널 파싱은 완료됨). ② 전역 URL 컨벤션 미합의면 1차 전환에서 경로 도출 불가 → 기존 IF 전부 `협의중` 유지(컨벤션 SOT가 이 §3에서 *처음* 합의됨). ③ §3 컨벤션 확정 → §4 경로 재도출 → 경로 얻은 IF만 `협의중`→`컨벤션` 승격. ④ 기존 `확정` lock 보존(재실행이 되돌리지 않음). ⑤ 신규 섹션/필드(DM·링크·출처)는 "구조 추가"로 한 묶음, 기존 SP/IF 본문 diff와 분리 제시(diff 폭발 방지). ⑥ 승인 후 `definitionVersion`+1·specVersion 1.2 bump. **즉 컨벤션 합의→경로 재도출→승격 순서 의존이라 1차 전환 직후 `컨벤션` 라벨이 0이어도 정상.** ⑦ 입출력 동일 경로 가드: §1에서 in-memory 스냅샷으로 읽고, §4 출력은 temp→원자적 rename(실패 시 원본 유지).
 
 ## 상태 결정 (status)

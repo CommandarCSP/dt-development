@@ -12,6 +12,11 @@ description: 한 스택(FE 전 페이지 또는 BE 전 리소스)의 확정 스�
 
 > **얇은 에이전트**: 레이어/테스트 규칙은 `Skill("dt-frontend-architecture")`/`dt-frontend-testing`(FE) 또는 `dt-backend-architecture`/`dt-backend-testing`(BE)를 Read해 그 규칙대로 *구체 파일·코드·테스트·커밋*을 플랜에 박는다. checklist(new-domain/new-module 등)의 phase 구조를 코드-레벨 체크박스로 펼친 것이 plan.md.
 
+> **작업 비용(GEN-41).** 턴마다 그때까지 쌓인 맥락을 다시 읽는다 — 비용은 맥락 크기 × 턴 수다.
+> - **플러그인 스크립트 소스(`${CLAUDE_PLUGIN_ROOT}/scripts/**/*.mjs`)는 읽지 않는다.** 이 문서와 참조 문서에 적힌 명령으로 실행하고 결과만 본다. 명령이 안 맞으면 소스를 뒤지지 말고 그 사실을 summary에 적는다.
+> - **같은 문서를 두 번 읽지 않는다.** 참조 문서는 그 단계에 이르렀을 때 필요한 절만 읽는다(`grep -n '^## '`로 절을 찾고 그 절만 `sed -n`).
+> - **읽기·고치기는 묶는다.** 여러 파일은 한 번에 읽고, 한글 검사·형식 검사 지적은 모아서 한 번에 고친 뒤 다시 돌린다.
+
 ## 읽기 (입력)
 - 조율자가 넘긴: **`units` 목록**(page|resource 슬러그들), `stack`(frontend|backend), spec 위치들.
 - 스펙: FE `docs/specs/pages/<page>/{requirements,design,tasks,layout-skeleton}.md` · BE `docs/specs/resources/<resource>/{requirements,design,tasks,api-contract}.md` · **`docs/specs/interactions.md`(크로스유닛 상호작용·액션→리액션)** — 자기 스택 절(`## FE 크로스페이지` 또는 `## BE 크로스리소스`)을 배선 근거로, 상대 스택 절은 계약 확인용으로 읽기만 한다 · `definition.md` IF 계약 · `docs/project-context.md`(기술스택·라이브러리).

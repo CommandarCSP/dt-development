@@ -1,3 +1,5 @@
+import { readFileSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { parseDefinitionHeader, SPEC_VERSION } from './buildDefinitionHeader.mjs';
 import { H } from './lib/headings.mjs';
 
@@ -84,4 +86,16 @@ export function validateDefinition(markdown) {
 
   const valid = errors.length === 0 && structureOk;
   return { valid, errors, kind, structureOk, specVersion, status, definitionVersion };
+}
+
+// CLI — node scripts/validateDefinition.mjs <definition.md> : 결과 JSON 을 출력하고, 유효하지 않으면 종료 코드 1(GEN-41: 함수를 import 하지 않게).
+const isMain = (() => { try { return process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url); } catch { return false; } })();
+if (isMain) {
+  const file = process.argv[2];
+  if (!file) { process.stderr.write('Usage: node scripts/validateDefinition.mjs <definition.md>\n'); process.exit(2); }
+  let md;
+  try { md = readFileSync(file, 'utf8'); } catch (e) { process.stderr.write(`❌ ${e.message}\n`); process.exit(2); }
+  const r = validateDefinition(md);
+  process.stdout.write(`${JSON.stringify(r)}\n`);
+  process.exit(r.valid ? 0 : 1);
 }

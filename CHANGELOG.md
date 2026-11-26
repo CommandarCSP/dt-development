@@ -11,6 +11,8 @@
 - **`/dt-explain`(문제 설명) 스킬·명령을 없앴다.** "설명해줘"·"왜 이래?"에 자동으로 걸려 간단한 질문에도 6절 틀과 한글 리뷰가 붙었고, 산출물이 없어 다른 흐름과 이어지지 않았다. 버그 기록은 `/dt-worklog`(Bug), 장애 정리는 `/dt-confluence`(장애 회고)가 맡는다. 호환 정책은 한 minor 동안 경고한 뒤 없애게 하지만, 팀 결정으로 바로 없앴다. 한글 검사의 `docType: explain`도 함께 없앴다 (GEN-13)
 
 ### 추가
+- 에이전트 비용 측정 `scripts/agentCost.mjs` — Claude Code 세션 기록에서 서브에이전트마다 턴 수·시작·평균·최대 맥락·출력·환산 비용·시간·읽은 파일을 표로 낸다(`--match`·`--files`·`--json`). 프롬프트 본문은 내지 않는다. 기준선과 원인 분석은 `docs/specs/2026-11-27-agent-cost-baseline.md` (GEN-41)
+- 헤더 명령줄 — `buildSpecHeader.mjs`·`buildDefinitionHeader.mjs`를 명령으로 실행한다. `--replace <파일>`은 헤더 줄만 바꾸고 다른 주석은 남기며, 빠진 값은 지금 헤더에서 가져온다. `validateDefinition.mjs`도 결과 JSON을 출력하고 무효면 종료 코드 1을 낸다 (GEN-41)
 - 가이드·핸드북 PDF 출력 설정 `docs/refs/doc-output.md`(읽는 곳 `scripts/lib/docOutput.mjs`) — `.dt-guide.json`·`.dt-handbook.json`이 같은 키로 받는다. `versionSource`(`auto` = package.json → Cargo.toml → pyproject.toml · `git-tag` · `file:<경로>`), `ticketKeyPattern`, `theme.{accent,font,logo}`, `pdf.pageSize`(`A4` · `A5` · `Letter` · `Legal`), `language`(목차·문서 제목 문구와 `<html lang>`). 핸드북도 `docs/handbook/theme.override.html`로 테마를 통째 바꿀 수 있다 (GEN-17)
 - 핸드북 진입점 감지에 Express·Koa(router)·Fastify 라우트와 Next.js 파일 라우트(`app/**/page`·`route`, `pages/**`, `next` 의존이 있을 때만)를 더했다. 그 밖의 언어는 `.dt-handbook.json`의 `entrypoints.extraPatterns`(`ext`로 `.py`·`.go` 같은 파일도 읽는다)로 더한다 (GEN-17)
 - UX 소스 어댑터 `docs/refs/ux-sources.md` — 소스 종류별 읽는 방법(Notion·Confluence는 MCP → 없으면 `WebFetch` → 그래도 안 되면 내보낸 파일·붙여 넣기를 묻는다), 주 소스 정하기, Figma·Notion 하는 일 → 도구 대응표(접두어 세 가지), 접두어를 찾는 Figma 사전 점검, 소스별 출처 표기 (GEN-14)
@@ -66,6 +68,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **작성 에이전트가 덜 읽고 덜 돈다.** spec-author·bespec-author·definition-author·adopt-extractor·plan-author에 규칙 세 줄을 넣었다: 플러그인 스크립트 소스를 읽지 않고 명령으로 실행한다 / 같은 문서를 두 번 읽지 않고 필요한 절만 읽는다 / 읽기·고치기를 묶는다. 정의서 버전만 오른 재결속은 드리프트 검사가 0이면 에이전트 없이 헤더 명령 한 줄로 한다(`docs/refs/spec-pipeline.md` §5-5). 같은 입력으로 정의서 작성을 다시 돌려 환산 비용이 15% 줄었다(73.5만 → 62.5만, 품질 게이트 그대로 통과) (GEN-41)
 - **리뷰가 남은 규칙 8개도 실제로 검사한다.** 예전에는 `ast-rule` 자리표라 "수동 확인(AST 미구현 휴리스틱)" 줄만 나오고 위반이 있어도 막지 않았다. 이제 기존 검출 방식(정규식)으로 본다 — FE: Business Hook이 JSX를 반환하거나 `react-dom`을 import함, hook·store 안에 `limit: 10`·`sort: 'x'`를 직접 적음, 에러 폴백에 `throw`가 없음, 브레드크럼 `data`에 개인정보 키, `vitest.config` 커버리지 기준 없음·80 미만 / BE: 컨트롤러의 `for`·`while`·`.reduce(`·`switch`, jest `coverageThreshold` 없음·80 미만. 기계로 단정하지 못하는 부분은 같은 규칙에 `manual`로 적어 리뷰어가 본다. `unit-view-component`는 짝 규칙 `view-test-props-only`와 겹쳐 `manual`로 바꿨다. `where-does-business-logic-go`는 `src/business/**`만, `adding-business-params`는 `src/business/hooks/**`·`src/store/**`만 본다(Page는 값을 정하는 곳이다). 리포트의 "AST 미구현" 문구는 "사람 확인"으로 바꿨고, 팀이 만든 규칙이 `ast-rule`을 쓰면 그 항목으로 남는다 (GEN-40)
 - 스크립트가 글자 그대로 찾는 산출물 제목·상태 라벨(정의서 절·상태, 스펙 필수 절, interactions 소유 절, project-context 절, 결정 문서 절, 마무리 댓글 줄 이름)을 `scripts/lib/headings.mjs` 한곳으로 모았다. 값은 그대로라 산출물은 바뀌지 않는다. 두 곳에 복사돼 있던 interactions 소유 절 목록도 하나가 됐다 (GEN-15 일부)
 - **가이드·핸드북의 티켓 키 검사는 키 형식을 알 때만 막는다.** 예전에는 아무 `대문자-숫자`나 사내 티켓으로 막아 `ES-2015`·`PEP-8`이 걸렸고, 핸드북 `audience: external`은 `UTF-8`·`ISO-8601`까지 막았다. 이제 `ticketKeyPattern` → 트래커 설정의 `defaultProjectKey`(`SHOP`이면 `SHOP-123`만) → `issueKeyPattern` 순으로 찾고, 없으면 보지 않는다. 예전처럼 다 막으려면 `"ticketKeyPattern": "[A-Z][A-Z0-9]+-\\d+"`를 적는다 (GEN-17)

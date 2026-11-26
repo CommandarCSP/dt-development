@@ -54,6 +54,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/analyze.mjs" <root>        # 구조
 **정의서의 §3 협의를 끝내고 버전이 정해진 뒤에** 한다 — 협의 반영으로 정의서 버전이 오르면(`definitionVersion.mjs`), 먼저 결속한 스펙은 시작부터 stale이 된다(검증 실행에서 병렬로 돌렸다가 실제로 겪음). 5단계 스펙은 정의서가 없을 때 썼으므로(standalone) 아직 IF를 가리키지 않는다. 정의서 작성 에이전트가 돌려준 IF 매핑(엔드포인트 → IF-n)을 들고 **bespec-author·spec-author를 다시 dispatch**해 자기 스펙에 결속시킨다(산출물의 쓰는 쪽은 그 에이전트다 — 조율자가 직접 고치지 않는다).
 - 머리 `basedOnDefinition: <경로>@v<N> | IF-…`(buildSpecHeader), api-contract 행, 그리고 **requirements.md의 FR 줄**마다 `<!-- from: IF-n -->`(FE도 — design 표에만 달면 FR 단위 영향 산출이 안 된다. 형식 검사 `fr-from-missing` 경고 0이 조건).
 - 결속 뒤 `scripts/checkDefinitionDrift.mjs`가 0이어야 한다. 결속 전에는 모든 엔드포인트가 "IF 없는 새 엔드포인트"로 잡히는 것이 정상이다(실제 프로젝트 검증에서 확인).
+- **결속 뒤 정의서 버전만 다시 올랐으면 에이전트를 부르지 않는다.** 드리프트 검사가 0이면 조율자가 파일마다 `node "${CLAUDE_PLUGIN_ROOT}/scripts/buildSpecHeader.mjs" --replace <파일> --definition <정의서 상대경로>@v<N>`만 돌린다(`docs/refs/spec-pipeline.md` §5-5). 드리프트가 남을 때만 작성 에이전트를 다시 dispatch한다.
 
 ### 7. 결정 후보 → PD 초안
 `extraction.json`의 `decisionCandidates`(스택·데이터 모델·API·커밋 근거)를 주제별로 보이고 "PD로 남길까요?"를 묶어 묻는다. 고른 것만 `dt-decision` new 절차로 쓴다 — 스택 후보는 머리 `topic`(`stack.*`)을 그대로 적는다(다음 사전 점검이 다시 묻지 않게). 근거가 `guess`인 후보는 기본값을 "남기지 않음"으로 둔다. 바뀔 가능성이 큰 결정(예: 페이지네이션 없음)은 `expires`를 단다.
