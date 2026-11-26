@@ -35,6 +35,10 @@ export const WRAP_STEP_NAMES = ['commit', 'wiki', 'tracker'];
 /** git 흐름(GEN-12). 뜻은 scripts/gitFlow.mjs 가 정한다. */
 export const MERGE_STRATEGIES = ['no-ff', 'squash', 'rebase', 'pr'];
 export const PUSH_POLICIES = ['push', 'none'];
+/** UX 소스(GEN-14). 뜻은 docs/refs/ux-sources.md · skills/dt-devspec/references/source-discovery.md. */
+export const ANNOTATION_LAYOUTS = ['none', 'right-panel'];
+/** API 규칙 프리셋(GEN-14). 뜻은 docs/refs/api-conventions.md. */
+export const CONVENTION_PRESETS = ['rest-v1', 'custom'];
 // git check-ref-format 의 주요 규칙: 공백·제어문자·~^:?*[\\ 금지, .. 와 @{ 금지, - 나 / 나 . 로 시작 금지, .lock·/ 로 끝 금지.
 const BAD_REF = /[\s~^:?*[\\\x00-\x1f\x7f]|\.\.|@\{|^[-/.]|\.lock$|\/\/|\/\./;
 export const isBranchName = (v) => typeof v === 'string' && v.length > 0 && !BAD_REF.test(v) && !v.endsWith('/') && !v.endsWith('.');
@@ -72,6 +76,10 @@ export const DEFAULTS = Object.freeze({
   wrap: { steps: ['commit', 'wiki', 'tracker'] },
   // git 흐름(GEN-12) — dt-git-flow·훅이 읽는다(scripts/gitFlow.mjs). 기본 = 지금 정책(main · --no-ff · feat/ · push).
   gitFlow: { baseBranch: 'main', mergeStrategy: 'no-ff', branchPrefix: 'feat/', pushPolicy: 'push' },
+  // UX 소스(GEN-14) — dt-devspec 이 읽는다. 기본 none = Figma 화면을 통째로 읽는다(주석 패널 판별은 opt-in).
+  uxSources: { figma: { annotationLayout: 'none' } },
+  // API 규칙 프리셋(GEN-14) — dt-devspec §3 이 읽는다. 기본 rest-v1 = 지금 제안값(/api/v1 · 복수형 · 케밥).
+  conventions: { preset: 'rest-v1' },
 });
 
 /** hooks 섹션이 생기면 채우는 기본값(옛 `.dt-pipeline.json` 과 같은 뜻). */
@@ -207,6 +215,31 @@ export function validate(raw, warnings = []) {
     if ('pushPolicy' in g) {
       if (PUSH_POLICIES.includes(g.pushPolicy)) out.gitFlow.pushPolicy = g.pushPolicy;
       else warnings.push(`gitFlow.pushPolicy: "${g.pushPolicy}" 은 ${PUSH_POLICIES.join('|')} 가 아니라 "push" 를 씁니다`);
+    }
+  }
+  // uxSources
+  const u = raw?.uxSources;
+  if (u != null && !isObj(u)) warnings.push('uxSources: 객체여야 합니다 — 무시했습니다');
+  else if (u) {
+    for (const k of Object.keys(u)) if (!(k in DEFAULTS.uxSources)) warnings.push(`알 수 없는 키 "uxSources.${k}" — 무시했습니다`);
+    const f = u.figma;
+    if (f != null && !isObj(f)) warnings.push('uxSources.figma: 객체여야 합니다 — 무시했습니다');
+    else if (f) {
+      for (const k of Object.keys(f)) if (!(k in DEFAULTS.uxSources.figma)) warnings.push(`알 수 없는 키 "uxSources.figma.${k}" — 무시했습니다`);
+      if ('annotationLayout' in f) {
+        if (ANNOTATION_LAYOUTS.includes(f.annotationLayout)) out.uxSources.figma.annotationLayout = f.annotationLayout;
+        else warnings.push(`uxSources.figma.annotationLayout: "${f.annotationLayout}" 은 ${ANNOTATION_LAYOUTS.join('|')} 가 아니라 "none" 을 씁니다`);
+      }
+    }
+  }
+  // conventions
+  const cv = raw?.conventions;
+  if (cv != null && !isObj(cv)) warnings.push('conventions: 객체여야 합니다 — 무시했습니다');
+  else if (cv) {
+    for (const k of Object.keys(cv)) if (!(k in DEFAULTS.conventions)) warnings.push(`알 수 없는 키 "conventions.${k}" — 무시했습니다`);
+    if ('preset' in cv) {
+      if (CONVENTION_PRESETS.includes(cv.preset)) out.conventions.preset = cv.preset;
+      else warnings.push(`conventions.preset: "${cv.preset}" 은 ${CONVENTION_PRESETS.join('|')} 가 아니라 "rest-v1" 을 씁니다`);
     }
   }
   return out;

@@ -39,6 +39,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 | `gitFlow.mergeStrategy` | `/dt-git finish`가 합치는 방식. `no-ff`=머지 커밋으로 모든 커밋 보존 · `squash`=커밋 하나로 합침 · `rebase`=리베이스 뒤 일직선(`--ff-only`) · `pr`=피처 브랜치를 push하고 PR을 연다(머지는 호스트에서) | `"no-ff"` | `scripts/gitFlow.mjs` |
 | `gitFlow.branchPrefix` | `/dt-git start`에서 이름에 슬래시가 없을 때 한 번 제안할 접두어. `null`이면 제안하지 않는다 | `"feat/"` | `scripts/gitFlow.mjs` |
 | `gitFlow.pushPolicy` | `push`=머지 뒤 기준 브랜치를 push(승인한 계획 안에서, fast-forward만) · `none`=push는 사람이 직접. `pr` 방식에서는 피처 브랜치만 push한다 | `"push"` | `scripts/gitFlow.mjs` |
+| `uxSources.figma.annotationLayout` | Figma 화면에서 IF 규칙 글을 어디서 읽을지. `none`=대상 화면을 통째로 읽는다(레이아웃을 가정하지 않음) · `right-panel`=화면을 [왼쪽 UI]+[오른쪽 주석]으로 그리는 팀이 주석 틀만 읽는다(토큰 절약, 애매하면 통째로) | `"none"` | `skills/dt-devspec/references/source-discovery.md` |
+| `conventions.preset` | 정의서 §3에서 URL 규칙을 물을 때의 제안값. `rest-v1`=`/api/v1`·복수형·케밥케이스·CRUD=HTTP 메서드·`POST /{resource}/{action}`을 한 묶음으로 제안 · `custom`=모양을 전제하지 않고 항목마다 묻는다(경로 규칙 없음도 고를 수 있다). 값은 늘 §3에서 사람이 정한다 | `"rest-v1"` | `docs/refs/api-conventions.md` |
 | `team.requiredMcp` | 팀이 꼭 쓰는 MCP 서버 이름 목록(예: `"figma"`, `"atlassian"`). 그 MCP를 쓰는 스킬이 시작할 때 연결을 점검한다 | `[]` | `docs/orchestration-policy.md` |
 
 에이전트가 어느 티어(`planner`·`builder`·`reviewer`)에 속하는지는 `scripts/lib/config.mjs`의 `AGENT_TIERS`가 정한다.
@@ -58,11 +60,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/lib/config.mjs" <projectRoot>
 }
 ```
 
-## 아직 없는 키
+## 새 키 넣기
 
-다음 키는 **그 값을 읽는 기능을 범용화할 때** 읽는 곳과 함께 넣는다. 읽는 곳 없이 먼저 적어 두면, 적혀 있는데 아무도 안 읽는 키가 생긴다.
-
-- `uxSources` — M3
+키는 **그 값을 읽는 기능을 만들 때** 읽는 곳과 함께 넣는다. 읽는 곳 없이 먼저 적어 두면, 적혀 있는데 아무도 안 읽는 키가 생긴다.
 
 새 키를 넣을 때는 세 곳을 같이 바꾼다. 로더의 `DEFAULTS`와 검증, 위 표, 그리고 그 키를 실제로 읽는 코드나 스킬이다. 구조 테스트가 표와 로더가 어긋나거나 읽는 곳이 없는 키를 잡는다.
 

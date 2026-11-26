@@ -11,6 +11,9 @@
 - **`/dt-explain`(문제 설명) 스킬·명령을 없앴다.** "설명해줘"·"왜 이래?"에 자동으로 걸려 간단한 질문에도 6절 틀과 한글 리뷰가 붙었고, 산출물이 없어 다른 흐름과 이어지지 않았다. 버그 기록은 `/dt-worklog`(Bug), 장애 정리는 `/dt-confluence`(장애 회고)가 맡는다. 호환 정책은 한 minor 동안 경고한 뒤 없애게 하지만, 팀 결정으로 바로 없앴다. 한글 검사의 `docType: explain`도 함께 없앴다 (GEN-13)
 
 ### 추가
+- UX 소스 어댑터 `docs/refs/ux-sources.md` — 소스 종류별 읽는 방법(Notion·Confluence는 MCP → 없으면 `WebFetch` → 그래도 안 되면 내보낸 파일·붙여 넣기를 묻는다), 주 소스 정하기, Figma·Notion 하는 일 → 도구 대응표(접두어 세 가지), 접두어를 찾는 Figma 사전 점검, 소스별 출처 표기 (GEN-14)
+- API 규칙 프리셋 `docs/refs/api-conventions.md`와 `.dt.json`의 `conventions.preset`(`rest-v1` 기본 · `custom`) — 정의서 §3이 URL 규칙을 물을 때의 제안값. `custom`은 모양을 전제하지 않고 항목마다 묻는다(경로 규칙 없음 포함) (GEN-14)
+- `/dt-devspec --primary <locator>` — 화면·기능의 존재를 다툴 때 기준이 되는 주 소스 (GEN-14)
 - `scripts/handbook/sources.mjs` — 핸드북의 "왜" 근거 원천. 결정 기록(PD·TP)을 먼저 읽고(MCP 불필요), 위키는 `wiki`(confluence면 `doc-design`·`doc-guide` 라벨로 좁힘, markdown이면 `docs/wiki/design`·`guide`), 트래커는 `tracker: jira`일 때만. 옛 `sources.atlassian.enabled: off`는 MCP 원천만 끈다 (GEN-13)
 - 트래커 어댑터의 `issue.read`(이슈 하나 읽기) (GEN-13)
 - 공통 설정 `.dt.json`의 `gitFlow`(`baseBranch`·`mergeStrategy`·`branchPrefix`·`pushPolicy`)와 `scripts/gitFlow.mjs` — `/dt-git`의 기준 브랜치(예: `develop`)와 합치는 방식(`no-ff` 기본 · `squash` · `rebase` · `pr`)을 팀이 정한다. 명령 순서는 스크립트가 내고, 스킬은 미리보기·승인 뒤 한 단계씩 실행한다. `pr` 방식은 피처 브랜치를 push하고 `gh`·`glab`으로 PR을 열거나, 없으면 PR 만들기 주소(`gitWebUrl.mjs compare`)를 보인다. 설정이 없으면 예전과 같은 main · `--no-ff` · 머지 뒤 push다 (GEN-12)
@@ -61,6 +64,9 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **`/dt-devspec`은 Figma 없이도 시작한다.** 기획 문서(Notion·Confluence·PDF·Markdown)에서 목차 → 화면·기능 후보 → 인터페이스 후보 → 규칙 문장을 뽑는 절차를 두었고(`skills/dt-devspec/references/source-discovery.md`), Figma는 있으면 함께 쓴다. 충돌 정리의 "원본(Figma) 우선"은 "주 소스 우선"이 됐다. Figma 사전 점검도 새로 들어갔다 (GEN-14)
+- **Figma 화면의 오른쪽 주석 틀만 읽는 판별은 opt-in이 됐다.** 기본은 데이터가 오가는 화면을 통째로 한 번 읽는다. 화면을 [왼쪽 UI]+[오른쪽 주석]으로 그리는 팀은 `.dt.json`에 `"uxSources": { "figma": { "annotationLayout": "right-panel" } }`을 넣으면 예전과 같다 (GEN-14)
+- `dt-spec` Figma 사전 점검이 연결 방식별 접두어(`plugin_figma_figma`·`claude_ai_Figma`·`figma`)를 찾아 쓴다 — 예전에는 한 가지 이름으로만 확인해 다른 방식으로 연결한 사람은 "연결 안 됨"이 됐다 (GEN-14)
 - `/dt-audit` 후속 기록이 `tracker`를 따른다 — `jira`면 코드 수정 묶음을 Task 하나로(완료 조건 = finding 해소), 아니면 `docs/audits/pending.md`가 백로그. 기록한 이슈 키를 `traceability.md`의 "후속 기록" 표에 되적어, 다음 감사가 잔존 finding 옆에 진행 상태를 보이고 "이슈는 완료인데 finding이 남음"을 따로 알린다 (GEN-13)
 - `/dt-handbook`은 `tracker`·`wiki`가 없으면 MCP 연결 안내를 띄우지 않는다. 외부 공개 게이트(G8)는 Atlassian 말고도 Notion과 팀 설정(`.dt-confluence.json`·`.dt-worklog.json`)의 `site` 호스트 링크를 막는다 (GEN-13)
 - 훅이 `gitFlow.baseBranch`를 따른다 — 시작 알림은 기준 브랜치 위에서 뜨고, 마무리 알림의 통합 문구는 기준 브랜치·`pr`·`pushPolicy: none`을 반영한다. `dt-git-flow`의 상태 스크립트는 `isBase`·`baseBranch`를 낸다(`isMain`은 0.16.x 동안 남긴다) (GEN-12)

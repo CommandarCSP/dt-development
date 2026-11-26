@@ -8,13 +8,13 @@
 
 Figma 소스가 1개 이상이면 순서대로 확인:
 
-1. Figma MCP 서버 연결 확인
-   - 시도: `mcp__plugin_figma_figma__get_metadata("1:1")` (임시 호출)
+1. Figma MCP 서버 연결 확인 — 접두어는 연결 방식마다 다르다(`${CLAUDE_PLUGIN_ROOT}/docs/refs/ux-sources.md` §3·§4). 이 세션에 있는 접두어를 찾아 이번 실행 내내 쓴다.
+   - 시도: 찾은 접두어의 `get_metadata("1:1")` (임시 호출). 접두어가 하나도 없으면 실패로 본다.
    - 실패 → "Figma MCP가 연결되지 않았습니다. `/mcp`로 연결 상태를 확인해주세요." → AskUserQuestion(원칙 10): "연결·권한을 고치고 다시 시도" / "Figma 없이 나머지 소스로 진행"(`status: draft`, layout-skeleton은 구조 스켈레톤·스텁, 헤더에 `(load-failed)`) / "중단". 다른 소스가 없으면 두 번째 선택지 대신 "문서 소스를 지금 추가"를 낸다.
 2. Figma 액세스 토큰 확인 (MCP 서버가 인증 에러 반환 시) → 안내 → AskUserQuestion(원칙 10): "연결·권한을 고치고 다시 시도" / "Figma 없이 나머지 소스로 진행"(`status: draft`, layout-skeleton은 구조 스켈레톤·스텁, 헤더에 `(load-failed)`) / "중단". 다른 소스가 없으면 두 번째 선택지 대신 "문서 소스를 지금 추가"를 낸다.
 3. 파일 접근 권한 확인 (위 호출이 401/403 반환 시) → "Figma 파일 공유 권한을 확인해주세요" → AskUserQuestion(원칙 10): "연결·권한을 고치고 다시 시도" / "Figma 없이 나머지 소스로 진행"(`status: draft`, layout-skeleton은 구조 스켈레톤·스텁, 헤더에 `(load-failed)`) / "중단". 다른 소스가 없으면 두 번째 선택지 대신 "문서 소스를 지금 추가"를 낸다.
 4. 각 figma@design 소스의 nodeId 조회 가능:
-   - `mcp__plugin_figma_figma__get_metadata(nodeId)` → 실패 시 AskUserQuestion(원칙 10): "올바른 node id를 입력"(Other로 입력받아 다시 조회) / "이 노드 없이 나머지 소스로 진행"(`status: draft`) / "중단".
+   - `figma.metadata(nodeId)`(1번에서 찾은 접두어의 `get_metadata`) → 실패 시 AskUserQuestion(원칙 10): "올바른 node id를 입력"(Other로 입력받아 다시 조회) / "이 노드 없이 나머지 소스로 진행"(`status: draft`) / "중단".
 5. 각 figma@wireframe 소스의 nodeId 조회 가능 → 동일 검사.
 6. `designSystemNodeId` (있다면) 조회 가능 → 실패 시 경고만 + 계속 (사용자 confirm).
 
@@ -45,9 +45,10 @@ Figma 소스가 1개 이상이면 순서대로 확인:
 
 - **markdown**: `Read` 도구로 파일 읽기.
 - **pdf**: `Read` 도구로 읽기 (`pages` 파라미터로 멀티페이지 추출).
-- **web (Notion)**: `notion-fetch` MCP 도구 사용.
+- **web (Notion)**: 하는 일 `notion.fetch`(도구 이름·접두어는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/ux-sources.md` §3).
 - **web (Atlassian/Confluence)**: 하는 일 `confluence.get`(URL로 페이지 읽기). 실제 도구 이름·인자(v1·v2가 다르다)와 접두어는 `${CLAUDE_PLUGIN_ROOT}/docs/refs/atlassian-mcp.md`에서 찾는다. 본문이 필요하므로 마크다운 전문으로 읽는다.
 - **web (일반 URL)**: `WebFetch` 도구 사용.
+- **MCP가 없거나 실패하면**(Notion·Confluence): `WebFetch`로 한 번 시도하고, 그래도 본문이 없으면 묻는다 — 순서와 선택지는 `ux-sources.md` §1.
 - **figma**: 노드 참조만 보관 (실제 로드는 AnalyzeFigmaFrame 어댑터가 MCP로 수행).
 
 ### Figma 역할(@role) 처리
@@ -81,7 +82,7 @@ Figma URL(`figma.com/design/:fileKey/...`)이 있으면 fileKey를 파싱한다.
 
 예 (page 이름 확정):
 - `header`: "페이지 이름"
-- `question`: "산출물이 저장될 디렉토리명을 정합니다. Figma 페이지 노드명에서 'SCR_FLE_01'을 추출했는데, `docs/specs/pages/<이름>/`의 <이름>으로 쓸까요? (kebab-case로 변환: scr-fle-01)"
+- `question`: "산출물이 저장될 디렉토리명을 정합니다. Figma 페이지 노드명에서 'SCR_FILE_01'을 추출했는데, `docs/specs/pages/<이름>/`의 <이름>으로 쓸까요? (kebab-case로 변환: scr-fle-01)"
 - options: label `"scr-fle-01 사용"`(description `"추출된 이름 그대로 디렉토리 생성"`) / label `"직접 입력"`(description `"다른 이름을 지정"`)
 
 ## [1-재실행] 재실행 시 소스 복원 (dt-spec 설계 §7-1-재실행)

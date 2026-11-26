@@ -39,7 +39,7 @@ dt-devspec 파이프라인에서 **list/검색 엔드포인트의 필터/정렬/
 
 | ID | 결정 |
 |---|---|
-| A | **스크린 단위 deep-read** — name·위치로 주석을 식별하지 않고, 대상 스크린 프레임을 `get_design_context`로 1회 통째 읽어 규칙 전문을 확보. 불변원칙 1을 "발견은 경량, 계약은 타깃 깊이"로 완화. (※ 후속 [2026-06-11 설계](2026-06-11-devspec-deepread-right-annotation-targeting-design.md)에서 *우측 주석 영역만 position으로 타깃*하도록 개선 — 통째는 폴백으로.) |
+| A | **스크린 단위 deep-read** — name·위치로 주석을 식별하지 않고, 대상 스크린 프레임을 `get_design_context`로 1회 통째 읽어 규칙 전문을 확보. 불변원칙 1을 "발견은 경량, 계약은 타깃 깊이"로 완화. (※ 후속 개선으로 *우측 주석 영역만 position으로 타깃*하는 판별이 들어왔다가, GEN-14(2026-11-26)에서 opt-in 설정 `uxSources.figma.annotationLayout: right-panel`로 옮겨졌다 — 기본은 이 절의 통째 읽기. 절차: `skills/dt-devspec/references/source-discovery.md` §3.) |
 | C | **협의중/확정 의미 정리** — 확정 IF는 lock(그대로 인용), 협의중 IF는 leaf가 deep-read로 보강·구체화 가능. "협의중을 확정값으로 인용" 모순 제거. |
 | B | **상향 정합 게이트** — leaf가 deep-read 계약 ↔ 인용 IF를 diff, 드리프트 발견 시 리포트(게이트=필수) + 정의서 보강 제안(사용자 확인 후 반영). `definitionPropagation` 양방향화. |
 

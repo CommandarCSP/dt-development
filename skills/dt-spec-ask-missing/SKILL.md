@@ -172,7 +172,7 @@ design doc 6절 [4-2] (c) **체크리스트 단일 출처**의 6개 항목을 �
 
 AskUserQuestion (`multiSelect: true` — 6개 항목이라 2개 질문으로 분할하거나 multiSelect 사용):
 - `header`: "누락 API 점검"
-- `question`: "이 페이지(**SCR_FLE_01 파일관리**)에서 버튼·폼 클릭 없이 **자동으로** 호출되는 API가 더 있나요? AI는 명시적 인터랙션만 추출해 아래 같은 호출은 놓칠 수 있습니다. **선택한 항목은 requirements.md에 FR로 추가**되고 이후 endpoint/schema를 묻습니다. (해당 없으면 아무것도 선택하지 않음)"
+- `question`: "이 페이지(**SCR_FILE_01 파일관리**)에서 버튼·폼 클릭 없이 **자동으로** 호출되는 API가 더 있나요? AI는 명시적 인터랙션만 추출해 아래 같은 호출은 놓칠 수 있습니다. **선택한 항목은 requirements.md에 FR로 추가**되고 이후 endpoint/schema를 묻습니다. (해당 없으면 아무것도 선택하지 않음)"
 - options (각 `description`에 의미·예시·결과):
   - label `"페이지 진입 시 자동 호출"` / description `"마운트 시점에 메타데이터·설정·목록을 불러오는 GET. 예: 파일 목록 자동 로딩 → Event-driven FR로 추가됨"`
   - label `"백그라운드 polling"` / description `"주기적으로 서버 상태를 확인. 예: 업로드 진행률·새 알림 폴링 → State-driven FR로 추가됨"`

@@ -6,7 +6,7 @@
 AskUserQuestion 호출 시 사용자가 "무엇을, 왜 설정하는지" 즉시 이해하도록 맥락을 충분히 담는다. **질문 한 줄 + 라벨만 있는 옵션은 금지** (사용자가 의도를 파악 못 함).
 
 각 질문은 3요소를 포함한다:
-1. **배경(Why)** — 왜 묻는지 + 현재 페이지/기능 맥락. `question` 첫 문장에 실제 페이지명·추출된 요소명을 넣어 구체화 (예: "이 페이지(SCR_FLE_01 파일관리)의 **login_button**에서 ...").
+1. **배경(Why)** — 왜 묻는지 + 현재 페이지/기능 맥락. `question` 첫 문장에 실제 페이지명·추출된 요소명을 넣어 구체화 (예: "이 페이지(SCR_FILE_01 파일관리)의 **login_button**에서 ...").
 2. **영향(Impact)** — 이 답이 어느 산출물(requirements.md FR / design.md / tasks.md)에 어떻게 반영되는지 `question`에 명시 (예: "선택한 항목은 requirements.md에 Event-driven FR로 추가됩니다").
 3. **옵션 설명(Options)** — 각 `option`의 `description`에 구체적 의미 + 선택 시 결과 + 예시. label만 두지 말 것.
 

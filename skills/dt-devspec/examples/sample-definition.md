@@ -30,13 +30,13 @@
 
 | ID | 엔드포인트 | 메서드 | 요청 | 응답 | 참조 DM | 합의 상태 | 출처 | from |
 |---|---|---|---|---|---|---|---|---|
-| IF-1 | /api/v1/files | GET | 쿼리 `cursor`,`limit`,`sort`,`keyword` | `{ items: File[], nextCursor, hasMore }` | DM-1 | 컨벤션 | [SCR_FLE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
-| IF-2 | /api/v1/files | POST | multipart `file`,`name` | `{ id, name, size, createdAt }` | DM-1 | 컨벤션 | [SCR_FLE_02](https://figma.com/design/ABC/file?node-id=10-5) | SP-1 |
-| IF-3 | /api/v1/files | DELETE | 바디 `{ ids: number[] }` | `{ deleted: number[] }` | DM-1 | 컨벤션 | [SCR_FLE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
-| IF-4 | /api/v1/files/{id}/download | GET | 경로 `id` | 파일 스트림 (Content-Disposition) | — | 컨벤션 | [SCR_FLE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
-| IF-5 | /api/v1/files/download-archive | POST | 바디 `{ ids: number[] }` | `{ jobId: string, status: "pending" }` | — | 컨벤션 | [SCR_FLE_03](https://figma.com/design/ABC/file?node-id=12-1) | SP-3 |
-| IF-6 | /api/v1/files/{id}/activity | GET | 쿼리 `cursor`,`limit` | `{ items: Activity[], nextCursor, hasMore }` | DM-2 | 협의중 | [SCR_FLE_04](https://figma.com/design/ABC/file?node-id=12-8) | SP-3 |
-| IF-7 | (미정) | (미정) | (미정) | (미정) | — | 미해소 | [SCR_FLE_05](https://figma.com/design/ABC/file?node-id=13-1) | SP-3 |
+| IF-1 | /api/v1/files | GET | 쿼리 `cursor`,`limit`,`sort`,`keyword` | `{ items: File[], nextCursor, hasMore }` | DM-1 | 컨벤션 | [SCR_FILE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
+| IF-2 | /api/v1/files | POST | multipart `file`,`name` | `{ id, name, size, createdAt }` | DM-1 | 컨벤션 | [SCR_FILE_02](https://figma.com/design/ABC/file?node-id=10-5) | SP-1 |
+| IF-3 | /api/v1/files | DELETE | 바디 `{ ids: number[] }` | `{ deleted: number[] }` | DM-1 | 컨벤션 | [SCR_FILE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
+| IF-4 | /api/v1/files/{id}/download | GET | 경로 `id` | 파일 스트림 (Content-Disposition) | — | 컨벤션 | [SCR_FILE_01](https://figma.com/design/ABC/file?node-id=10-2) | SP-1 |
+| IF-5 | /api/v1/files/download-archive | POST | 바디 `{ ids: number[] }` | `{ jobId: string, status: "pending" }` | — | 컨벤션 | [SCR_FILE_03](https://figma.com/design/ABC/file?node-id=12-1) | SP-3 |
+| IF-6 | /api/v1/files/{id}/activity | GET | 쿼리 `cursor`,`limit` | `{ items: Activity[], nextCursor, hasMore }` | DM-2 | 협의중 | [SCR_FILE_04](https://figma.com/design/ABC/file?node-id=12-8) | SP-3 |
+| IF-7 | (미정) | (미정) | (미정) | (미정) | — | 미해소 | [SCR_FILE_05](https://figma.com/design/ABC/file?node-id=13-1) | SP-3 |
 
 ## 데이터 모델 (Data Models)
 
@@ -47,7 +47,7 @@
 
 ## 변경 추적 (Traceability)
 
-- 2026-06-09: 최초 작성(1.2 스키마) — Figma 파일 관리 페이지 경량 스캔 + 우측 주석 deep-read 기반
+- 2026-06-09: 최초 작성(1.2 스키마) — 파일 관리 기획 문서 + Figma 화면 읽기 기반
 - 전역 규약: 에러 포맷·ID·페이지네이션·인증·멱등성·**URL 컨벤션** 합의
 - URL 컨벤션 합의 → IF 경로 결정론 도출 → IF-1·2·3·4·5·6 `컨벤션`으로 시작(`확정`은 BE 상향정합 T2/T3에서 승격)
 - 데이터 모델: `File`(DM-1)·`Activity`(DM-2) 공유 shape 추출(타입 어휘만, nullable/required는 IF 행 소유)

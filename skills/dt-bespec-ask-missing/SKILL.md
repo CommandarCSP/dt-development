@@ -20,7 +20,7 @@ description: Use within dt-bespec to resolve source conflicts/duplicates and fil
 ## Step 1~5: 명세 보강
 1. AI 추론 엔드포인트 후보 confirm/edit/remove (`ai-confirmed`/`ai-edited`).
 2. 모호 후보 명확화(`confidence: ambiguous`).
-3. 누락 카테고리 체크리스트: 인증/인가, 페이지네이션, 정렬/필터, 멱등성, rate-limit, 감사 로그, 문자열 입력 필드 상·하한(필드마다 최대 길이 + 400 조건 — 침묵 시 반드시 질문) <!-- from: audit 2026-07-24-spec SB-4/SB-9 -->.
+3. 누락 카테고리 체크리스트: 인증/인가, 페이지네이션, 정렬/필터, 멱등성, rate-limit, 감사 로그, 문자열 입력 필드 상·하한(필드마다 최대 길이 + 400 조건 — 침묵 시 반드시 질문).
    - **인증 발급 트리거**: "이 백엔드가 토큰을 발급하나?" 확인. Y → auth 리소스(register/login/refresh)가 필요하다는 신호로 표시. N → 외부 발급 가정(토큰 검증만, 현 동작). 단 원천(OpenAPI security scheme·ERD `passwordHash`/refresh/role)이 인증을 명시하면 **그것을 우선**하고 묻지 않는다(소스-퍼스트).
    - **토글/멱등 트리거**: 켜고/끄는 관계(좋아요·팔로우·북마크 등) 후보가 보이면 "이건 멱등 토글인가?" 확인. Y → `templates-backend/toggle-recipe.md` 캐논 신호로 표시(복합 PK·`upsert`/`deleteMany` 멱등·`count`/`byMe` 집계·actor=토큰 sub). 원천이 이미 토글 계약(`POST`/`DELETE` 204 + `count`/`byMe`)을 명시하면 묻지 않고 따른다.
 4. EARS 형식 질문으로 method/endpoint/request·response schema/status code 채움.

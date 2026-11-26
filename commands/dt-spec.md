@@ -1,7 +1,7 @@
 ---
 description: Build SDD-format spec documents (requirements.md/design.md/tasks.md/layout-skeleton.md) for a page from multiple sources (Figma nodes, Markdown, PDF, web docs). Outputs to docs/specs/pages/<page>/.
 argument-hint: '<locator>[@role] [<locator>[@role] ...] [--source <locator>[@role]] [--api-doc <path>] [--design-system-node-id <id>] [--only requirements|design|tasks|layout-skeleton]'
-allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion, WebFetch, mcp__claude_ai_Notion__notion-fetch, mcp__atlassian__fetch, mcp__atlassian__getConfluencePage, mcp__atlassian__getConfluenceContent, mcp__atlassian__discover, mcp__atlassian__executeRead, mcp__claude_ai_Atlassian__fetch, mcp__claude_ai_Atlassian__getConfluencePage, mcp__claude_ai_Atlassian__getConfluenceContent, mcp__claude_ai_Atlassian__discover, mcp__claude_ai_Atlassian__executeRead
+allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion, WebFetch, mcp__claude_ai_Notion__notion-fetch, mcp__notion__notion-fetch, mcp__atlassian__fetch, mcp__atlassian__getConfluencePage, mcp__atlassian__getConfluenceContent, mcp__atlassian__discover, mcp__atlassian__executeRead, mcp__claude_ai_Atlassian__fetch, mcp__claude_ai_Atlassian__getConfluencePage, mcp__claude_ai_Atlassian__getConfluenceContent, mcp__claude_ai_Atlassian__discover, mcp__claude_ai_Atlassian__executeRead
 ---
 
 > 설계: `docs/specs/2026-06-01-dt-spec-multi-source-design.md` — 본문의 "dt-spec 설계 §N"은 이 문서의 절을 가리킨다.

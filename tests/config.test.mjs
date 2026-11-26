@@ -76,10 +76,10 @@ test('decisions.sharedDir: 문자열이면 받고, 아니면 경고 후 null', (
 });
 
 test('모르는 키는 경고만 하고 버린다', () => {
-  withDir({ '.dt.json': { uxSources: ['figma'], team: { colour: 'red' } } }, (dir) => {
+  withDir({ '.dt.json': { telemetry: ['on'], team: { colour: 'red' } } }, (dir) => {
     const { config, warnings } = loadConfig(dir);
-    assert.ok(!('uxSources' in config));
-    assert.ok(warnings.some((w) => w.includes('"uxSources"')));
+    assert.ok(!('telemetry' in config));
+    assert.ok(warnings.some((w) => w.includes('"telemetry"')));
     assert.ok(warnings.some((w) => w.includes('"team.colour"')));
   });
 });

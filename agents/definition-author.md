@@ -22,8 +22,8 @@ dt-devspec이 정의서 생성/갱신을 맡기면, **토큰 무거운 발견·d
 
 ## 절차 (한 컨텍스트 순차 — dt-devspec §1~§4 대응)
 재개 시 `progress.md`를 먼저 읽어 끝난 단계는 파일에서 불러온다.
-1. **발견 + 타깃 deep-read (§1)** — Figma는 `get_metadata`로 프레임 트리(경량), 데이터·IF 후보 스크린만 **우측 주석 영역 deep-read**(불확실하면 통째 폴백, 대상 스크린당 1라운드 토큰 가드). 문서는 텍스트 파싱. → `discovery.json`.
-2. **역합치 입력 발견 (§1-b, D12)** — `parseDefinitionSources.discoverLeafSpecs`로 흩어진 leaf 수거, 매핑 키(method+정규화 경로) join, 마커 스캔(`conflict`/`deprecate`/`skipped`), 3자 충돌 1차 정렬(원본>BE>FE).
+1. **발견 + 타깃 읽기 (§1)** — 소스는 무엇이든 된다(Figma가 없어도 된다). 읽기·대체 경로·Figma 사전 점검은 `${CLAUDE_PLUGIN_ROOT}/docs/refs/ux-sources.md`, 뽑을 것은 `${CLAUDE_PLUGIN_ROOT}/skills/dt-devspec/references/source-discovery.md` — 기획 문서는 목차 → SP·IF 후보 → 규칙 문장, Figma는 화면 트리 → 데이터 화면만 본문 한 번(`annotationLayout: right-panel`이면 주석 틀만). 못 읽은 소스는 `(load-failed)`로 적고, 사람이 정할 것(주 소스, 대체 경로 실패 시 내보낸 파일 받기)은 needsDecision으로 올린다. → `discovery.json`.
+2. **역합치 입력 발견 (§1-b, D12)** — `parseDefinitionSources.discoverLeafSpecs`로 흩어진 leaf 수거, 매핑 키(method+정규화 경로) join, 마커 스캔(`conflict`/`deprecate`/`skipped`), 3자 충돌 1차 정렬(원본=주 소스>BE>FE).
 3. **FE/BE 경계·IF 추론 (§2)** — 책임 `FE|BE|공통`(confident/ambiguous) 분류, IF 후보, **URL 경로 결정론 도출(D1)**(컨벤션 미합의면 `협의중`), 타입/nullable 출처 규칙(D6 — 단정 금지, 모호하면 협의로), DM-n 공유 shape(D3), SP↔IF·DM↔IF 링크, 출처 deep-link(D10).
 4. **충실도·협의완전성 검증 (§2.5)** — 입력 원본 ground truth로 초안 대조(누락/왜곡/환각) + 협의완전성(handoff-checklist 카탈로그) → 자동 정제(IF 누락채움·왜곡교정·환각제거) + 남은 모호/미해소는 **협의 큐**로. (워커 자신이 A/B/refute 라운드 수행 — 별도 서브에이전트 불필요.)
 5. **초안 저장 + 협의 큐 반환** — `draft.md`에 SP/IF/DM 초안 저장. **§3 협의가 필요한 것**(ambiguous 분담, 전역 규약 미정, IF 합의 상태)은 **직접 AskUserQuestion 하지 않고 `needsDecision`으로** 반환(기초→파생 정렬, 기능 그룹 군집화).

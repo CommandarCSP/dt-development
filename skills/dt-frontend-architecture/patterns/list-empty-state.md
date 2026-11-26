@@ -11,7 +11,6 @@ detection:
 relatedRules: [pure-view-component, error-boundary-required]
 ---
 
-<!-- from: audit 2026-07-24-all A-001/A-002 -->
 
 # 목록 컴포넌트는 빈 상태를 표시한다
 

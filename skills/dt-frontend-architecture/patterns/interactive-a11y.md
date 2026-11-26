@@ -12,7 +12,6 @@ detection:
 relatedRules: [pure-view-component, view-styling]
 ---
 
-<!-- from: audit 2026-07-24-all A-003 -->
 
 # 클릭 가능한 비버튼 요소는 키보드로도 조작 가능해야 한다
 
