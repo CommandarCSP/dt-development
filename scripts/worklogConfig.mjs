@@ -178,13 +178,33 @@ const filled = (v) => {
 };
 
 /**
+ * 항목 값이 채워졌나. 같은 줄 콜론 뒤를 먼저 보고, 비었으면 그 아래 **더 들여쓴 하위 항목**을
+ * 다음 같은 높이(또는 더 얕은) 줄이 나오기 전까지 본다 — 산출물·결정이 여럿이면 나눠 쓰는 게 자연스럽다.
+ * 하위 항목도 한 줄씩 `filled` 로 본다(자리 표시 `{…}`·`없음` 은 빈 값).
+ */
+function fieldFilled(md, label) {
+  const text = String(md ?? '');
+  const m = FIELD(label).exec(text);
+  if (!m) return false;
+  if (filled(m[1])) return true;
+  const indent = (line) => line.match(/^[ \t]*/)[0].replace(/\t/g, '  ').length;
+  const own = indent(m[0]);
+  const rest = text.slice(m.index + m[0].length).split('\n').slice(1);
+  for (const line of rest) {
+    if (!line.trim()) continue;
+    if (indent(line) <= own) break;
+    if (filled(line.replace(/^[ \t]*(?:[-*][ \t]*)?/, ''))) return true;
+  }
+  return false;
+}
+
+/**
  * 마무리 댓글 검사(TP-002 §4) — Done 전이 전에 스킬이 돌린다.
  * @returns {{ ok: boolean, missing: string[], has: { result, output, decision } }}
  */
 export function checkCloseComment(md, rules) {
-  const val = (label) => (String(md ?? '').match(FIELD(label)) ?? [])[1];
   const L = H.closeComment; // scripts/lib/headings.mjs
-  const has = { result: filled(val(L.result)), output: filled(val(L.output)), decision: filled(val(L.decision)) };
+  const has = { result: fieldFilled(md, L.result), output: fieldFilled(md, L.output), decision: fieldFilled(md, L.decision) };
   const missing = [];
   const need = rules?.close?.need ?? 'outputOrDecision';
   if (rules?.templates !== 'org-guideline' && !has.result) missing.push(L.result);

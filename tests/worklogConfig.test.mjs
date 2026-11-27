@@ -120,6 +120,35 @@ test('마무리 댓글: basic 은 산출물이나 결정 사항 하나면 통과
   assert.deepEqual(checkCloseComment(CLOSE({ result: '', output: 'x' }), basic).missing, ['결과']);
 });
 
+test('마무리 댓글: 값을 아래 하위 항목으로 나눠 써도 읽는다', () => {
+  const basic = PRESETS.basic;
+  const multi = [
+    '**완료**',
+    '- 결과: 위치 고르기를 넣었다',
+    '- 산출물:',
+    '  - 기능 머지 https://github.com/acme/app/commit/563ceab',
+    '  - 테스트 6301개 통과',
+    '- 결정 사항:',
+    '  - 선택창은 main 이 연다',
+    '- 완료 조건: 5/5',
+  ].join('\n');
+  const r = checkCloseComment(multi, basic);
+  assert.equal(r.ok, true, JSON.stringify(r.missing));
+  assert.equal(r.has.output, true);
+  assert.equal(r.has.decision, true);
+  // 결과도 하위 항목으로 쓸 수 있다
+  assert.equal(checkCloseComment(multi.replace('- 결과: 위치 고르기를 넣었다', '- 결과:\n  - 위치 고르기를 넣었다'), basic).has.result, true);
+});
+
+test('마무리 댓글: 하위 항목이 자리 표시뿐이거나 다음 항목의 하위면 빈 값', () => {
+  const basic = PRESETS.basic;
+  const placeholder = ['**완료**', '- 결과: 바꿨다', '- 산출물:', '  - {확인 필요}', '  - 없음', '- 결정 사항:', '- 완료 조건: 1/1'].join('\n');
+  assert.deepEqual(checkCloseComment(placeholder, basic).missing, ['산출물 또는 결정 사항']);
+  // 빈 "산출물:" 바로 다음이 최상위 항목이면, 그 뒤 다른 항목의 하위를 끌어오지 않는다
+  const borrowed = ['**완료**', '- 결과: 바꿨다', '- 산출물:', '- 완료 조건: 1/1', '  - 남은 메모 https://x.y/z'].join('\n');
+  assert.equal(checkCloseComment(borrowed, basic).has.output, false);
+});
+
 test('마무리 댓글: org-guideline 은 산출물 링크가 꼭 있어야 하고, 예전 자유 서술 댓글도 읽는다', () => {
   const org = PRESETS['org-guideline'];
   assert.deepEqual(checkCloseComment(CLOSE({ decision: '무언가 정함' }), org).missing, ['산출물'], '결정만으로는 Done 금지(예전 규칙 7)');
