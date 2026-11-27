@@ -38,6 +38,15 @@ const externalRes = (projectRoot, config) => {
   ];
 };
 
+const TEST_DIR_RE = /(^|\/)(?:__tests__|__mocks__|tests?|e2e|fixtures|test-utils)(\/|$)/;
+export const isTestDir = (dir) => TEST_DIR_RE.test(dir);
+/** 본문이 dir 이나 그 상위 폴더(최소 두 단계 — `src` 하나로 전체를 덮지 않게)를 적었나. */
+export function coveredDir(body, dir) {
+  const parts = dir.split('/');
+  for (let n = parts.length; n >= Math.min(2, parts.length); n--) if (body.includes(parts.slice(0, n).join('/'))) return true;
+  return false;
+}
+
 /** 한글 리뷰 영수증의 해시 — front matter 를 뺀 본문만 본다(머리말을 고쳐도 리뷰는 유효하다). */
 export const koReviewHash = (body) => createHash('sha256').update(body, 'utf8').digest('hex');
 
@@ -104,9 +113,12 @@ export function runGate({ projectRoot, figureErrors = [], runGit }) {
   }
 
   // ── G2: 인벤토리 정합 ──────────────────────────────────────────────
+  // 군집을 묶어 설명해도 된다 — 상위 폴더(두 단계 이상)를 적었으면 그 아래 폴더도 다룬 것으로 본다.
+  // 테스트 폴더는 구조 장이 설명할 대상이 아니다(폴더 수십 개를 색인표로 억지로 늘어놓게 된다).
   for (const c of structure.clusters ?? []) {
     if (!c.files || c.files.length === 0) continue;
-    if (!body.includes(c.dir)) block('G2', `군집 ${c.dir} 가 문서에 없다`);
+    if (isTestDir(c.dir)) continue;
+    if (!coveredDir(body, c.dir)) block('G2', `군집 ${c.dir} 가 문서에 없다(이 폴더나 두 단계 이상의 상위 폴더를 적는다)`);
   }
 
   // ── G3: 근거 ───────────────────────────────────────────────────────

@@ -191,3 +191,14 @@ test('G7: 회차가 여러 번이어도 마지막이 깨끗하면 통과한다',
   }), 'utf8');
   assert.equal(runGate({ projectRoot: root }).findings.some((f) => f.id === 'G7'), false);
 });
+
+test('G2: 상위 폴더로 묶어 설명하면 하위 군집도 다룬 것으로 본다, 테스트 폴더는 보지 않는다', async () => {
+  const { coveredDir, isTestDir } = await import('../scripts/handbook/gate.mjs');
+  const body = '`packages/react-code-editor` 는 편집기 패키지다.';
+  assert.equal(coveredDir(body, 'packages/react-code-editor/src/tree'), true);
+  assert.equal(coveredDir(body, 'packages/virtual-fs/src'), false);
+  assert.equal(coveredDir('src 아래', 'src/foo'), false, '한 단계(src)로 전체를 덮지 않는다');
+  assert.equal(coveredDir('`src/foo` 를 본다', 'src/foo'), true);
+  for (const d of ['src/__tests__', 'apps/web/e2e', 'packages/x/test/fixtures']) assert.equal(isTestDir(d), true, d);
+  assert.equal(isTestDir('src/testing-library-utils'), false);
+});
