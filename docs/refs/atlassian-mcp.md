@@ -38,7 +38,8 @@ v2에서 "직접 도구"가 없는 일은 범용 실행기로 부른다: 읽기 
 | `jira.transitions` (지금 가능한 전이) | `getTransitionsForJiraIssue` | `executeRead` → `listJiraIssueTransitions` | 응답의 전이 id를 `jira.transition`에 넘긴다. 전이 이름과 도착 상태는 다른 필드다 — 도착 상태로 고른다 |
 | `jira.transition` | `transitionJiraIssue` | `transitionJiraIssue` | **v1 `transition: { id }` → v2 `transitionId: "<id>"`.** v2는 도착한 상태를 돌려준다(다시 읽을 필요 없음) |
 | `jira.comment` | `addCommentToJiraIssue` | `addOrEditJiraIssueComment` | 본문 `commentBody`·`contentFormat: "markdown"`은 같다. v2는 `commentId`를 주면 수정. **markdown의 `- [ ]`는 체크박스가 되지 않는다** — 체크박스는 `contentFormat: "html"`의 task list(`<ul data-type="task-list">`)로 쓴다(설명·댓글 같음) |
-| `jira.remoteLink` (이슈의 웹 링크) | (없음) | `executeWrite` → `createJiraIssueRemoteIssueLink` | 이슈 "웹 링크" 칸에 문서를 단다. 지금 역링크 표준은 댓글(TP-002·TP-003)이고, 이 도구는 아직 스킬이 쓰지 않는다(후속) |
+| `jira.remoteLinks` (이슈의 웹 링크 목록) | (없음) | `executeRead` → `listJiraIssueRemoteIssueLinks` | `issueIdOrKey`. 달기 전에 같은 `url`이 있는지 본다 |
+| `jira.remoteLink` (이슈에 웹 링크 달기) | (없음 — 댓글로 대신) | `executeWrite` → `createJiraIssueRemoteIssueLink` | `issueIdOrKey`·`url`(http(s) 절대 주소)·`title`·`summary`·`relationship`. 같은 `url`을 두 번 넣으면 링크가 둘이 되고 지우는 도구는 없다 — `jira.remoteLinks`로 먼저 확인한다. 쓰는 곳: `dt-confluence-doc` §8 |
 | `jira.worklog` | `addWorklogToJiraIssue` | `executeWrite` → `addOrEditJiraIssueWorklog` | `timeSpent`(예 `2h 30m`)·`started`(ISO 8601)·`comment` |
 
 ### Confluence

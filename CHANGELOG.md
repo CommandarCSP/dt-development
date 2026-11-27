@@ -68,6 +68,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **`/dt-confluence`의 이슈 역링크가 댓글 대신 이슈 웹 링크로 들어간다.** 달기 전에 웹 링크 목록을 읽어 같은 문서 주소가 있으면 건너뛴다(같은 주소를 다시 넣으면 둘이 되고 지우는 도구가 없다). 웹 링크 도구가 없거나 실패하면 예전 형식의 댓글로 대신한다. TP-003 "이슈 → 문서"와 트래커 대응표(`issue.link.web`)·Atlassian 도구표(`jira.remoteLinks`·`jira.remoteLink`)를 맞췄다. `/dt-worklog` 댓글의 "관련 문서" 줄은 그대로다 (GEN-44)
 - 리뷰 규칙 7개가 설명 문구로 검사를 고르다 "사람 확인"으로 떨어지던 것을 정리했다 — 결정 로그(FE·BE)는 제목 줄 없이 `- …` 항목으로 시작하는 블록을, `integration-page`는 `createMemoryRouter`·`RouterProvider`·MSW를, `integration-domain`은 MSW·에러 응답 분기와 business·store `vi.mock` 금지를, `unit-store-query`는 에러 케이스를, `e2e-playwright`는 `page.goto`·`expect`를 검사한다. 나머지는 같은 규칙에 `manual`로 적었다. `unit-ui-store`는 `manual`이다 (GEN-44)
 - **`modal-management` 규칙이 `NiceModal.register`를 실제로 잡는다.** 머리말 정규식에 백슬래시를 두 번 써서(`\\.`) 글자 그대로 `\`를 찾았고, 그래서 한 번도 위반을 잡지 못했다. 규칙 머리말에 이중 백슬래시가 다시 들어오지 않게 테스트를 뒀다 (GEN-44)
 - **작성 에이전트가 덜 읽고 덜 돈다.** spec-author·bespec-author·definition-author·adopt-extractor·plan-author에 규칙 세 줄을 넣었다: 플러그인 스크립트 소스를 읽지 않고 명령으로 실행한다 / 같은 문서를 두 번 읽지 않고 필요한 절만 읽는다 / 읽기·고치기를 묶는다. 정의서 버전만 오른 재결속은 드리프트 검사가 0이면 에이전트 없이 헤더 명령 한 줄로 한다(`docs/refs/spec-pipeline.md` §5-5). 같은 입력으로 정의서 작성을 다시 돌려 환산 비용이 15% 줄었다(73.5만 → 62.5만, 품질 게이트 그대로 통과) (GEN-41)

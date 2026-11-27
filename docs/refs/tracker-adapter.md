@@ -27,6 +27,7 @@
 | `issue.edit` | 설명·필드 고치기(완료 조건 체크) | `jira.issue.edit` | 이슈 수정 | 이슈 수정 |
 | `transitions` · `transition` | 가능한 상태 전이 · 전이 | `jira.transitions` · `jira.transition` | 열기·닫기 | 상태 변경 |
 | `comment` | 진행·마무리 댓글 | `jira.comment` | 이슈 댓글 | 댓글 |
+| `issue.link.web` | 이슈에 문서 링크 달기(문서 → 이슈 역링크). 같은 주소가 있으면 건너뛴다 | `jira.remoteLinks` · `jira.remoteLink` | 이슈 본문·댓글에 링크 | 첨부 링크 |
 | `worklog` | 작업 시간(사람이 말했을 때만) | `jira.worklog` | — | — |
 | `wiki.search` | 관련 문서 찾기(역링크) | `confluence.search` | — | — |
 
