@@ -36,7 +36,21 @@ export function migrateLegacy(md) {
   const be = sections.find((s) => s.key === OWNERS.backend);
   const feText = (fe ? fe.text.replace(/\n*$/, '\n\n') : `## ${OWNERS.frontend}\n\n`) + demoted;
   const out = [{ key: OWNERS.frontend, text: feText }, ...(be ? [be] : [])];
-  return { md: renderSections({ preamble: PREAMBLE, sections: out }), moved: loose.length };
+  return { md: renderSections({ preamble: keepPreamble(parseSections(md).preamble), sections: out }), moved: loose.length };
+}
+
+/**
+ * 옛 파일의 첫 `##` 절 앞(머리 주석·제목·소개 글)은 사람이 쓴 기록이다 — 지우지 않는다.
+ * 형식 표시만 더한다: 제목(`# …`)이 있으면 그 바로 아래, 없으면 맨 위. 앞부분이 비었으면 기본 머리말.
+ */
+function keepPreamble(preamble) {
+  if (!preamble.trim()) return PREAMBLE;
+  const marker = PREAMBLE.replace(/^# Interactions\n\n/, '');
+  const h1 = /^# .*\n/m.exec(preamble);
+  const at = h1 ? h1.index + h1[0].length : 0;
+  const before = preamble.slice(0, at);
+  const after = preamble.slice(at).replace(/^\n*/, '');
+  return `${before}${h1 ? '\n' : ''}${marker}${after}`.replace(/\n*$/, '\n\n');
 }
 
 /**
