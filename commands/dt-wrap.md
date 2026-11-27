@@ -1,5 +1,5 @@
 ---
-description: 작업 마무리 루틴을 순서대로 진행한다 — 기본은 커밋(피처 브랜치) → 위키 문서 판단 → 작업 기록 동기화이고, .dt.json의 wrap.steps로 바꾸며 꺼진 트래커·위키 단계는 건너뛴다. 각 단계는 해당 스킬의 dry-run 승인을 따르며 자동 실행하지 않는다. --init으로 공통 설정 .dt.json(훅 opt-in·팀 설정)을 생성.
+description: 작업 마무리 루틴을 순서대로 밟는다 — 기본은 커밋(피처 브랜치) → 위키 문서 판단 → 작업 기록 동기화다. 단계는 .dt.json의 wrap.steps로 바꾸고, 꺼진 트래커·위키 단계는 건너뛴다. 각 단계는 그 스킬의 미리보기 승인을 따르고 저절로 실행하지 않는다. --init은 공통 설정 .dt.json(훅 opt-in·팀 설정)을 만든다.
 argument-hint: '[--init]'
 allowed-tools: Read, Write, Edit, Bash, AskUserQuestion
 ---

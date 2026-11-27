@@ -1,5 +1,5 @@
 ---
-description: Build backend SDD spec documents (requirements.md/design.md/tasks.md/api-contract.md) for a REST resource from OpenAPI, ERD/SQL, and Markdown/PDF/Web sources. Outputs to docs/specs/resources/<resource>/.
+description: REST 리소스 하나의 BE 스펙(requirements·design·tasks·api-contract)을 OpenAPI·ERD/SQL·Markdown·PDF·웹 문서에서 만든다. docs/specs/resources/<resource>/에 쓴다
 argument-hint: '<locator> [<locator> ...] [--source <locator>] [--only requirements|design|tasks|api-contract]'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion, WebFetch
 ---

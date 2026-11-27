@@ -1,5 +1,5 @@
 ---
-description: Generate or extend dt-frontend domain code via multi-agent scaffold workflow
+description: FE 도메인 코드를 새로 만들거나 넓힌다 — 단계별 에이전트 스캐폴드(5계층, 단계마다 미니 리뷰)
 argument-hint: '[new-project|new-domain|extend-domain] <domain-name or feature description>'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---

@@ -1,5 +1,5 @@
 ---
-description: Check Korean prose in the given files (or the git diff) — mechanical lint plus one isolated review pass, shown as before/after and applied only on approval.
+description: 파일(또는 git 변경분)의 한국어 문장을 검사한다 — 기계 검사와 격리 리뷰 1회, 고칠 곳을 전·후 표로 보이고 승인한 것만 바꾼다
 argument-hint: '[파일…] [--docType jira|confluence|guide|handbook|spec] [--fix]'
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, AskUserQuestion
 ---

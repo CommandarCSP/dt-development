@@ -1,5 +1,5 @@
 ---
-description: Generate an end-user guide PDF for a web-frontend or Electron project — analyze the project in four stages, screenshot screens, draft a Korean guide (reviewed once), and build a gated PDF into docs/guide/.
+description: 웹·Electron 앱의 사용자 가이드 PDF를 만든다 — 프로젝트를 4단계로 분석하고 화면을 캡처해 한글 가이드를 쓰고(리뷰 1회) 게이트를 통과한 PDF를 docs/guide/에 낸다
 argument-hint: '[analyze|capture|write|build] [--type web|electron] [--unattended]'
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, AskUserQuestion
 ---

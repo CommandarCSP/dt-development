@@ -1,5 +1,5 @@
 ---
-description: Turn dt-bespec resource artifacts into NestJS code by delegating to the dt-backend-scaffold engine
+description: 확정된 리소스 스펙을 NestJS 코드로 만든다(dt-backend-scaffold 엔진에 맡긴다)
 argument-hint: '<specDir e.g. docs/specs/resources/orders>'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---

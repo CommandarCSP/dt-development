@@ -1,5 +1,5 @@
 ---
-description: Author and verify scenario-based acceptance e2e (Jest+Supertest+Testcontainers) for implemented backend resources, driven by resource specs (api-contract.md). Human verifies by reviewing ledger↔test diff plus green run; scenarios tracked in a status ledger. Runs after /dt-be-implement.
+description: 구현한 리소스의 시나리오 수용 e2e(Jest·Supertest·Testcontainers)를 쓰고 돌린다 — api-contract.md에서 시나리오를 뽑아 원장으로 관리하고, 사람이 원장↔테스트 차이와 통과를 확인한다. /dt-be-implement 다음에 쓴다
 argument-hint: '[<resource|scope>]'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---

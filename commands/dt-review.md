@@ -1,5 +1,5 @@
 ---
-description: Run dt-frontend rule and coverage review against current project — bootstraps the stack config if missing, then shows the report verbatim
+description: FE 아키텍처 규칙과 테스트 커버리지를 검사하고 보고서를 그대로 보인다. 스택 설정이 없으면 먼저 만든다
 argument-hint: '[full|partial] [--base <ref>] [--paths file1,file2] [--verbose]'
 allowed-tools: Read, Write, Bash, AskUserQuestion
 ---

@@ -103,8 +103,8 @@ test('플러그인 내부 문서 링크(docs/refs · docs/specs/<날짜>-… · 
 
 test('README 의 스킬·에이전트·명령 개수가 실제와 같다', () => {
   const readme = readFileSync(rel('README.md'), 'utf8');
-  const m = readme.match(/스킬 (\d+)개 · 에이전트 (\d+)개 · 커맨드 (\d+)개/);
-  assert.ok(m, 'README 에 "스킬 N개 · 에이전트 N개 · 커맨드 N개" 문장이 있어야 한다');
+  const m = readme.match(/스킬 (\d+)개 · 에이전트 (\d+)개 · 명령 (\d+)개/);
+  assert.ok(m, 'README 에 "스킬 N개 · 에이전트 N개 · 명령 N개" 문장이 있어야 한다');
   assert.deepEqual(
     { skills: Number(m[1]), agents: Number(m[2]), commands: Number(m[3]) },
     { skills: skillDirs.length, agents: agentFiles.length, commands: commandFiles.length },

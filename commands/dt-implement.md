@@ -1,5 +1,5 @@
 ---
-description: Turn dt-spec page artifacts into code by delegating to the dt-frontend-scaffold engine
+description: 확정된 화면 스펙을 FE 5계층 코드로 만든다(dt-frontend-scaffold 엔진에 맡긴다)
 argument-hint: '<specDir e.g. docs/specs/pages/file-management>'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---

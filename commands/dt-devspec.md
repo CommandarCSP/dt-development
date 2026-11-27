@@ -1,5 +1,5 @@
 ---
-description: Build the project-level development definition (docs/specs/definition.md) — the Source of Truth for FE/BE scope split, interface contracts, and change traceability — from planning/UX sources of any kind (Notion, Confluence, PDF, Markdown, web links, and Figma when available). Consumed by dt-spec(FE) and dt-bespec(BE) at their §0 gate.
+description: 프로젝트 정의서(docs/specs/definition.md)를 만든다 — FE·BE 범위 분담과 인터페이스 합의의 원본. 기획 문서(Notion·Confluence·PDF·Markdown·링크)만으로도 되고 Figma가 있으면 함께 쓴다
 argument-hint: '<locator> [<locator> ...] [--source <locator>] [--primary <locator>] [--scope <slug>]'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion, WebFetch, mcp__claude_ai_Notion__notion-fetch, mcp__notion__notion-fetch, mcp__atlassian__fetch, mcp__atlassian__getConfluencePage, mcp__atlassian__getConfluenceContent, mcp__atlassian__discover, mcp__atlassian__executeRead, mcp__claude_ai_Atlassian__fetch, mcp__claude_ai_Atlassian__getConfluencePage, mcp__claude_ai_Atlassian__getConfluenceContent, mcp__claude_ai_Atlassian__discover, mcp__claude_ai_Atlassian__executeRead
 ---

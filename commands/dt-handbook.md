@@ -1,5 +1,5 @@
 ---
-description: Generate a developer handbook PDF for an existing codebase — extract the static axis (data owners, clusters, boundaries, hotspots), trace scenario call chains, write an 8-chapter Korean handbook with figures, and build a gated PDF into docs/handbook/.
+description: 이미 있는 코드의 개발자 인수인계 핸드북 PDF를 만든다 — 데이터 주인·군집·경계·핫스팟을 먼저 세우고 시나리오 호출 사슬을 따라가 8장 한글 핸드북을 쓰고, 게이트를 통과한 PDF를 docs/handbook/에 낸다
 argument-hint: '[analyze|trace|write|build] [--flow "이름"] [--area <경로>] [--section 5,6] [--pdf-only-section N] [--max-flows N] [--shots] [--unattended]'
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task, AskUserQuestion
 ---

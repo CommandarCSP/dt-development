@@ -1,5 +1,5 @@
 ---
-description: Author and verify scenario-based acceptance e2e (Playwright) for implemented pages, driven by page specs and interactions.md. Human verifies results; scenarios tracked in a status ledger. Runs after /dt-implement.
+description: 구현한 화면의 시나리오 수용 e2e(Playwright)를 쓰고 돌린다 — 화면 스펙·interactions.md에서 시나리오를 뽑아 원장으로 관리하고, 사람이 결과를 확인한다. /dt-implement 다음에 쓴다
 argument-hint: '[<page|scope>]'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---

@@ -1,5 +1,5 @@
 ---
-description: Audit the implemented app against dt spec artifacts — as-built extraction per track(fe|be|ux), spec diff, git-based drift detection, action-oriented report to docs/audits/.
+description: 구현된 앱을 스펙과 대조해 어긋난 곳(드리프트)을 찾는다 — 트랙(fe·be·ux)별로 현재 동작을 뽑아 비교하고, 고칠 일 위주의 보고서를 docs/audits/에 쓴다
 argument-hint: '[--scope fe|be|ux|spec|all] [--page <p>] [--resource <r>] [--app-url <url>] [--consult]'
 allowed-tools: Read, Write, Bash, Grep, Glob, Task, AskUserQuestion, mcp__atlassian__getJiraIssue, mcp__claude_ai_Atlassian__getJiraIssue
 ---

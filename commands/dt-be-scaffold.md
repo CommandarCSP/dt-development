@@ -1,5 +1,5 @@
 ---
-description: Generate or extend dt-backend (NestJS) module code via multi-agent scaffold workflow
+description: NestJS 모듈 코드를 새로 만들거나 넓힌다 — 단계별 에이전트 스캐폴드(계층형, 단계마다 미니 리뷰)
 argument-hint: '[new-project|new-module|extend-module] <module-name or feature description>'
 allowed-tools: Read, Write, Edit, Bash, Task, AskUserQuestion
 ---
