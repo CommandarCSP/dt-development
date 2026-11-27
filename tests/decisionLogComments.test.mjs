@@ -111,8 +111,8 @@ test('decision-log-format 룰이 FE·BE 양쪽에 있고 형식 검사 detection
     assert.match(fm, /^severity: minor$/m, `${rel}: severity 누락`);
     assert.match(fm, /^summary: .+/m, `${rel}: summary 누락`);
     assert.ok(fm.includes(expectedGlob), `${rel}: appliesTo 경로 누락`);
-    assert.ok(fm.includes('required-pattern'), `${rel}: required-pattern 누락`);
-    assert.ok(fm.includes('forbidden-pattern'), `${rel}: forbidden-pattern 누락`);
+    assert.ok(!fm.includes('required-pattern'), `${rel}: 설명 문구로 고르는 required-pattern 은 쓰지 않는다(GEN-44)`);
+    assert.equal((fm.match(/type: forbidden-pattern/g) ?? []).length, 2, `${rel}: 제목 줄 없는 블록·이유 없는 항목 두 검사`);
 
     const body = readFileSync(p, 'utf8');
     assert.ok(body.includes('블록이 있을 때만'), `${rel}: 누락은 안 잡는다는 규정 누락`);
@@ -181,7 +181,7 @@ test('ATLAS 블록에 decision-log-scope이 반영돼 있다', () => {
   }
 });
 
-test('결정 로그 검출: 허용 레이어 밖 항목·이유 없는 항목은 정규식으로 잡고, 순서·제목 갱신은 manual 이다', async () => {
+test('결정 로그 검출: 허용 레이어 밖·제목 줄 없는 블록·이유 없는 항목은 정규식으로 잡고, 항목 모양·순서·제목 갱신은 manual 이다', async () => {
   const { parseFrontmatter } = await import('../scripts/review/lib/frontmatter.mjs');
   const { detectForbiddenPattern } = await import('../scripts/review/lib/detection/forbidden-pattern.mjs');
   for (const st of ['frontend', 'backend']) {
@@ -190,9 +190,11 @@ test('결정 로그 검출: 허용 레이어 밖 항목·이유 없는 항목은
     assert.equal(detectForbiddenPattern('/**\n * 한도\n * - 2026-05 · PROJ-1(CS팀): 늘림. 문의가 많았음\n */\n', scope).length, 1, `${st}: 밖 레이어 결정 로그`);
     assert.equal(detectForbiddenPattern('// 목록 - 일반 주석\nconst a = 1;\n', scope).length, 0);
     const fmt = fm('decision-log-format');
-    const noReason = fmt.detection.find((d) => d.type === 'forbidden-pattern');
+    const noReason = fmt.detection.find((d) => d.type === 'forbidden-pattern' && /이유가 없는/.test(d.description));
+    const noTitle = fmt.detection.find((d) => d.type === 'forbidden-pattern' && /제목 줄 없이/.test(d.description));
+    assert.equal(detectForbiddenPattern('/**\n * - 2026-01 · 초기: 24시간 전까지. 경쟁사 기준\n */\n', noTitle).length, 1, `${st}: 제목 줄 없는 블록`);
     assert.equal(detectForbiddenPattern('/**\n * 한도: 48시간\n * - 2026-01 · 초기: 24시간 전까지\n */\n', noReason).length, 1, `${st}: 이유 없는 항목`);
     assert.equal(detectForbiddenPattern('/**\n * 한도: 48시간\n * - 2026-01 · 초기: 24시간 전까지. 경쟁사 기준\n * - 2026-05 · PROJ-1: 48시간.\n *   분쟁 문의가 많았음.\n */\n', noReason).length, 0);
-    assert.equal(fmt.detection.filter((d) => d.type === 'manual').length, 2, `${st}: 날짜 순서·제목 갱신은 정규식으로 못 잡아 manual`);
+    assert.equal(fmt.detection.filter((d) => d.type === 'manual').length, 3, `${st}: 항목 모양·날짜 순서·제목 갱신은 정규식으로 못 잡아 manual`);
   }
 });

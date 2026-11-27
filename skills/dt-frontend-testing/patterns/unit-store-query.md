@@ -4,8 +4,12 @@ summary: "Store Query 단위 테스트, MSW로 응답 stub, queryKey 파라미�
 severity: important
 appliesTo: ["src/store/queries/**/__tests__/**/*.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "Store Query 테스트는 happy/error 케이스 + 같은 hook의 다른 파라미터 호출 시 캐시 분리 확인을 포함해야 한다."
+  - type: pattern-pair
+    when: "\b(?:test|it)\("
+    require: "status:\s*[45]\d\d|HttpResponse\.error\(|\.networkError\(|mockRejected|\.rejects\b|isError"
+    rationale: "Store Query 테스트에 에러 케이스가 없다 — 4xx·5xx 응답이나 실패를 한 번은 다룬다"
+  - type: manual
+    description: "같은 hook 을 다른 파라미터로 불렀을 때 캐시가 갈리는지 확인하는지는 사람이 본다"
 relatedRules: [query-key-design, msw-handler-design]
 ---
 

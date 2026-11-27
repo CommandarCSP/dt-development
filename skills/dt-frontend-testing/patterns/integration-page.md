@@ -4,8 +4,12 @@ summary: "Page 통합 테스트는 MemoryRouter + MSW, 실 사용자 진입 시�
 severity: important
 appliesTo: ["src/pages/**/__tests__/**/*.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "Page 테스트는 createMemoryRouter + RouterProvider + MSW로 라우팅 흐름까지 검증"
+  - type: pattern-pair
+    when: "\b(?:test|it)\("
+    requireAll: ["createMemoryRouter", "RouterProvider", "\b(?:http|rest)\.(?:get|post|put|patch|delete|all)\(|server\.use\(|setupServer\("]
+    rationale: "Page 테스트에 createMemoryRouter·RouterProvider·MSW 핸들러 중 빠진 것이 있다 — 라우팅 흐름과 네트워크를 실제와 같게 둔다"
+  - type: manual
+    description: "라우팅 흐름(진입·이동·뒤로)을 실제로 검증하는지는 사람이 본다"
 relatedRules: [integration-domain]
 ---
 

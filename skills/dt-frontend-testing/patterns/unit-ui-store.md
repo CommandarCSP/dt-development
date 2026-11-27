@@ -4,8 +4,8 @@ summary: "Zustand UI Store 단위 테스트, 초기값/setter/reset 상태 전�
 severity: minor
 appliesTo: ["src/store/stores/**/__tests__/**/*.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "UI Store 테스트는 초기값, setter 동작, 리셋(필요 시) 모두 커버"
+  - type: manual
+    description: "UI Store 테스트가 초기값·setter·리셋(필요할 때)을 모두 다루는지는 사람이 본다 — store 마다 이름이 달라 기계로 단정할 수 없다"
 relatedRules: [server-vs-client-state]
 ---
 

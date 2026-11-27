@@ -4,8 +4,13 @@ summary: "Domain 컴포넌트 통합 테스트, 실제 hook + MSW, hook mock 금
 severity: important
 appliesTo: ["src/components/domain/**/__tests__/**/*.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "Domain Component 테스트는 실제 hook + MSW 사용. loading/data/error 분기 모두 커버."
+  - type: pattern-pair
+    when: "\b(?:test|it)\("
+    requireAll: ["\b(?:http|rest)\.(?:get|post|put|patch|delete|all)\(|server\.use\(|setupServer\(", "status:\s*[45]\d\d|HttpResponse\.error\(|\.networkError\(|mockRejected|\.rejects\b|isError"]
+    forbid: "vi\.mock\([^)]*(?:business|store)"
+    rationale: "Domain 테스트는 실제 hook + MSW 로 돈다 — MSW 핸들러가 없거나, 에러 응답 분기가 없거나, business·store 를 vi.mock 으로 바꿔 끼웠다"
+  - type: manual
+    description: "loading·data·error 세 분기를 모두 화면으로 확인하는지는 사람이 본다"
 relatedRules: [integration-no-hook-mocking]
 ---
 

@@ -4,9 +4,13 @@ summary: "Business Hook의 결정 로그 주석은 제목 줄 + 시간순 `- YYY
 severity: minor
 appliesTo: ["src/business/hooks/**/*.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "결정 로그 블록은 제목 줄로 시작하고 항목은 `- YYYY-MM · 출처: ` 형태여야 함"
+  - type: forbidden-pattern
+    pattern: "/\*\*[ \t]*\n[ \t]*\*[ \t]*- (?:[0-9]{4}-[0-9]{2} · |[A-Z][A-Z0-9]+-[0-9]+)"
+    flags: "gm"
+    description: "결정 로그 블록이 제목 줄 없이 바로 `- …` 항목으로 시작함"
     rationale: "제목 줄이 현재 규칙을 고정해야 로그가 길어져도 읽는 비용이 늘지 않음"
+  - type: manual
+    description: "항목이 `- YYYY-MM · 출처: 무엇을. 왜.` 모양인지(날짜가 빠진 항목 등)는 사람이 본다 — 블록 안의 일반 목록과 기계로 가르기 어렵다"
   - type: forbidden-pattern
     pattern: "^[ \t]*[*][ \t]*- [0-9]{4}-[0-9]{2} · [^:\n]+: [^.\n]+\n[ \t]*([*][ \t]*- [0-9]{4}|[*]/)"
     flags: "gm"

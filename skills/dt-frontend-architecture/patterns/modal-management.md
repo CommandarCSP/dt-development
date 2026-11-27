@@ -6,7 +6,7 @@ appliesTo: ["src/**/*.{ts,tsx}"]
 excludePathPatterns: ["src/modals/**"]
 detection:
   - type: forbidden-pattern
-    pattern: "NiceModal\\.register"
+    pattern: "NiceModal\.register"
     rationale: "모달 등록(NiceModal.register)은 src/modals/registry 단일 위치에서만 — 분산 등록 금지"
 relatedRules: [server-vs-client-state, pure-view-component, centralized-query-keys]
 ---

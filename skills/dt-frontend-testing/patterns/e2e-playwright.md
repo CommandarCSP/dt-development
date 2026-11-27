@@ -4,8 +4,12 @@ summary: "수용(acceptance) 사용자 시나리오, 외부는 MSW/origin 명시
 severity: important
 appliesTo: ["e2e/**/*.spec.{ts,tsx}"]
 detection:
-  - type: required-pattern
-    description: "E2E spec은 페이지 진입 → 핵심 사용자 인터랙션 → 결과 검증 흐름을 포함. 네트워크는 page.route 또는 e2e/fixtures/msw로 stub."
+  - type: pattern-pair
+    when: "\btest\("
+    requireAll: ["page\.goto\(", "\bexpect\("]
+    rationale: "E2E spec 에 페이지 진입(page.goto)이나 결과 검증(expect)이 없다"
+  - type: manual
+    description: "핵심 사용자 인터랙션을 거치는지, 네트워크를 page.route·e2e/fixtures/msw 로 stub 했는지는 사람이 본다"
   - type: forbidden-pattern
     pattern: "page\.waitForTimeout"
     rationale: "고정 대기는 flaky. auto-wait(expect toBeVisible) 또는 page.waitForResponse 사용."
