@@ -38,7 +38,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/handbook/analyze.mjs" <projectRoot> --since-
 
 ### 3. 왜 이렇게 됐는지를 모은다
 코드는 "무엇"만 말한다. 이유는 입력 `sources`(`scripts/handbook/sources.mjs`)가 정한 순서로 찾는다.
-1. **결정 기록** — `sources.decisions.dirs` 의 PD 와 플러그인 TP. 채택(`accepted`)된 것만 근거로 쓰고, 대체된 것은 "예전엔 X였다"로만 쓴다. 인용은 `[문서] PD-007`.
+1. **결정 기록** — `sources.decisions.dirs` 의 PD 와 플러그인 TP. 채택(`accepted`)된 것만 근거로 쓰고, 대체된 것은 "예전엔 X였다"로만 쓴다. 인용은 `[문서] PD-007`. `sources.decisions.adr` 폴더의 ADR 도 같은 무게로 읽는다 — 상태 줄(`상태:`·`Status:`)이 승인·채택(accepted)인 것만 근거로 쓰고, 인용은 파일 제목의 번호(`[문서] ADR-0007`)다. 먼저 제목 줄만 훑어 주제에 맞는 것만 연다(ADR 은 수십 개일 수 있다).
 2. **위키** — `sources.wiki` 가 `markdown`이면 그 폴더의 문서를 직접 읽고, `confluence`면 `labels` 로 좁혀 찾는다. `null`이면 건너뛴다.
 3. **트래커** — `sources.tracker` 가 있을 때만 모듈명·데이터명을 키워드로 찾는다.
 4. git 커밋 메시지·주석·`docs/` 의 다른 설계 문서.

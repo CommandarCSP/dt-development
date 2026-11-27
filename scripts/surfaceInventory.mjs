@@ -29,7 +29,7 @@ export function walkSourceFiles(root, { extraExts = [] } = {}) {
   return out.sort();
 }
 
-const isTestFile = (f) => /(\.|\/)(test|spec)\.[tj]sx?$/.test(f) || /(^|\/)(tests?|__tests__|__mocks__|e2e|test-utils|fixtures)\//.test(f);
+export const isTestFile = (f) => /(\.|\/)(test|spec)\.[tj]sx?$/.test(f) || /(^|\/)(tests?|__tests__|__mocks__|e2e|test-utils|fixtures)\//.test(f);
 
 export function detectType(files) {
   return files.some((f) => /(^|\/)electron\//.test(f)) ? 'electron' : 'web';

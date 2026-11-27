@@ -130,3 +130,23 @@ test('dt-explain 은 없앴다 — 스킬·명령·참조가 남아 있지 않�
     assert.doesNotMatch(readFileSync(join(root, f), 'utf8'), /dt-explain/, f);
   }
 });
+
+test('ADR 폴더 — 흔한 위치를 자동으로 찾고, sources.decisions.dirs 로 더한다', async () => {
+  const { mkdtempSync, mkdirSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { resolveHandbookSources, ADR_DIRS } = await import('../scripts/handbook/sources.mjs');
+  const root = mkdtempSync(join(tmpdir(), 'hb-adr-'));
+  mkdirSync(join(root, 'docs/adr'), { recursive: true });
+  const dt = { tracker: 'none', wiki: 'none' };
+  const r = resolveHandbookSources(root, { handbook: null, dt });
+  assert.ok(ADR_DIRS.includes('docs/adr'));
+  assert.deepEqual(r.decisions.adr, ['docs/adr']);
+  assert.ok(r.decisions.dirs.includes('docs/adr') && r.decisions.dirs.includes('docs/decisions'));
+  assert.match(r.decisions.cite, /ADR-0001/);
+  const r2 = resolveHandbookSources(root, { handbook: { sources: { decisions: { dirs: ['architecture/records'] } } }, dt });
+  assert.ok(r2.decisions.dirs.includes('architecture/records'));
+  const none = resolveHandbookSources(mkdtempSync(join(tmpdir(), 'hb-noadr-')), { handbook: null, dt });
+  assert.equal(none.decisions.adr, undefined);
+  assert.doesNotMatch(none.decisions.cite, /ADR/);
+});

@@ -3,7 +3,8 @@
  * 핸드북 "왜 이렇게 됐나"의 근거 원천(GEN-13) — 어디서 찾을지와 외부 공개 때 가릴 링크 호스트.
  *
  * 순서(앞이 먼저, 가장 믿을 만한 것):
- *   1. 결정 기록 — 프로젝트 PD(`docs/decisions/`, 공유 폴더 포함) + 플러그인 TP. 설정 없이 늘 읽는다(MCP 불필요).
+ *   1. 결정 기록 — 프로젝트 PD(`docs/decisions/`, 공유 폴더 포함) + 흔한 ADR 폴더(ADR_DIRS 중 있는 것) + `.dt-handbook.json`
+ *      `sources.decisions.dirs` + 플러그인 TP. 설정 없이 늘 읽는다(MCP 불필요).
  *   2. 위키 — `.dt.json` `wiki`: confluence(MCP, 설계·가이드 라벨로 좁힘) · markdown(`docs/wiki/design`·`guide` 직접 읽기) · 그 밖에는 없음.
  *   3. 트래커 — `tracker: jira` 일 때만(MCP, 티켓 검색).
  * 옛 `.dt-handbook.json` `sources.atlassian.enabled: "off"` 는 2·3의 MCP 원천을 끈다(markdown 위키·결정 기록은 그대로).
@@ -17,6 +18,9 @@ import { loadConfig } from '../lib/config.mjs';
 import { decisionDirs } from '../decisions.mjs';
 import { resolveWikiConfig } from '../wikiConfig.mjs';
 import { resolveWorklogConfig } from '../worklogConfig.mjs';
+
+/** 저장소에 흔한 ADR(Architecture Decision Record) 폴더 — 있으면 결정 기록으로 함께 읽는다. */
+export const ADR_DIRS = ['docs/adr', 'docs/adrs', 'docs/decisions/adr', 'doc/adr', 'docs/architecture/decisions', 'adr'];
 
 /** TP-003 의 설계·운영 가이드 — "왜"를 담는 문서 종류. */
 export const WHY_DOC_TYPES = ['design', 'guide'];
@@ -39,10 +43,14 @@ export function resolveHandbookSources(projectRoot, o = {}) {
   const rel = (p) => relative(projectRoot, p) || '.';
 
   const dirs = quiet(() => decisionDirs(projectRoot)) ?? { local: join(projectRoot, 'docs/decisions'), shared: null };
+  const own = Array.isArray(handbook?.sources?.decisions?.dirs) ? handbook.sources.decisions.dirs.filter((d) => typeof d === 'string' && d.trim()) : [];
+  const adr = ADR_DIRS.filter((d) => existsSync(join(projectRoot, d)));
+  const decisionList = [...new Set([rel(dirs.local), ...(dirs.shared ? [rel(dirs.shared)] : []), ...adr, ...own])];
   const decisions = {
-    dirs: [rel(dirs.local), ...(dirs.shared ? [rel(dirs.shared)] : [])],
+    dirs: decisionList,
+    ...(adr.length ? { adr } : {}),
     policies: true,
-    cite: '[문서] PD-007 · [문서] TP-002 처럼 ID 로',
+    cite: adr.length ? '[문서] PD-007 · [문서] TP-002 · [문서] ADR-0001 처럼 ID 로(ADR 은 파일 제목의 번호)' : '[문서] PD-007 · [문서] TP-002 처럼 ID 로',
   };
 
   let wiki = null;

@@ -68,6 +68,7 @@
 - BE 규칙 2개가 FE 규칙을 `relatedRules`로 가리키던 것, `flaky-test-prevention` 요약이 스킬 목록과 달랐던 것 (GEN-27)
 
 ### 변경
+- **핸드북 분석이 모노레포·브라우저 앱에서도 구조를 바로 본다.** 실제 프로젝트(React·Vite 모노레포)로 끝까지 돌려 보니 세 곳이 빗나갔다. ① import 간선이 tsconfig `paths` 별칭(`@/…`)과 워크스페이스 패키지(`@acme/ui`)를 못 따라가 군집 응집도가 틀렸다 — 이제 가장 가까운 tsconfig의 별칭과 `package.json` `name`(`exports['.'].source` → `src/index`)으로 푼다(그 프로젝트에서 간선 507 → 766). ② 데이터 쓰기 지점이 브라우저 저장을 못 봤다 — IndexedDB(`objectStore('x').put`·`db.put('x')`)·Web Storage(`setItem`)를 잡고, Zustand `set({ a })`·`setState({ a, b })`는 필드마다 센다. 테스트 파일은 데이터 주인에서 뺀다(쓰기 대상 2 → 32). ③ 결정 기록을 `docs/decisions`에서만 찾아 ADR 47개를 놓쳤다 — 흔한 ADR 폴더(`docs/adr` 등)를 함께 읽고, `.dt-handbook.json` `sources.decisions.dirs`로 더할 수 있다 (GEN-44)
 - **`/dt-confluence`의 이슈 역링크가 댓글 대신 이슈 웹 링크로 들어간다.** 달기 전에 웹 링크 목록을 읽어 같은 문서 주소가 있으면 건너뛴다(같은 주소를 다시 넣으면 둘이 되고 지우는 도구가 없다). 웹 링크 도구가 없거나 실패하면 예전 형식의 댓글로 대신한다. TP-003 "이슈 → 문서"와 트래커 대응표(`issue.link.web`)·Atlassian 도구표(`jira.remoteLinks`·`jira.remoteLink`)를 맞췄다. `/dt-worklog` 댓글의 "관련 문서" 줄은 그대로다 (GEN-44)
 - 리뷰 규칙 7개가 설명 문구로 검사를 고르다 "사람 확인"으로 떨어지던 것을 정리했다 — 결정 로그(FE·BE)는 제목 줄 없이 `- …` 항목으로 시작하는 블록을, `integration-page`는 `createMemoryRouter`·`RouterProvider`·MSW를, `integration-domain`은 MSW·에러 응답 분기와 business·store `vi.mock` 금지를, `unit-store-query`는 에러 케이스를, `e2e-playwright`는 `page.goto`·`expect`를 검사한다. 나머지는 같은 규칙에 `manual`로 적었다. `unit-ui-store`는 `manual`이다 (GEN-44)
 - **`modal-management` 규칙이 `NiceModal.register`를 실제로 잡는다.** 머리말 정규식에 백슬래시를 두 번 써서(`\\.`) 글자 그대로 `\`를 찾았고, 그래서 한 번도 위반을 잡지 못했다. 규칙 머리말에 이중 백슬래시가 다시 들어오지 않게 테스트를 뒀다 (GEN-44)
